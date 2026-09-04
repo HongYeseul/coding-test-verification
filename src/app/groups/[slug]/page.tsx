@@ -13,6 +13,8 @@ import { deleteProofAction, reviewProofAction } from "@/app/actions/proofs";
 import { StatusMessage } from "@/components/status-message";
 import { requireUser } from "@/lib/auth";
 import { firstQueryValue } from "@/lib/form";
+import { GroupOverview } from "@/components/group-overview";
+import type { GroupOverviewData } from "@/lib/group-overview";
 
 type MembershipRow = {
   user_id: string;
@@ -104,27 +106,36 @@ export default async function GroupPage({
     redirect("/dashboard");
   }
 
-  const [{ data: membershipData }, { data: accountData }, { data: proofData }] =
-    await Promise.all([
-      supabase
-        .from("group_members")
-        .select("user_id, role, status, joined_at")
-        .eq("group_id", group.id)
-        .neq("status", "REVOKED")
-        .order("created_at"),
-      supabase
-        .from("platform_accounts")
-        .select("id, user_id, platform, handle, verification_status")
-        .order("created_at"),
-      supabase
-        .from("proofs")
-        .select(
-          "id, user_id, platform_account_id, problem_key, problem_url, problem_title, accepted_at, verification_status, evidence_path",
-        )
-        .eq("group_id", group.id)
-        .order("accepted_at", { ascending: false })
-        .limit(50),
-    ]);
+  const [
+    { data: membershipData },
+    { data: accountData },
+    { data: proofData },
+    overviewResult,
+  ] = await Promise.all([
+    supabase
+      .from("group_members")
+      .select("user_id, role, status, joined_at")
+      .eq("group_id", group.id)
+      .neq("status", "REVOKED")
+      .order("created_at"),
+    supabase
+      .from("platform_accounts")
+      .select("id, user_id, platform, handle, verification_status")
+      .order("created_at"),
+    supabase
+      .from("proofs")
+      .select(
+        "id, user_id, platform_account_id, problem_key, problem_url, problem_title, accepted_at, verification_status, evidence_path",
+      )
+      .eq("group_id", group.id)
+      .order("accepted_at", { ascending: false })
+      .limit(50),
+    supabase.rpc("get_group_overview", { target_group_id: group.id }),
+  ]);
+
+  const overview = overviewResult.error
+    ? null
+    : (overviewResult.data as GroupOverviewData | null);
 
   const memberships = (membershipData ?? []) as MembershipRow[];
   const accounts = (accountData ?? []) as PlatformAccountRow[];
@@ -193,6 +204,17 @@ export default async function GroupPage({
           error={firstQueryValue(query.error)}
           message={firstQueryValue(query.message)}
         />
+
+        {overview ? (
+          <GroupOverview data={overview} currentUserId={user.id} />
+        ) : (
+          <p
+            role="alert"
+            className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900"
+          >
+            인증 현황을 불러오지 못했습니다. 잠시 후 페이지를 새로고침해주세요.
+          </p>
+        )}
 
         <section className="grid gap-6 lg:grid-cols-2">
           <div className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
