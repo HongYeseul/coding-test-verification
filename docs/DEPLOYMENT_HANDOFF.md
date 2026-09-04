@@ -9,9 +9,11 @@
 - GitHub 저장소: `https://github.com/HongYeseul/coding-test-verification`
 - 저장소 공개 범위: Private
 - 기본 브랜치: `main`
-- 인수인계 작성 전 원격 HEAD: `86ed0ec18ab3e98e49deef23c49e5d0fbd9958b7`
+- 배포된 원격 HEAD: `a6ec2321226b2d7cdfc3a0cc33aa54b297f695ea`
 - Vercel 워크스페이스 slug: `hongyeseuls-projects`
-- Vercel 프로젝트와 배포 URL은 아직 생성되지 않았습니다.
+- Vercel 프로젝트 ID: `prj_F67rErRW8oBwkLTComzHn4g23qzi`
+- Production URL: `https://coding-test-verification.vercel.app`
+- Production 배포 ID: `dpl_ALgq5SAivZuZEA3QksGU5qdNKmvh`
 
 2026-09-05 재시도에서 GitHub CLI의 활성 계정이 `HongYeseul`이고 원격 `main`이 최신 상태임을 확인했습니다. 깨끗한 환경에서도 `pnpm check`가 동작하도록 타입 검사 전에 `next typegen`을 실행하게 수정했으며, Node.js 24에서 전체 검증을 통과했습니다.
 
@@ -23,11 +25,13 @@ Vercel MCP 연결도 확인했지만 당시 세션에서는 다음 제약이 있
 - `list_projects`에 `hongyeseuls-projects`를 전달해도 조회가 실패했습니다.
 - `deploy_to_vercel` 쓰기 호출은 해당 작업의 승인 정책에 차단됐습니다.
 
-새 PC의 새 작업에서는 MCP 연결과 계정 범위를 다시 확인합니다. MCP 직접 배포는 GitHub 자동 배포 연결을 보장하지 않으므로, 지속 배포가 목적이면 Vercel 대시보드에서 이 GitHub 저장소를 Import하는 방식이 우선입니다.
+MCP 직접 배포는 GitHub 자동 배포 연결을 보장하지 않으므로, 브라우저에서 이 GitHub 저장소를 Import해 프로젝트를 생성했습니다. `main` 브랜치가 Production에 연결되어 이후 push 시 자동으로 배포됩니다.
 
 2026-09-05 재시도에서도 `list_teams`는 빈 배열을 반환했고, Git 프로젝트 생성은 `hongyeseuls-projects` 워크스페이스 접근 권한이 없어 HTTP 403으로 실패했습니다. Vercel MCP를 다시 인증할 때 이 워크스페이스에 대한 접근을 허용해야 합니다. 로컬 Vercel CLI 토큰도 만료된 상태입니다.
 
-## 이어서 진행할 순서
+브라우저 배포는 성공했으며 Production URL에서 HTTP 200과 `오늘 푼 문제를 함께 확인합니다.` 문구를 확인했습니다. `.env.example`에서 감지된 Supabase 환경변수 세 개는 현재 빈 Secret 값으로 등록되어 있으므로, Supabase 연결 전 삭제하거나 실제 값으로 교체합니다.
+
+## 완료한 배포 절차
 
 1. GitHub CLI를 `HongYeseul` 계정으로 로그인합니다.
 2. 저장소를 clone하고 `main` 최신 상태를 확인합니다.
