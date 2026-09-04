@@ -6,9 +6,13 @@ import { createClient } from "@/lib/supabase/client";
 
 type GithubSignInButtonProps = {
   configured: boolean;
+  nextPath?: string;
 };
 
-export function GithubSignInButton({ configured }: GithubSignInButtonProps) {
+export function GithubSignInButton({
+  configured,
+  nextPath = "/dashboard",
+}: GithubSignInButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,10 +25,12 @@ export function GithubSignInButton({ configured }: GithubSignInButtonProps) {
     setError(null);
 
     const supabase = createClient();
+    const callbackUrl = new URL("/auth/callback", window.location.origin);
+    callbackUrl.searchParams.set("next", nextPath);
     const { error: signInError } = await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callbackUrl.toString(),
       },
     });
 

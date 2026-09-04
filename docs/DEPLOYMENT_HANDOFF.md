@@ -27,7 +27,7 @@ MCP 직접 배포는 GitHub 자동 배포 연결을 보장하지 않으므로, �
 
 2026-09-05 재시도에서도 `list_teams`는 빈 배열을 반환했고, Git 프로젝트 생성은 `hongyeseuls-projects` 워크스페이스 접근 권한이 없어 HTTP 403으로 실패했습니다. Vercel MCP를 다시 인증할 때 이 워크스페이스에 대한 접근을 허용해야 합니다. 로컬 Vercel CLI 토큰도 만료된 상태입니다.
 
-브라우저 배포는 성공했으며 Production URL에서 HTTP 200과 `오늘 푼 문제를 함께 확인합니다.` 문구를 확인했습니다. `.env.example`에서 감지된 Supabase 환경변수 세 개는 현재 빈 Secret 값으로 등록되어 있으므로, Supabase 연결 전 삭제하거나 실제 값으로 교체합니다.
+브라우저 배포는 성공했으며 Production URL에서 HTTP 200과 `오늘 푼 문제를 함께 확인합니다.` 문구를 확인했습니다. `.env.example`에서 감지되어 빈 값으로 등록됐던 Supabase 환경변수 세 개는 삭제했습니다.
 
 ## 완료한 배포 절차
 

@@ -1,4 +1,8 @@
+import { redirect } from "next/navigation";
+
 import { GithubSignInButton } from "@/components/github-sign-in-button";
+import { StatusMessage } from "@/components/status-message";
+import { getOptionalUser } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 const steps = [
@@ -19,8 +23,14 @@ const steps = [
   },
 ];
 
-export default function Home() {
+export default async function Home({ searchParams }: PageProps<"/">) {
   const configured = isSupabaseConfigured();
+  const user = await getOptionalUser();
+  const query = await searchParams;
+
+  if (user) {
+    redirect("/dashboard");
+  }
 
   return (
     <main className="min-h-screen bg-[var(--background)] px-5 py-6 text-[var(--foreground)] sm:px-8 lg:px-12">
@@ -57,6 +67,11 @@ export default function Home() {
 
             <div className="mt-9 max-w-sm">
               <GithubSignInButton configured={configured} />
+              {query.auth_error && (
+                <div className="mt-3">
+                  <StatusMessage error="GitHub 로그인을 완료하지 못했습니다." />
+                </div>
+              )}
               {!configured && (
                 <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
                   현재는 프로젝트 설정 단계입니다. Supabase 연결 후 로그인이
@@ -100,9 +115,7 @@ export default function Home() {
 
             <div className="mt-6 flex items-center gap-3 rounded-2xl bg-[var(--ink)] px-5 py-4 text-sm text-white">
               <span className="size-2.5 shrink-0 rounded-full bg-[var(--accent)] shadow-[0_0_0_5px_rgba(190,242,100,0.12)]" />
-              <p>
-                Codeforces는 자동 확인, 프로그래머스는 관리자 검수로 시작합니다.
-              </p>
+              <p>현재 모든 플랫폼 제출은 그룹 검수자가 확인합니다.</p>
             </div>
           </div>
         </section>

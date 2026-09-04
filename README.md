@@ -10,11 +10,13 @@
 - 초대·멤버십·플랫폼 계정·풀이 인증·검수 데이터 모델
 - `ACTIVE` 그룹 멤버 기준 PostgreSQL RLS
 - 증빙 이미지·영상용 비공개 Storage 정책
+- 그룹 생성, 대상 계정 초대 수락, 소유자 가입 승인
+- 플랫폼 계정 등록, 풀이 제출, 승인·반려 검수 화면
 - Vercel 배포가 가능한 Next.js 기본 화면
 
-실제 초대 수락, 관리자 승인, 풀이 등록과 검수 화면은 다음 구현 단계에서 연결합니다.
+그룹 생성과 초대 수락은 인증 사용자를 확인하는 PostgreSQL 함수에서 원자적으로 처리합니다. 그룹 데이터는 서버와 RLS에서 모두 `ACTIVE` 멤버십을 확인합니다.
 
-초기 마이그레이션은 브라우저에서 그룹과 초대를 직접 만들 수 없도록 닫아두었습니다. 첫 그룹 생성과 초대 수락은 신뢰할 수 있는 서버 함수로 원자적으로 구현한 뒤 개방합니다.
+Codeforces 공식 API 자동 확인과 증빙 파일 업로드 화면은 다음 구현 단계에서 연결합니다. 현재 제출은 플랫폼과 관계없이 그룹의 `OWNER` 또는 `REVIEWER`가 검수합니다.
 
 ## 구성
 
@@ -65,6 +67,12 @@ https://<project-ref>.supabase.co/auth/v1/callback
 - Redirect URLs: `http://localhost:3000/**`, 운영 주소의 `/auth/callback`, 사용할 Preview 주소 패턴
 
 GitHub OAuth callback은 Vercel 주소가 아니라 Supabase callback 주소라는 점에 주의합니다.
+
+로컬 PostgreSQL 17 환경은 Docker 실행 후 아래 명령으로 시작합니다.
+
+```bash
+npx supabase start
+```
 
 ## Vercel 배포
 
