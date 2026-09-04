@@ -1,5 +1,6 @@
 export const INVITE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export const MAX_PHOTO_BYTES = 6 * 1024 * 1024;
+export const MAX_SOURCE_PHOTO_BYTES = 20 * 1024 * 1024;
 export const PHOTO_EXTENSIONS: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -21,10 +22,13 @@ export function isPhotoPath(path: string, groupId: string, userId: string) {
   );
 }
 
-export function photoError(file: { type: string; size: number }) {
+export function photoError(
+  file: { type: string; size: number },
+  maxBytes = MAX_PHOTO_BYTES,
+) {
   if (!Object.hasOwn(PHOTO_EXTENSIONS, file.type))
     return "JPG, PNG, WebP 사진만 올릴 수 있습니다.";
-  if (file.size < 1 || file.size > MAX_PHOTO_BYTES)
-    return "사진은 6MB 이하로 올려주세요.";
+  if (file.size < 1 || file.size > maxBytes)
+    return `사진은 ${maxBytes / 1024 / 1024}MB 이하로 올려주세요.`;
   return null;
 }

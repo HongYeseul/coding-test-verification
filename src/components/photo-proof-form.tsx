@@ -4,7 +4,18 @@ import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createPhotoProofAction } from "@/app/actions/proofs";
 import { createClient } from "@/lib/supabase/client";
-import { PHOTO_EXTENSIONS, photoError } from "@/lib/proof-input";
+import {
+  MAX_SOURCE_PHOTO_BYTES,
+  PHOTO_EXTENSIONS,
+  photoError,
+} from "@/lib/proof-input";
+import { compressPhoto } from "@/lib/compress-photo";
+
+function displaySize(bytes: number) {
+  return bytes >= 1024 * 1024
+    ? `${(bytes / 1024 / 1024).toFixed(1)}MB`
+    : `${Math.max(1, Math.round(bytes / 1024))}KB`;
+}
 
 export function PhotoProofForm({
   groupId,
@@ -18,7 +29,9 @@ export function PhotoProofForm({
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
-  const upload = useRef<{ file: File; path: string } | null>(null);
+  const upload = useRef<{ file: File; path: string; size: number } | null>(
+    null,
+  );
   const submitting = useRef(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -29,23 +42,37 @@ export function PhotoProofForm({
     const fileInput = form.elements.namedItem("photo") as HTMLInputElement;
     const file = fileInput.files?.[0];
     if (!(file instanceof File)) return;
-    const validationError = photoError(file);
+    const validationError = photoError(file, MAX_SOURCE_PHOTO_BYTES);
     if (validationError) {
       setMessage(validationError);
       return;
     }
     submitting.current = true;
     setBusy(true);
-    setMessage("사진을 업로드하고 있습니다.");
+    setMessage("사진 용량을 줄이고 있습니다.");
     try {
       const supabase = createClient();
       if (!upload.current || upload.current.file !== file) {
         const previousPath = upload.current?.path;
-        const path = `${groupId}/${userId}/${crypto.randomUUID()}.${PHOTO_EXTENSIONS[file.type]}`;
+        let compressed: Blob;
+        try {
+          compressed = await compressPhoto(file);
+        } catch (error) {
+          setMessage(
+            error instanceof Error
+              ? error.message
+              : "사진을 압축하지 못했습니다.",
+          );
+          return;
+        }
+        setMessage(
+          `사진 업로드 중: ${displaySize(file.size)} → ${displaySize(compressed.size)}`,
+        );
+        const path = `${groupId}/${userId}/${crypto.randomUUID()}.${PHOTO_EXTENSIONS[compressed.type]}`;
         const { error } = await supabase.storage
           .from("proof-evidence")
-          .upload(path, file, {
-            contentType: file.type,
+          .upload(path, compressed, {
+            contentType: compressed.type,
             upsert: false,
           });
         if (error) {
@@ -54,7 +81,7 @@ export function PhotoProofForm({
           );
           return;
         }
-        upload.current = { file, path };
+        upload.current = { file, path, size: compressed.size };
         if (previousPath) {
           // 이미 기록에 연결된 사진은 Storage 정책에서 삭제를 차단합니다.
           await supabase.storage.from("proof-evidence").remove([previousPath]);
@@ -70,10 +97,11 @@ export function PhotoProofForm({
         setMessage(result.error);
         return;
       }
+      const storedSize = upload.current.size;
       upload.current = null;
       form.reset();
       setMessage(
-        "사진을 풀이 기록으로 등록했습니다. 검수 승인을 기다려주세요.",
+        `사진을 풀이 기록으로 등록했습니다 (${displaySize(file.size)} → ${displaySize(storedSize)}). 검수 승인을 기다려주세요.`,
       );
       router.refresh();
     } catch {
@@ -110,7 +138,11 @@ export function PhotoProofForm({
         aria-describedby="photo-help"
       />
       <p id="photo-help" className="mt-2 text-xs text-[var(--muted)]">
-        JPG, PNG, WebP · 최대 6MB · 문제와 풀이 결과가 보이는 사진
+        JPG, PNG, WebP · 원본 최대 20MB · 업로드 전 자동 압축
+      </p>
+      <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
+        긴 변을 최대 1,920px로 줄여 약 500KB를 목표로 압축합니다. 글자 가독성을
+        위해 사진에 따라 더 크게 저장될 수 있습니다.
       </p>
       <label htmlFor="proof-title" className="mt-4 block text-sm font-bold">
         제목 (선택)

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ko">
+  <meta charset="utf-8" />
+  <title>사진 압축 브라우저 검증</title>
+  <style>
+    body {
+      font: 16px system-ui;
+      margin: 32px;
+      background: #f6f7f9;
+    }
+    button {
+      padding: 12px;
+    }
+    pre {
+      white-space: pre-wrap;
+    }
+    img {
+      max-width: 100%;
+      border: 1px solid #ccc;
+    }
+    section {
+      margin: 24px 0;
+    }
+  </style>
+  <h1>사진 압축 브라우저 검증</h1>
+  <p>
+    브라우저에서 생성한 테스트 이미지만 사용합니다. 서버에 사진을 저장하거나
+    전송하지 않습니다.
+  </p>
+  <button id="run">검증 실행</button>
+  <pre id="result" role="status">대기 중</pre>
+  <div id="images"></div>
+  <script type="module">
+    import { compressPhoto } from "/compress-photo.ts";
+    const result = document.querySelector("#result");
+    const images = document.querySelector("#images");
+    const urls = [];
+    document.querySelector("#run").onclick = async () => {
+      for (const url of urls.splice(0)) URL.revokeObjectURL(url);
+      images.replaceChildren();
+      result.textContent = "검증 중…";
+      try {
+        const summaries = [];
+        for (const [width, height] of [
+          [4032, 3024],
+          [3024, 4032],
+          [640, 480],
+        ]) {
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#182033";
+          ctx.fillRect(0, 0, width, height);
+          for (let y = 0; y < height; y += 6)
+            for (let x = 0; x < width; x += 6) {
+              ctx.fillStyle = `rgb(${(x * 13 + y * 7) % 150} 50 ${(x * 3 + y * 11) % 180})`;
+              ctx.fillRect(x, y, 6, 6);
+            }
+          ctx.fillStyle = "#182033";
+          ctx.fillRect(0, 0, width, height / 2);
+          ctx.font = `${Math.max(18, Math.round(width / 80))}px monospace`;
+          ctx.fillStyle = "#d4e9a7";
+          const lines = [
+            "프로그래머스 · 두 수의 합",
+            "정확성: 100.0 / 합계: 100.0",
+            "function solution(a, b) {",
+            "  return a + b;",
+            "}",
+            "테스트 1 · 통과 (0.01ms, 33.5MB)",
+          ];
+          lines.forEach((line, i) =>
+            ctx.fillText(line, 20, 70 + i * Math.max(30, width / 45)),
+          );
+          const sourceType = width === 4032 ? "image/jpeg" : "image/png";
+          const source = await new Promise((resolve) =>
+            canvas.toBlob(resolve, sourceType, 0.95),
+          );
+          const compressed = await compressPhoto(
+            new File([source], "sample", { type: sourceType }),
+          );
+          const url = URL.createObjectURL(compressed);
+          urls.push(url);
+          const img = new Image();
+          img.src = url;
+          await img.decode();
+          if (
+            Math.max(img.naturalWidth, img.naturalHeight) > 1920 ||
+            compressed.size > source.size
+          )
+            throw Error("해상도 또는 용량 검증 실패");
+          const summary = `${width}×${height} → ${img.naturalWidth}×${img.naturalHeight}: ${(source.size / 1024).toFixed(1)}KB → ${(compressed.size / 1024).toFixed(1)}KB (${compressed.type})`;
+          summaries.push(summary);
+          const section = document.createElement("section");
+          const title = document.createElement("h2");
+          title.textContent = summary;
+          section.append(title, img);
+          images.append(section);
+          canvas.width = 0;
+          canvas.height = 0;
+        }
+        let rejected = false;
+        try {
+          await compressPhoto(
+            new File(["not an image"], "broken.png", { type: "image/png" }),
+          );
+        } catch {
+          rejected = true;
+        }
+        if (!rejected) throw Error("손상된 이미지 허용");
+        result.textContent = `통과: 실제 인코딩 3건 + 손상 파일 차단\n${summaries.join("\n")}`;
+      } catch (error) {
+        result.textContent = `실패: ${error.message}`;
+      }
+    };
+  </script>
+</html>
