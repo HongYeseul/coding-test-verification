@@ -1,75 +1,53 @@
 # 배포 인수인계
 
-마지막 정리: 2026-09-05
+마지막 확인: 2026-09-05
 
-이 문서는 다른 PC에서 Vercel 배포를 이어가기 위한 현재 상태만 기록합니다. 프로젝트 구성과 Supabase 설정 방법은 [`README.md`](../README.md)를 참고합니다.
+## 운영 연결
 
-## 현재 상태
-
-- GitHub 저장소: `https://github.com/HongYeseul/coding-test-verification`
-- 저장소 공개 범위: Private
-- 기본 브랜치: `main`
-- Vercel 워크스페이스 slug: `hongyeseuls-projects`
+- GitHub: `HongYeseul/coding-test-verification` (Private, `main`)
+- Vercel: `hongyeseuls-projects/coding-test-verification`
 - Vercel 프로젝트 ID: `prj_F67rErRW8oBwkLTComzHn4g23qzi`
-- Production URL: `https://coding-test-verification.vercel.app`
+- 운영 URL: https://coding-test-verification.vercel.app
+- Supabase 프로젝트: `lfukmjprduxmesciplrx` (`coding-test-verification`, Free)
+- Supabase 리전: Sydney (`ap-southeast-2`)
+- GitHub OAuth 앱: https://github.com/settings/applications/3837795
 
-2026-09-05 GitHub CLI의 활성 계정이 `HongYeseul`이고 원격 `main`이 최신 상태임을 확인했습니다. 핵심 그룹·초대·가입 승인·플랫폼 계정·풀이 제출·검수 흐름은 기능 커밋 `5b2cff1`에 포함되어 있습니다. 깨끗한 환경에서도 `pnpm check`가 동작하도록 타입 검사 전에 `next typegen`을 실행하며, Node.js 24에서 전체 검증을 통과했습니다.
+`main` push 시 Vercel Production에 자동 배포됩니다. GitHub OAuth 제공자는 활성화되어 있으며 Client Secret은 Supabase에만 저장했습니다. Vercel Production에 프로젝트 URL, Publishable Key, 사이트 URL을 등록했습니다. Preview에는 운영 DB 환경변수를 등록하지 않았습니다.
 
-Vercel GitHub App 접근 범위는 `HongYeseul/coding-test-verification` 한 저장소로 제한했습니다. `main` 브랜치가 Production에 연결되어 이후 push 시 자동으로 배포됩니다.
+## 인증 주소
 
-Vercel MCP 연결도 확인했지만 당시 세션에서는 다음 제약이 있었습니다.
+- Supabase Site URL: `https://coding-test-verification.vercel.app`
+- GitHub OAuth callback: `https://lfukmjprduxmesciplrx.supabase.co/auth/v1/callback`
+- 허용된 앱 callback: `https://coding-test-verification.vercel.app/auth/callback**`, `http://localhost:3000/auth/callback**`
 
-- `list_teams`가 빈 배열을 반환했습니다.
-- `list_projects`에 `hongyeseuls-projects`를 전달해도 조회가 실패했습니다.
-- `deploy_to_vercel` 쓰기 호출은 해당 작업의 승인 정책에 차단됐습니다.
+초대 링크에서 로그인하거나 로그인이 만료되면 원래 경로로 복귀합니다. 초대 대상 확인에는 `auth.identities`의 GitHub 계정과 확인된 이메일을 사용합니다.
 
-MCP 직접 배포는 GitHub 자동 배포 연결을 보장하지 않으므로, 브라우저에서 이 GitHub 저장소를 Import해 프로젝트를 생성했습니다.
+## 데이터베이스
 
-2026-09-05 재시도에서도 `list_teams`는 빈 배열을 반환했고, Git 프로젝트 생성은 `hongyeseuls-projects` 워크스페이스 접근 권한이 없어 HTTP 403으로 실패했습니다. Vercel MCP를 다시 인증할 때 이 워크스페이스에 대한 접근을 허용해야 합니다. 로컬 Vercel CLI 토큰도 만료된 상태입니다.
+SQL Editor에서 아래 마이그레이션에 해당하는 스키마와 함수를 적용했습니다.
 
-기능 커밋의 Vercel 배포는 성공했으며 GitHub commit status에서 `Deployment has completed`를 확인했습니다. Production URL은 HTTP 200을 반환하고 `현재 모든 플랫폼 제출은 그룹 검수자가 확인합니다.` 문구가 반영되어 있습니다. `.env.example`에서 감지되어 빈 값으로 등록됐던 Supabase 환경변수 세 개는 삭제했습니다.
+- `20260904000000_initial_schema.sql`
+- `20260905000000_core_workflows.sql`
+- `20260905010000_verified_identity_and_roles.sql`
 
-## 완료한 배포 절차
+세 버전을 `supabase_migrations.schema_migrations`에도 등록했습니다. 기존 마이그레이션을 재실행하지 않고 새 마이그레이션부터 적용합니다.
 
-1. GitHub CLI를 `HongYeseul` 계정으로 로그인합니다.
-2. 저장소를 clone하고 `main` 최신 상태를 확인합니다.
-3. Node.js 24를 사용해 아래 검증을 실행합니다.
+그룹 생성·초대 수락·가입 승인·검수자 지정 함수가 연결되어 있습니다. 그룹 데이터는 ACTIVE 멤버만 조회하며, 작성자 본인의 풀이 검수는 차단됩니다.
 
-   ```bash
-   nvm use
-   corepack enable
-   pnpm install --frozen-lockfile
-   pnpm check
-   ```
+## 로컬 실행과 검증
 
-4. Vercel의 `hongyeseuls-projects` 워크스페이스에서 GitHub 저장소를 Import합니다.
-5. 프로젝트 이름은 `coding-test-verification`, Framework Preset은 Next.js, Root Directory는 저장소 루트로 둡니다.
-6. Supabase 프로젝트가 아직 없으면 환경변수를 빈 값으로 만들지 않고 첫 배포를 진행합니다. 이 상태에서는 랜딩 화면이 열리고 GitHub 로그인 버튼만 비활성화됩니다.
-7. Production 배포가 끝나면 실제 URL에서 HTTP 200과 `오늘 푼 문제를 함께 확인합니다.` 문구를 확인합니다.
-8. 생성된 Vercel 프로젝트 ID와 Production URL을 이 문서에 추가해 커밋합니다.
+Node.js 24에서 `pnpm test`, `pnpm check`를 실행합니다. 로컬 `.env.local`에는 현재 프로젝트의 공개 연결값이 설정되어 있으며 Git에서 제외됩니다.
 
-## 이후 Supabase 연결
+- 실제 Supabase에서 초대 대상 위조, PENDING 데이터 접근, 비소유자 승인, 자기 검수 차단 확인
+- 가입 승인, 검수자 역할 지정, 다른 멤버의 풀이 검수 확인
+- 비활성 소유자 권한 차단 확인
+- DB 시나리오 테스트 데이터 전체 롤백
+- 비로그인 공개 키 요청의 그룹 조회 거부(401) 확인
+- 로그인 복귀 URL 검증 테스트 및 lint·타입 검사·빌드 통과
+- 운영 브라우저에서 GitHub 로그인, 대시보드 진입, 그룹 생성과 ACTIVE 소유자 화면 확인
 
-Supabase 프로젝트를 만든 다음 마이그레이션 적용, GitHub OAuth 설정, Vercel 환경변수 등록 순서로 진행합니다. 필요한 값과 callback URL은 [`README.md`](../README.md)에 정리되어 있습니다.
+## 남은 기능
 
-원격 Supabase 연결 전에도 랜딩 페이지는 동작하지만 로그인 이후 기능은 사용할 수 없습니다. Codeforces 공식 API 자동 확인과 증빙 파일 업로드 화면도 후속 구현 대상입니다.
+Codeforces 공식 API 자동 확인과 증빙 이미지·영상 업로드 화면은 아직 구현하지 않았습니다. 현재 풀이 기록은 그룹 소유자 또는 검수자가 수동으로 승인·반려합니다.
 
-다음 값은 저장소에 커밋하지 않습니다.
-
-- `.env.local`
-- Supabase 관리자 키
-- GitHub OAuth Client Secret
-- Vercel 인증 토큰
-
-## 확인된 검증 결과
-
-- `pnpm lint`, `pnpm typecheck`, `pnpm build` 통과
-- PostgreSQL 17 환경에서 두 마이그레이션 적용 통과
-- 그룹 생성, 대상 계정 초대, PENDING 가입, 소유자 승인, 풀이 제출·검수 시나리오 통과
-- ACTIVE 멤버 RLS, 초대 대상 불일치, 비소유자 승인, 타인 플랫폼 계정 제출, 자기 검수 차단 확인
-- 환경변수가 없는 프로덕션 모드에서 랜딩 HTTP 200과 인증 보호 경로 리다이렉트 확인
-
-## Suggested skills
-
-- 배포 빌드가 실패하거나 동작이 예상과 다를 때: `diagnosing-bugs`
-- 다음 작업도 다른 세션으로 넘겨야 할 때: `handoff`
+환경변수 설정 방법과 Storage 경로 계약은 [README.md](../README.md)를 참고합니다. 관리자 키, OAuth Client Secret, DB 비밀번호, 인증 토큰은 저장소에 추가하지 않습니다.
