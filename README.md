@@ -12,6 +12,7 @@
 - 증빙 이미지·영상용 비공개 Storage 정책
 - 그룹 생성, 대상 계정 초대 수락, 소유자 가입 승인
 - 플랫폼 계정 등록, 풀이 제출, 승인·반려 검수 화면
+- 소유자의 검수자 지정·해제, 초대 링크를 유지하는 로그인 재시도·계정 전환
 - Vercel 배포가 가능한 Next.js 기본 화면
 
 그룹 생성과 초대 수락은 인증 사용자를 확인하는 PostgreSQL 함수에서 원자적으로 처리합니다. 그룹 데이터는 서버와 RLS에서 모두 `ACTIVE` 멤버십을 확인합니다.
@@ -68,6 +69,8 @@ https://<project-ref>.supabase.co/auth/v1/callback
 
 GitHub OAuth callback은 Vercel 주소가 아니라 Supabase callback 주소라는 점에 주의합니다.
 
+로그인 복귀 경로를 포함하려면 허용 목록에 `https://<운영 도메인>/auth/callback**`와 `http://localhost:3000/auth/callback**`를 등록합니다. 초대 대상 GitHub 아이디는 사용자가 수정할 수 있는 프로필 대신 OAuth 제공자가 확인한 `auth.identities`에서 검사합니다.
+
 로컬 PostgreSQL 17 환경은 Docker 실행 후 아래 명령으로 시작합니다.
 
 ```bash
@@ -104,6 +107,7 @@ pnpm lint
 pnpm typecheck
 pnpm build
 pnpm check
+pnpm test
 ```
 
 ## 디렉터리

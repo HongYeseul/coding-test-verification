@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import {
   approveMembershipAction,
   createInvitationAction,
+  setMemberRoleAction,
 } from "@/app/actions/groups";
 import {
   createPlatformAccountAction,
@@ -82,7 +83,7 @@ export default async function GroupPage({
 }: PageProps<"/groups/[slug]">) {
   const { slug } = await params;
   const query = await searchParams;
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireUser(`/groups/${slug}`);
   const { data: group } = await supabase
     .from("groups")
     .select("id, name, slug, owner_id")
@@ -133,10 +134,7 @@ export default async function GroupPage({
   const proofIds = proofs.map((proof) => proof.id);
   const [{ data: profileData }, { data: reviewData }] = await Promise.all([
     memberIds.length
-      ? supabase
-          .from("profiles")
-          .select("id, display_name")
-          .in("id", memberIds)
+      ? supabase.from("profiles").select("id, display_name").in("id", memberIds)
       : Promise.resolve({ data: [] }),
     proofIds.length
       ? supabase
@@ -193,7 +191,9 @@ export default async function GroupPage({
 
         {invitationPath && (
           <section className="rounded-2xl border border-lime-300 bg-lime-50 p-5">
-            <p className="font-bold text-lime-900">7일 동안 사용할 초대 링크입니다.</p>
+            <p className="font-bold text-lime-900">
+              7일 동안 사용할 초대 링크입니다.
+            </p>
             <code className="mt-3 block overflow-x-auto rounded-xl bg-white px-4 py-3 text-sm text-lime-900">
               {invitationPath}
             </code>
@@ -226,7 +226,11 @@ export default async function GroupPage({
                   {isOwner && membership.status === "PENDING" && (
                     <form action={approveMembershipAction}>
                       <input type="hidden" name="groupId" value={group.id} />
-                      <input type="hidden" name="groupSlug" value={group.slug} />
+                      <input
+                        type="hidden"
+                        name="groupSlug"
+                        value={group.slug}
+                      />
                       <input
                         type="hidden"
                         name="userId"
@@ -240,6 +244,38 @@ export default async function GroupPage({
                       </button>
                     </form>
                   )}
+                  {isOwner &&
+                    membership.status === "ACTIVE" &&
+                    membership.role !== "OWNER" && (
+                      <form action={setMemberRoleAction} className="flex gap-2">
+                        <input type="hidden" name="groupId" value={group.id} />
+                        <input
+                          type="hidden"
+                          name="groupSlug"
+                          value={group.slug}
+                        />
+                        <input
+                          type="hidden"
+                          name="userId"
+                          value={membership.user_id}
+                        />
+                        <select
+                          name="role"
+                          aria-label="멤버 역할"
+                          defaultValue={membership.role}
+                          className="rounded-xl border border-[var(--line-strong)] bg-white px-3 py-2 text-sm"
+                        >
+                          <option value="MEMBER">멤버</option>
+                          <option value="REVIEWER">검수자</option>
+                        </select>
+                        <button
+                          type="submit"
+                          className="rounded-xl bg-[var(--ink)] px-3 py-2 text-sm font-bold text-white"
+                        >
+                          역할 변경
+                        </button>
+                      </form>
+                    )}
                 </li>
               ))}
             </ul>
@@ -317,7 +353,9 @@ export default async function GroupPage({
                   {currentUserAccounts.map((account) => (
                     <li key={account.id} className="text-sm">
                       <strong>{platformLabels[account.platform]}</strong>
-                      <span className="ml-2 text-[var(--muted)]">{account.handle}</span>
+                      <span className="ml-2 text-[var(--muted)]">
+                        {account.handle}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -367,8 +405,11 @@ export default async function GroupPage({
                 className="mt-3 w-full rounded-xl border border-[var(--line-strong)] px-4 py-3"
                 placeholder="https://..."
               />
-              <label className="mt-3 block text-sm font-semibold" htmlFor="acceptedAt">
-                풀이 완료 시각
+              <label
+                className="mt-3 block text-sm font-semibold"
+                htmlFor="acceptedAt"
+              >
+                풀이 완료 시각 (한국 시간)
               </label>
               <input
                 id="acceptedAt"
@@ -390,7 +431,9 @@ export default async function GroupPage({
           <div className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold text-[var(--muted)]">최근 50개</p>
+                <p className="text-sm font-semibold text-[var(--muted)]">
+                  최근 50개
+                </p>
                 <h2 className="mt-1 text-xl font-extrabold">풀이 기록</h2>
               </div>
               <span className="rounded-full bg-[var(--accent-soft)] px-3 py-1 font-mono text-xs font-bold text-[var(--accent-ink)]">
@@ -450,7 +493,11 @@ export default async function GroupPage({
                           action={reviewProofAction}
                           className="mt-4 border-t border-[var(--line)] pt-4"
                         >
-                          <input type="hidden" name="proofId" value={proof.id} />
+                          <input
+                            type="hidden"
+                            name="proofId"
+                            value={proof.id}
+                          />
                           <input
                             type="hidden"
                             name="groupSlug"
@@ -487,7 +534,11 @@ export default async function GroupPage({
                       {proof.user_id === user.id &&
                         proof.verification_status === "PENDING" && (
                           <form action={deleteProofAction} className="mt-3">
-                            <input type="hidden" name="proofId" value={proof.id} />
+                            <input
+                              type="hidden"
+                              name="proofId"
+                              value={proof.id}
+                            />
                             <input
                               type="hidden"
                               name="groupSlug"

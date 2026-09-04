@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 
+import { loginPath } from "@/lib/auth-navigation";
+
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
@@ -16,7 +18,7 @@ export async function getOptionalUser() {
   return user;
 }
 
-export async function requireUser() {
+export async function requireUser(next = "/dashboard") {
   if (!isSupabaseConfigured()) {
     redirect("/?auth_error=configuration");
   }
@@ -28,7 +30,7 @@ export async function requireUser() {
   } = await supabase.auth.getUser();
 
   if (error || !user) {
-    redirect("/");
+    redirect(loginPath(next));
   }
 
   return { supabase, user };

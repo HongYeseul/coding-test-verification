@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
+import { signOutAction } from "@/app/actions/auth";
 import { acceptInvitationAction } from "@/app/actions/groups";
 import { GithubSignInButton } from "@/components/github-sign-in-button";
 import { StatusMessage } from "@/components/status-message";
@@ -12,6 +14,7 @@ export default async function InvitationPage({
   searchParams,
 }: PageProps<"/invite/[token]">) {
   const { token } = await params;
+  if (!/^[A-Za-z0-9_-]{32,128}$/.test(token)) notFound();
   const query = await searchParams;
   const configured = isSupabaseConfigured();
   const user = await getOptionalUser();
@@ -20,7 +23,10 @@ export default async function InvitationPage({
   return (
     <main className="grid min-h-screen place-items-center bg-[var(--background)] px-5 py-10">
       <section className="w-full max-w-lg rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-7 shadow-[0_30px_80px_rgba(15,23,42,0.12)] sm:p-9">
-        <Link href="/" className="font-mono text-sm font-bold text-[var(--accent-strong)]">
+        <Link
+          href="/"
+          className="font-mono text-sm font-bold text-[var(--accent-strong)]"
+        >
           CODING PROOF
         </Link>
         <p className="mt-8 font-mono text-xs font-bold tracking-[0.14em] text-[var(--muted)]">
@@ -51,21 +57,32 @@ export default async function InvitationPage({
         )}
 
         {user && (
-          <form action={acceptInvitationAction} className="mt-7">
-            <input type="hidden" name="token" value={token} />
-            <p className="mb-3 text-sm text-[var(--muted)]">
-              <strong className="text-[var(--foreground)]">
-                {user.user_metadata.user_name ?? user.email ?? "현재 계정"}
-              </strong>
-              으로 로그인했습니다.
-            </p>
-            <button
-              type="submit"
-              className="w-full rounded-xl bg-[var(--accent)] px-5 py-3 font-bold text-[var(--accent-ink)] hover:bg-[#d0fa86]"
-            >
-              초대 수락
-            </button>
-          </form>
+          <>
+            <form action={acceptInvitationAction} className="mt-7">
+              <input type="hidden" name="token" value={token} />
+              <p className="mb-3 text-sm text-[var(--muted)]">
+                <strong className="text-[var(--foreground)]">
+                  {user.user_metadata.user_name ?? user.email ?? "현재 계정"}
+                </strong>
+                으로 로그인했습니다.
+              </p>
+              <button
+                type="submit"
+                className="w-full rounded-xl bg-[var(--accent)] px-5 py-3 font-bold text-[var(--accent-ink)] hover:bg-[#d0fa86]"
+              >
+                초대 수락
+              </button>
+            </form>
+            <form action={signOutAction} className="mt-4">
+              <input type="hidden" name="next" value={invitationPath} />
+              <button
+                type="submit"
+                className="text-sm font-bold text-[var(--accent-strong)]"
+              >
+                로그아웃하고 다른 GitHub 계정으로 계속하기
+              </button>
+            </form>
+          </>
         )}
       </section>
     </main>

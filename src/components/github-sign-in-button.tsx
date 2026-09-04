@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { safeNextPath } from "@/lib/auth-navigation";
+
 import { createClient } from "@/lib/supabase/client";
 
 type GithubSignInButtonProps = {
@@ -24,18 +26,24 @@ export function GithubSignInButton({
     setLoading(true);
     setError(null);
 
-    const supabase = createClient();
-    const callbackUrl = new URL("/auth/callback", window.location.origin);
-    callbackUrl.searchParams.set("next", nextPath);
-    const { error: signInError } = await supabase.auth.signInWithOAuth({
-      provider: "github",
-      options: {
-        redirectTo: callbackUrl.toString(),
-      },
-    });
+    try {
+      const supabase = createClient();
+      const callbackUrl = new URL("/auth/callback", window.location.origin);
+      callbackUrl.searchParams.set("next", safeNextPath(nextPath));
+      const { error: signInError } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: callbackUrl.toString(),
+        },
+      });
 
-    if (signInError) {
-      setError("GitHub 로그인을 시작하지 못했습니다. 잠시 후 다시 시도해주세요.");
+      if (signInError) {
+        throw signInError;
+      }
+    } catch {
+      setError(
+        "GitHub 로그인을 시작하지 못했습니다. 잠시 후 다시 시도해주세요.",
+      );
       setLoading(false);
     }
   };

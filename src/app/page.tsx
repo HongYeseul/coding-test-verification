@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { GithubSignInButton } from "@/components/github-sign-in-button";
 import { StatusMessage } from "@/components/status-message";
 import { getOptionalUser } from "@/lib/auth";
+import { authErrorMessage, safeNextPath } from "@/lib/auth-navigation";
+import { firstQueryValue } from "@/lib/form";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 const steps = [
@@ -27,9 +29,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const configured = isSupabaseConfigured();
   const user = await getOptionalUser();
   const query = await searchParams;
+  const next = safeNextPath(firstQueryValue(query.next));
 
   if (user) {
-    redirect("/dashboard");
+    redirect(next === "/" ? "/dashboard" : next);
   }
 
   return (
@@ -41,7 +44,9 @@ export default async function Home({ searchParams }: PageProps<"/">) {
               AC
             </span>
             <div>
-              <p className="text-base font-bold tracking-[-0.02em]">Coding Proof</p>
+              <p className="text-base font-bold tracking-[-0.02em]">
+                Coding Proof
+              </p>
               <p className="text-sm text-[var(--muted)]">Private study group</p>
             </div>
           </div>
@@ -66,10 +71,12 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             </p>
 
             <div className="mt-9 max-w-sm">
-              <GithubSignInButton configured={configured} />
+              <GithubSignInButton configured={configured} nextPath={next} />
               {query.auth_error && (
                 <div className="mt-3">
-                  <StatusMessage error="GitHub 로그인을 완료하지 못했습니다." />
+                  <StatusMessage
+                    error={authErrorMessage(firstQueryValue(query.auth_error))}
+                  />
                 </div>
               )}
               {!configured && (
@@ -84,7 +91,9 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           <div className="flex flex-col justify-center bg-[var(--surface-subtle)] px-6 py-12 sm:px-10 lg:px-12">
             <div className="mb-7 flex items-end justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold text-[var(--muted)]">가입 절차</p>
+                <p className="text-sm font-semibold text-[var(--muted)]">
+                  가입 절차
+                </p>
                 <h2 className="mt-1 text-2xl font-extrabold tracking-[-0.03em]">
                   그룹이 열리기까지
                 </h2>
@@ -104,7 +113,9 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                     {step.number}
                   </span>
                   <div>
-                    <h3 className="font-bold tracking-[-0.01em]">{step.title}</h3>
+                    <h3 className="font-bold tracking-[-0.01em]">
+                      {step.title}
+                    </h3>
                     <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
                       {step.description}
                     </p>

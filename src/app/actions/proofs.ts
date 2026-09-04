@@ -95,7 +95,13 @@ export async function createProofAction(formData: FormData) {
     .maybeSingle();
 
   if (membership?.status !== "ACTIVE") {
-    redirect(withStatus("/dashboard", "error", "활성 멤버만 풀이를 등록할 수 있습니다."));
+    redirect(
+      withStatus(
+        "/dashboard",
+        "error",
+        "활성 멤버만 풀이를 등록할 수 있습니다.",
+      ),
+    );
   }
 
   const { data: account } = await supabase
@@ -106,7 +112,9 @@ export async function createProofAction(formData: FormData) {
     .maybeSingle();
 
   if (!account) {
-    redirect(withStatus(groupPath, "error", "본인의 플랫폼 계정을 선택해주세요."));
+    redirect(
+      withStatus(groupPath, "error", "본인의 플랫폼 계정을 선택해주세요."),
+    );
   }
 
   const { error } = await supabase.from("proofs").insert({
@@ -128,7 +136,9 @@ export async function createProofAction(formData: FormData) {
   }
 
   revalidatePath(groupPath);
-  redirect(withStatus(groupPath, "message", "풀이를 검수 대기로 등록했습니다."));
+  redirect(
+    withStatus(groupPath, "message", "풀이를 검수 대기로 등록했습니다."),
+  );
 }
 
 export async function reviewProofAction(formData: FormData) {
@@ -149,6 +159,34 @@ export async function reviewProofAction(formData: FormData) {
   }
 
   const { supabase, user } = await requireUser();
+  const { data: proof } = await supabase
+    .from("proofs")
+    .select("group_id, user_id, verification_status")
+    .eq("id", proofId)
+    .maybeSingle();
+  const { data: membership } = proof
+    ? await supabase
+        .from("group_members")
+        .select("role, status")
+        .eq("group_id", proof.group_id)
+        .eq("user_id", user.id)
+        .maybeSingle()
+    : { data: null };
+  if (
+    !proof ||
+    proof.user_id === user.id ||
+    proof.verification_status !== "PENDING" ||
+    membership?.status !== "ACTIVE" ||
+    !["OWNER", "REVIEWER"].includes(membership.role)
+  ) {
+    redirect(
+      withStatus(
+        groupPath,
+        "error",
+        "다른 멤버의 검수 대기 풀이만 검수할 수 있습니다.",
+      ),
+    );
+  }
   const { error } = await supabase.from("proof_reviews").insert({
     proof_id: proofId,
     reviewer_id: user.id,
@@ -185,7 +223,13 @@ export async function deleteProofAction(formData: FormData) {
     .select("id");
 
   if (error || !data?.length) {
-    redirect(withStatus(groupPath, "error", "검수 대기 중인 풀이만 삭제할 수 있습니다."));
+    redirect(
+      withStatus(
+        groupPath,
+        "error",
+        "검수 대기 중인 풀이만 삭제할 수 있습니다.",
+      ),
+    );
   }
 
   revalidatePath(groupPath);
