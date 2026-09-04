@@ -2,6 +2,8 @@
 
 초대된 멤버끼리 코딩 테스트 풀이 기록을 제출하고 확인하는 비공개 스터디 서비스입니다.
 
+진행 중인 Vercel 배포 상태는 [`docs/DEPLOYMENT_HANDOFF.md`](docs/DEPLOYMENT_HANDOFF.md)에서 확인합니다.
+
 ## 현재 범위
 
 - GitHub OAuth 로그인을 위한 Supabase SSR 클라이언트
