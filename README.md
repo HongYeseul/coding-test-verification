@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Coding Proof
 
-## Getting Started
+초대된 멤버끼리 코딩 테스트 풀이 기록을 제출하고 확인하는 비공개 스터디 서비스입니다.
 
-First, run the development server:
+## 현재 범위
+
+- GitHub OAuth 로그인을 위한 Supabase SSR 클라이언트
+- 초대·멤버십·플랫폼 계정·풀이 인증·검수 데이터 모델
+- `ACTIVE` 그룹 멤버 기준 PostgreSQL RLS
+- 증빙 이미지·영상용 비공개 Storage 정책
+- Vercel 배포가 가능한 Next.js 기본 화면
+
+실제 초대 수락, 관리자 승인, 풀이 등록과 검수 화면은 다음 구현 단계에서 연결합니다.
+
+초기 마이그레이션은 브라우저에서 그룹과 초대를 직접 만들 수 없도록 닫아두었습니다. 첫 그룹 생성과 초대 수락은 신뢰할 수 있는 서버 함수로 원자적으로 구현한 뒤 개방합니다.
+
+## 구성
+
+- Next.js App Router, TypeScript, Tailwind CSS
+- Supabase Auth, PostgreSQL, Storage
+- Vercel
+- Node.js 24, pnpm 11
+
+별도 서버를 운영하지 않습니다. GitHub의 `main` 브랜치를 Vercel Production에 연결하고, 다른 브랜치와 Pull Request는 Preview 배포로 확인합니다.
+
+## 로컬 실행
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+nvm install
+nvm use
+corepack enable
+pnpm install
+cp .env.example .env.local
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`http://localhost:3000`에서 확인합니다. Supabase 환경변수가 비어 있으면 화면은 열리지만 GitHub 로그인 버튼은 비활성화됩니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 환경변수
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
 
-## Learn More
+프로젝트 URL과 Publishable Key는 Supabase의 Connect 화면에서 확인합니다. 관리자 키는 현재 필요하지 않으며 브라우저 환경변수로 추가하면 안 됩니다.
 
-To learn more about Next.js, take a look at the following resources:
+## Supabase 설정
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Supabase 프로젝트를 생성합니다.
+2. SQL Editor 또는 Supabase CLI로 `supabase/migrations`의 마이그레이션을 적용합니다.
+3. Authentication > Providers에서 GitHub를 활성화합니다.
+4. GitHub OAuth App의 callback URL을 아래 주소로 등록합니다.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```text
+https://<project-ref>.supabase.co/auth/v1/callback
+```
 
-## Deploy on Vercel
+5. Supabase URL Configuration에 주소를 등록합니다.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Site URL: 운영 Vercel 주소
+- Redirect URLs: `http://localhost:3000/**`, 운영 주소의 `/auth/callback`, 사용할 Preview 주소 패턴
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+GitHub OAuth callback은 Vercel 주소가 아니라 Supabase callback 주소라는 점에 주의합니다.
+
+## Vercel 배포
+
+1. 이 저장소를 GitHub에 push합니다.
+2. Vercel의 New Project에서 GitHub 저장소를 Import합니다.
+3. Supabase 환경변수 세 개를 Development, Preview, Production 환경에 맞게 등록합니다.
+4. 첫 배포 후 생성된 Production URL을 Supabase Site URL과 Redirect URLs에 반영합니다.
+5. 환경변수나 OAuth URL을 바꿨다면 새로 배포합니다.
+
+초기 기능은 사용자의 요청으로 동작하므로 Cron은 필요하지 않습니다. Codeforces 정기 동기화가 필요해질 때 별도로 추가합니다.
+
+## 증빙 파일 경로
+
+Storage의 `proof-evidence` 버킷은 비공개입니다. 파일 경로는 다음 계약을 사용합니다.
+
+```text
+<group-id>/<user-id>/<file-id>.<extension>
+```
+
+`ACTIVE` 그룹 멤버만 읽을 수 있고, 작성자는 자신의 경로에만 업로드할 수 있습니다. 증빙은 공개 URL로 제공하지 않습니다.
+
+제출자는 검수 전 기록만 삭제 후 다시 등록할 수 있습니다. 검수 완료 후에는 같은 경로의 파일 교체와 삭제가 차단되며, 작성자 본인은 자신의 인증을 승인할 수 없습니다.
+
+## 명령어
+
+```bash
+pnpm dev
+pnpm lint
+pnpm typecheck
+pnpm build
+pnpm check
+```
+
+## 디렉터리
+
+```text
+src/app/                 화면과 Route Handler
+src/components/          공용 UI
+src/lib/supabase/        브라우저·서버·Proxy 클라이언트
+supabase/migrations/     데이터 모델과 RLS
+```

@@ -1,26 +1,50 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #eef2f6;
+  --surface: #ffffff;
+  --surface-subtle: #f7f9fb;
+  --foreground: #101827;
+  --ink: #111827;
+  --muted: #687386;
+  --muted-strong: #465166;
+  --line: #e1e6ed;
+  --line-strong: #cbd3dd;
+  --accent: #bef264;
+  --accent-soft: #e8fac8;
+  --accent-strong: #4d7c0f;
+  --accent-ink: #365314;
+  --font-app-sans: "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI",
+    sans-serif;
+  --font-app-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-app-sans);
+  --font-mono: var(--font-app-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-app-sans);
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent-strong) 45%, transparent);
+  outline-offset: 3px;
 }
