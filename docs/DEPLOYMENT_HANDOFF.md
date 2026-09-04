@@ -9,11 +9,9 @@
 - GitHub 저장소: `https://github.com/HongYeseul/coding-test-verification`
 - 저장소 공개 범위: Private
 - 기본 브랜치: `main`
-- 배포된 원격 HEAD: `a6ec2321226b2d7cdfc3a0cc33aa54b297f695ea`
 - Vercel 워크스페이스 slug: `hongyeseuls-projects`
 - Vercel 프로젝트 ID: `prj_F67rErRW8oBwkLTComzHn4g23qzi`
 - Production URL: `https://coding-test-verification.vercel.app`
-- Production 배포 ID: `dpl_ALgq5SAivZuZEA3QksGU5qdNKmvh`
 
 2026-09-05 재시도에서 GitHub CLI의 활성 계정이 `HongYeseul`이고 원격 `main`이 최신 상태임을 확인했습니다. 깨끗한 환경에서도 `pnpm check`가 동작하도록 타입 검사 전에 `next typegen`을 실행하게 수정했으며, Node.js 24에서 전체 검증을 통과했습니다.
 
