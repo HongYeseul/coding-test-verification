@@ -13,9 +13,9 @@
 - Vercel 프로젝트 ID: `prj_F67rErRW8oBwkLTComzHn4g23qzi`
 - Production URL: `https://coding-test-verification.vercel.app`
 
-2026-09-05 재시도에서 GitHub CLI의 활성 계정이 `HongYeseul`이고 원격 `main`이 최신 상태임을 확인했습니다. 깨끗한 환경에서도 `pnpm check`가 동작하도록 타입 검사 전에 `next typegen`을 실행하게 수정했으며, Node.js 24에서 전체 검증을 통과했습니다.
+2026-09-05 GitHub CLI의 활성 계정이 `HongYeseul`이고 원격 `main`이 최신 상태임을 확인했습니다. 핵심 그룹·초대·가입 승인·플랫폼 계정·풀이 제출·검수 흐름은 기능 커밋 `5b2cff1`에 포함되어 있습니다. 깨끗한 환경에서도 `pnpm check`가 동작하도록 타입 검사 전에 `next typegen`을 실행하며, Node.js 24에서 전체 검증을 통과했습니다.
 
-Vercel 대시보드에서 GitHub 연결을 시작했고, GitHub App 접근 범위를 `HongYeseul/coding-test-verification` 한 저장소로 제한했습니다. 설치 마지막 단계에서 GitHub sudo mode의 Passkey 본인 확인이 필요해 중단됐습니다. 다른 PC에서는 GitHub App 설치 상태를 먼저 확인하고, 미완료라면 같은 범위로 다시 설치합니다.
+Vercel GitHub App 접근 범위는 `HongYeseul/coding-test-verification` 한 저장소로 제한했습니다. `main` 브랜치가 Production에 연결되어 이후 push 시 자동으로 배포됩니다.
 
 Vercel MCP 연결도 확인했지만 당시 세션에서는 다음 제약이 있었습니다.
 
@@ -23,11 +23,11 @@ Vercel MCP 연결도 확인했지만 당시 세션에서는 다음 제약이 있
 - `list_projects`에 `hongyeseuls-projects`를 전달해도 조회가 실패했습니다.
 - `deploy_to_vercel` 쓰기 호출은 해당 작업의 승인 정책에 차단됐습니다.
 
-MCP 직접 배포는 GitHub 자동 배포 연결을 보장하지 않으므로, 브라우저에서 이 GitHub 저장소를 Import해 프로젝트를 생성했습니다. `main` 브랜치가 Production에 연결되어 이후 push 시 자동으로 배포됩니다.
+MCP 직접 배포는 GitHub 자동 배포 연결을 보장하지 않으므로, 브라우저에서 이 GitHub 저장소를 Import해 프로젝트를 생성했습니다.
 
 2026-09-05 재시도에서도 `list_teams`는 빈 배열을 반환했고, Git 프로젝트 생성은 `hongyeseuls-projects` 워크스페이스 접근 권한이 없어 HTTP 403으로 실패했습니다. Vercel MCP를 다시 인증할 때 이 워크스페이스에 대한 접근을 허용해야 합니다. 로컬 Vercel CLI 토큰도 만료된 상태입니다.
 
-브라우저 배포는 성공했으며 Production URL에서 HTTP 200과 `오늘 푼 문제를 함께 확인합니다.` 문구를 확인했습니다. `.env.example`에서 감지되어 빈 값으로 등록됐던 Supabase 환경변수 세 개는 삭제했습니다.
+기능 커밋의 Vercel 배포는 성공했으며 GitHub commit status에서 `Deployment has completed`를 확인했습니다. Production URL은 HTTP 200을 반환하고 `현재 모든 플랫폼 제출은 그룹 검수자가 확인합니다.` 문구가 반영되어 있습니다. `.env.example`에서 감지되어 빈 값으로 등록됐던 Supabase 환경변수 세 개는 삭제했습니다.
 
 ## 완료한 배포 절차
 
@@ -52,6 +52,8 @@ MCP 직접 배포는 GitHub 자동 배포 연결을 보장하지 않으므로, �
 
 Supabase 프로젝트를 만든 다음 마이그레이션 적용, GitHub OAuth 설정, Vercel 환경변수 등록 순서로 진행합니다. 필요한 값과 callback URL은 [`README.md`](../README.md)에 정리되어 있습니다.
 
+원격 Supabase 연결 전에도 랜딩 페이지는 동작하지만 로그인 이후 기능은 사용할 수 없습니다. Codeforces 공식 API 자동 확인과 증빙 파일 업로드 화면도 후속 구현 대상입니다.
+
 다음 값은 저장소에 커밋하지 않습니다.
 
 - `.env.local`
@@ -62,9 +64,10 @@ Supabase 프로젝트를 만든 다음 마이그레이션 적용, GitHub OAuth �
 ## 확인된 검증 결과
 
 - `pnpm lint`, `pnpm typecheck`, `pnpm build` 통과
-- PostgreSQL 17 환경에서 초기 마이그레이션 적용 통과
-- ACTIVE 멤버 RLS, 타인 플랫폼 계정 제출 차단, 자기 검수 차단, 검수 완료 증빙 삭제 차단 확인
-- `86ed0ec`은 검증 완료 뒤 `package.json`의 패키지 이름만 변경한 커밋입니다.
+- PostgreSQL 17 환경에서 두 마이그레이션 적용 통과
+- 그룹 생성, 대상 계정 초대, PENDING 가입, 소유자 승인, 풀이 제출·검수 시나리오 통과
+- ACTIVE 멤버 RLS, 초대 대상 불일치, 비소유자 승인, 타인 플랫폼 계정 제출, 자기 검수 차단 확인
+- 환경변수가 없는 프로덕션 모드에서 랜딩 HTTP 200과 인증 보호 경로 리다이렉트 확인
 
 ## Suggested skills
 
