@@ -13,6 +13,8 @@
 - Vercel 워크스페이스 slug: `hongyeseuls-projects`
 - Vercel 프로젝트와 배포 URL은 아직 생성되지 않았습니다.
 
+2026-09-05 재시도에서 GitHub CLI의 활성 계정이 `HongYeseul`이고 원격 `main`이 최신 상태임을 확인했습니다. 깨끗한 환경에서도 `pnpm check`가 동작하도록 타입 검사 전에 `next typegen`을 실행하게 수정했으며, Node.js 24에서 전체 검증을 통과했습니다.
+
 Vercel 대시보드에서 GitHub 연결을 시작했고, GitHub App 접근 범위를 `HongYeseul/coding-test-verification` 한 저장소로 제한했습니다. 설치 마지막 단계에서 GitHub sudo mode의 Passkey 본인 확인이 필요해 중단됐습니다. 다른 PC에서는 GitHub App 설치 상태를 먼저 확인하고, 미완료라면 같은 범위로 다시 설치합니다.
 
 Vercel MCP 연결도 확인했지만 당시 세션에서는 다음 제약이 있었습니다.
@@ -22,6 +24,8 @@ Vercel MCP 연결도 확인했지만 당시 세션에서는 다음 제약이 있
 - `deploy_to_vercel` 쓰기 호출은 해당 작업의 승인 정책에 차단됐습니다.
 
 새 PC의 새 작업에서는 MCP 연결과 계정 범위를 다시 확인합니다. MCP 직접 배포는 GitHub 자동 배포 연결을 보장하지 않으므로, 지속 배포가 목적이면 Vercel 대시보드에서 이 GitHub 저장소를 Import하는 방식이 우선입니다.
+
+2026-09-05 재시도에서도 `list_teams`는 빈 배열을 반환했고, Git 프로젝트 생성은 `hongyeseuls-projects` 워크스페이스 접근 권한이 없어 HTTP 403으로 실패했습니다. Vercel MCP를 다시 인증할 때 이 워크스페이스에 대한 접근을 허용해야 합니다. 로컬 Vercel CLI 토큰도 만료된 상태입니다.
 
 ## 이어서 진행할 순서
 
