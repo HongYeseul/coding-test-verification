@@ -21,7 +21,7 @@ const steps = [
   {
     number: "03",
     title: "풀이 인증",
-    description: "공식 API 또는 검수된 증빙으로 AC 기록을 남깁니다.",
+    description: "사진을 올려 풀이를 기록하고 그룹 검수자에게 확인받습니다.",
   },
 ];
 

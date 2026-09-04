@@ -1,17 +1,15 @@
 import Link from "next/link";
+import Image from "next/image";
+import { PhotoProofForm } from "@/components/photo-proof-form";
+import { getSiteUrl } from "@/lib/supabase/config";
 import { notFound, redirect } from "next/navigation";
 
 import {
   approveMembershipAction,
-  createInvitationAction,
+  rotateInviteCodeAction,
   setMemberRoleAction,
 } from "@/app/actions/groups";
-import {
-  createPlatformAccountAction,
-  createProofAction,
-  deleteProofAction,
-  reviewProofAction,
-} from "@/app/actions/proofs";
+import { deleteProofAction, reviewProofAction } from "@/app/actions/proofs";
 import { StatusMessage } from "@/components/status-message";
 import { requireUser } from "@/lib/auth";
 import { firstQueryValue } from "@/lib/form";
@@ -39,9 +37,10 @@ type PlatformAccountRow = {
 type ProofRow = {
   id: string;
   user_id: string;
-  platform_account_id: string;
+  platform_account_id: string | null;
   problem_key: string;
-  problem_url: string;
+  problem_url: string | null;
+  evidence_path: string | null;
   problem_title: string | null;
   accepted_at: string;
   verification_status: string;
@@ -120,7 +119,7 @@ export default async function GroupPage({
       supabase
         .from("proofs")
         .select(
-          "id, user_id, platform_account_id, problem_key, problem_url, problem_title, accepted_at, verification_status",
+          "id, user_id, platform_account_id, problem_key, problem_url, problem_title, accepted_at, verification_status, evidence_path",
         )
         .eq("group_id", group.id)
         .order("accepted_at", { ascending: false })
@@ -152,12 +151,18 @@ export default async function GroupPage({
   const reviewByProofId = new Map(
     reviews.map((review) => [review.proof_id, review]),
   );
-  const currentUserAccounts = accounts.filter(
-    (account) => account.user_id === user.id,
-  );
+
   const canReview = ["OWNER", "REVIEWER"].includes(currentMembership.role);
   const isOwner = currentMembership.role === "OWNER";
-  const invitationPath = firstQueryValue(query.invite);
+  const { data: invitation } = isOwner
+    ? await supabase
+        .from("group_invite_codes")
+        .select("code, expires_at")
+        .eq("group_id", group.id)
+        .gt("expires_at", "now")
+        .maybeSingle()
+    : { data: null };
+  const validInvitation = Boolean(invitation);
 
   return (
     <main className="min-h-screen bg-[var(--background)] px-5 py-6 sm:px-8 lg:px-12">
@@ -188,17 +193,6 @@ export default async function GroupPage({
           error={firstQueryValue(query.error)}
           message={firstQueryValue(query.message)}
         />
-
-        {invitationPath && (
-          <section className="rounded-2xl border border-lime-300 bg-lime-50 p-5">
-            <p className="font-bold text-lime-900">
-              7일 동안 사용할 초대 링크입니다.
-            </p>
-            <code className="mt-3 block overflow-x-auto rounded-xl bg-white px-4 py-3 text-sm text-lime-900">
-              {invitationPath}
-            </code>
-          </section>
-        )}
 
         <section className="grid gap-6 lg:grid-cols-2">
           <div className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
@@ -283,149 +277,56 @@ export default async function GroupPage({
 
           {isOwner && (
             <form
-              action={createInvitationAction}
+              action={rotateInviteCodeAction}
               className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm"
             >
               <h2 className="text-xl font-extrabold">멤버 초대</h2>
               <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                이메일 또는 GitHub 아이디에 묶인 일회용 링크를 만듭니다.
+                상대방의 계정 정보 없이 코드를 공유하세요. 가입 신청 후 소유자의
+                승인이 필요합니다.
               </p>
               <input type="hidden" name="groupId" value={group.id} />
               <input type="hidden" name="groupSlug" value={group.slug} />
-              <div className="mt-5 grid grid-cols-[8rem_1fr] gap-3">
-                <select
-                  name="targetType"
-                  className="rounded-xl border border-[var(--line-strong)] bg-white px-3 py-3 text-sm font-semibold"
-                >
-                  <option value="github">GitHub ID</option>
-                  <option value="email">이메일</option>
-                </select>
-                <input
-                  name="target"
-                  required
-                  className="min-w-0 rounded-xl border border-[var(--line-strong)] px-4 py-3"
-                  placeholder="octocat"
-                />
-              </div>
+              {invitation ? (
+                <div className="mt-5 space-y-3 rounded-xl bg-[var(--surface-subtle)] p-4">
+                  <p className="font-mono text-4xl font-black tracking-widest">
+                    {invitation.code}
+                  </p>
+                  <p className="break-all text-sm">
+                    {getSiteUrl()}/join/{invitation.code}
+                  </p>
+                  <p className="text-xs text-[var(--muted)]">
+                    {displayDate(invitation.expires_at)}까지 사용 가능
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-5 text-sm text-[var(--muted)]">
+                  사용 가능한 초대코드가 없습니다.
+                </p>
+              )}
               <button
                 type="submit"
                 className="mt-4 w-full rounded-xl bg-[var(--accent)] px-4 py-3 font-bold text-[var(--accent-ink)]"
               >
-                초대 링크 만들기
+                {validInvitation
+                  ? "새 초대코드 만들기"
+                  : "5자리 초대코드 만들기"}
               </button>
+              <p className="mt-2 text-xs text-[var(--muted)]">
+                여러 사람이 7일 동안 사용할 수 있습니다. 새로 만들면 이전 코드는
+                만료됩니다.
+              </p>
             </form>
           )}
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">
-          <div className="space-y-6">
-            <form
-              action={createPlatformAccountAction}
-              className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm"
-            >
-              <h2 className="text-xl font-extrabold">내 플랫폼 계정</h2>
-              <input type="hidden" name="groupSlug" value={group.slug} />
-              <select
-                name="platform"
-                className="mt-5 w-full rounded-xl border border-[var(--line-strong)] bg-white px-4 py-3"
-              >
-                {Object.entries(platformLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-              <input
-                name="handle"
-                required
-                maxLength={100}
-                className="mt-3 w-full rounded-xl border border-[var(--line-strong)] px-4 py-3"
-                placeholder="플랫폼 계정명"
-              />
-              <button
-                type="submit"
-                className="mt-3 w-full rounded-xl bg-[var(--ink)] px-4 py-3 font-bold text-white"
-              >
-                계정 등록
-              </button>
-              {currentUserAccounts.length > 0 && (
-                <ul className="mt-4 space-y-2 border-t border-[var(--line)] pt-4">
-                  {currentUserAccounts.map((account) => (
-                    <li key={account.id} className="text-sm">
-                      <strong>{platformLabels[account.platform]}</strong>
-                      <span className="ml-2 text-[var(--muted)]">
-                        {account.handle}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </form>
-
-            <form
-              action={createProofAction}
-              className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm"
-            >
-              <h2 className="text-xl font-extrabold">풀이 등록</h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                현재는 모든 플랫폼의 제출을 그룹 검수자가 확인합니다.
-              </p>
-              <input type="hidden" name="groupId" value={group.id} />
-              <input type="hidden" name="groupSlug" value={group.slug} />
-              <select
-                name="platformAccountId"
-                required
-                disabled={!currentUserAccounts.length}
-                className="mt-5 w-full rounded-xl border border-[var(--line-strong)] bg-white px-4 py-3 disabled:bg-slate-100"
-              >
-                <option value="">플랫폼 계정 선택</option>
-                {currentUserAccounts.map((account) => (
-                  <option key={account.id} value={account.id}>
-                    {platformLabels[account.platform]} · {account.handle}
-                  </option>
-                ))}
-              </select>
-              <input
-                name="problemKey"
-                required
-                maxLength={160}
-                className="mt-3 w-full rounded-xl border border-[var(--line-strong)] px-4 py-3"
-                placeholder="문제 식별자 (예: 1857-A)"
-              />
-              <input
-                name="problemTitle"
-                maxLength={160}
-                className="mt-3 w-full rounded-xl border border-[var(--line-strong)] px-4 py-3"
-                placeholder="문제 제목 (선택)"
-              />
-              <input
-                name="problemUrl"
-                type="url"
-                required
-                className="mt-3 w-full rounded-xl border border-[var(--line-strong)] px-4 py-3"
-                placeholder="https://..."
-              />
-              <label
-                className="mt-3 block text-sm font-semibold"
-                htmlFor="acceptedAt"
-              >
-                풀이 완료 시각 (한국 시간)
-              </label>
-              <input
-                id="acceptedAt"
-                name="acceptedAt"
-                type="datetime-local"
-                required
-                className="mt-2 w-full rounded-xl border border-[var(--line-strong)] px-4 py-3"
-              />
-              <button
-                type="submit"
-                disabled={!currentUserAccounts.length}
-                className="mt-4 w-full rounded-xl bg-[var(--accent)] px-4 py-3 font-bold text-[var(--accent-ink)] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
-              >
-                검수 요청
-              </button>
-            </form>
+          <div>
+            <PhotoProofForm
+              groupId={group.id}
+              groupSlug={group.slug}
+              userId={user.id}
+            />
           </div>
 
           <div className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
@@ -444,7 +345,9 @@ export default async function GroupPage({
             {proofs.length ? (
               <ul className="mt-5 space-y-4">
                 {proofs.map((proof) => {
-                  const account = accountById.get(proof.platform_account_id);
+                  const account = accountById.get(
+                    proof.platform_account_id ?? "",
+                  );
                   const review = reviewByProofId.get(proof.id);
                   const reviewable =
                     canReview &&
@@ -458,20 +361,27 @@ export default async function GroupPage({
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <a
-                            href={proof.problem_url}
+                            href={
+                              proof.problem_url ??
+                              `/proofs/${proof.id}/evidence`
+                            }
                             target="_blank"
                             rel="noreferrer"
                             className="font-bold hover:text-[var(--accent-strong)]"
                           >
-                            {proof.problem_title || proof.problem_key}
+                            {proof.problem_title ||
+                              (proof.evidence_path
+                                ? "사진 풀이 기록"
+                                : proof.problem_key)}
                           </a>
                           <p className="mt-1 text-sm text-[var(--muted)]">
                             {profileById.get(proof.user_id) ?? "멤버"} ·{" "}
                             {account
                               ? `${platformLabels[account.platform]} ${account.handle}`
-                              : "플랫폼 계정"}
+                              : "사진 인증"}
                           </p>
                           <p className="mt-1 font-mono text-xs text-[var(--muted)]">
+                            {proof.platform_account_id ? "풀이 " : "등록 "}
                             {displayDate(proof.accepted_at)}
                           </p>
                         </div>
@@ -480,6 +390,27 @@ export default async function GroupPage({
                             proof.verification_status}
                         </span>
                       </div>
+
+                      {proof.evidence_path && (
+                        <a
+                          href={`/proofs/${proof.id}/evidence`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-4 block"
+                        >
+                          <Image
+                            src={`/proofs/${proof.id}/evidence`}
+                            alt="풀이 인증 사진"
+                            width={720}
+                            height={480}
+                            unoptimized
+                            className="max-h-80 w-full rounded-xl bg-[var(--surface-subtle)] object-contain"
+                          />
+                          <span className="mt-1 block text-xs text-[var(--muted)]">
+                            사진 크게 보기
+                          </span>
+                        </a>
+                      )}
 
                       {review && (
                         <p className="mt-3 rounded-xl bg-[var(--surface-subtle)] px-4 py-3 text-sm text-[var(--muted-strong)]">

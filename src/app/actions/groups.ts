@@ -1,6 +1,6 @@
 "use server";
 
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes, randomInt } from "node:crypto";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -8,6 +8,84 @@ import { redirect } from "next/navigation";
 import { getRequiredText, withStatus } from "@/lib/form";
 import { requireUser } from "@/lib/auth";
 import { getSiteUrl } from "@/lib/supabase/config";
+import { INVITE_ALPHABET, normalizeInviteCode } from "@/lib/proof-input";
+
+export async function rotateInviteCodeAction(formData: FormData) {
+  const groupId = getRequiredText(formData, "groupId");
+  const slug = getRequiredText(formData, "groupSlug");
+  if (!UUID_PATTERN.test(groupId) || !SLUG_PATTERN.test(slug))
+    redirect("/dashboard");
+  const { supabase, user } = await requireUser();
+  const { data: member } = await supabase
+    .from("group_members")
+    .select("role, status")
+    .eq("group_id", groupId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (member?.status !== "ACTIVE" || member.role !== "OWNER")
+    redirect("/dashboard");
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const code = Array.from(
+      { length: 5 },
+      () => INVITE_ALPHABET[randomInt(INVITE_ALPHABET.length)],
+    ).join("");
+    const { error } = await supabase.rpc("rotate_group_invite_code", {
+      target_group_id: groupId,
+      invitation_code: code,
+    });
+    if (!error) {
+      revalidatePath(`/groups/${slug}`);
+      redirect(
+        withStatus(
+          `/groups/${slug}`,
+          "message",
+          "새 초대코드를 만들었습니다. 이전 코드는 사용할 수 없습니다.",
+        ),
+      );
+    }
+    if (error.code !== "23505") break;
+  }
+  redirect(
+    withStatus(`/groups/${slug}`, "error", "초대코드를 만들지 못했습니다."),
+  );
+}
+
+export async function joinByCodeAction(formData: FormData) {
+  const code = normalizeInviteCode(getRequiredText(formData, "code"));
+  if (!code)
+    redirect(
+      withStatus("/dashboard", "error", "5자리 초대코드를 확인해주세요."),
+    );
+  const { supabase } = await requireUser(`/join/${code}`);
+  const { data, error } = await supabase.rpc("join_group_by_code", {
+    invitation_code: code,
+  });
+  if (!error && data?.status === "ACTIVE" && SLUG_PATTERN.test(data.slug))
+    redirect(`/groups/${data.slug}`);
+  if (!error && data?.status === "PENDING") {
+    revalidatePath("/dashboard");
+    redirect(
+      withStatus(
+        "/dashboard",
+        "message",
+        "가입을 신청했습니다. 그룹 소유자의 승인을 기다려주세요.",
+      ),
+    );
+  }
+  const message =
+    data?.status === "RATE_LIMITED"
+      ? "입력 횟수를 초과했습니다. 15분 후 다시 시도해주세요."
+      : data?.status === "REVOKED"
+        ? "가입할 수 없습니다. 그룹 소유자에게 문의해주세요."
+        : "유효하지 않거나 만료된 초대코드입니다.";
+  redirect(
+    withStatus(
+      `/join/${code}`,
+      "error",
+      error ? "가입 신청을 처리하지 못했습니다." : message,
+    ),
+  );
+}
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const UUID_PATTERN =

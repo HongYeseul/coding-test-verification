@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { signOutAction } from "@/app/actions/auth";
-import { createGroupAction } from "@/app/actions/groups";
+import { createGroupAction, joinByCodeAction } from "@/app/actions/groups";
 import { StatusMessage } from "@/components/status-message";
 import { requireUser } from "@/lib/auth";
 import { firstQueryValue } from "@/lib/form";
@@ -84,6 +84,29 @@ export default async function DashboardPage({
           message={firstQueryValue(query.message)}
         />
 
+        <form
+          action={joinByCodeAction}
+          className="flex flex-wrap items-center gap-3 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5"
+        >
+          <label htmlFor="invite-code" className="font-bold">
+            초대코드로 가입
+          </label>
+          <input
+            id="invite-code"
+            name="code"
+            required
+            minLength={5}
+            maxLength={5}
+            autoCapitalize="characters"
+            autoComplete="off"
+            placeholder="5자리 코드"
+            className="w-40 rounded-xl border border-[var(--line-strong)] px-4 py-3 font-mono uppercase"
+          />
+          <button className="rounded-xl bg-[var(--ink)] px-4 py-3 font-bold text-white">
+            가입 신청
+          </button>
+        </form>
+
         {pendingCount > 0 && (
           <section className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-semibold text-amber-800">
             가입 승인 대기 중인 그룹이 {pendingCount}개 있습니다.
@@ -94,7 +117,9 @@ export default async function DashboardPage({
           <div className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold text-[var(--muted)]">활성 그룹</p>
+                <p className="text-sm font-semibold text-[var(--muted)]">
+                  활성 그룹
+                </p>
                 <h2 className="mt-1 text-xl font-extrabold">함께 푸는 공간</h2>
               </div>
               <span className="rounded-full bg-[var(--accent-soft)] px-3 py-1 font-mono text-xs font-bold text-[var(--accent-ink)]">

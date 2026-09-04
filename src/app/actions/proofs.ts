@@ -5,6 +5,59 @@ import { redirect } from "next/navigation";
 
 import { requireUser } from "@/lib/auth";
 import { getRequiredText, withStatus } from "@/lib/form";
+import { isPhotoPath } from "@/lib/proof-input";
+
+export async function createPhotoProofAction(input: {
+  groupId: string;
+  groupSlug: string;
+  evidencePath: string;
+  title: string;
+}): Promise<{ error?: string }> {
+  const { groupId, groupSlug, evidencePath } = input;
+  const title = input.title.trim();
+  const { supabase, user } = await requireUser();
+  if (
+    !UUID_PATTERN.test(groupId) ||
+    !SLUG_PATTERN.test(groupSlug) ||
+    !isPhotoPath(evidencePath, groupId, user.id) ||
+    title.length > 160
+  ) {
+    return { error: "사진과 제목을 확인해주세요." };
+  }
+  const { data: member } = await supabase
+    .from("group_members")
+    .select("status")
+    .eq("group_id", groupId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (member?.status !== "ACTIVE")
+    return { error: "활성 멤버만 풀이를 등록할 수 있습니다." };
+  const { error } = await supabase.from("proofs").insert({
+    group_id: groupId,
+    user_id: user.id,
+    evidence_path: evidencePath,
+    problem_key: evidencePath.split("/")[2],
+    problem_title: title || null,
+    accepted_at: new Date().toISOString(),
+  });
+  if (error) {
+    // 응답 유실 후 같은 사진으로 재시도해도 기록은 한 번만 생성합니다.
+    const { data: existing } =
+      error.code === "23505"
+        ? await supabase
+            .from("proofs")
+            .select("id")
+            .eq("evidence_path", evidencePath)
+            .eq("user_id", user.id)
+            .eq("group_id", groupId)
+            .maybeSingle()
+        : { data: null };
+    if (!existing)
+      return { error: "사진 기록을 저장하지 못했습니다. 다시 시도해주세요." };
+  }
+  revalidatePath(`/groups/${groupSlug}`);
+  return {};
+}
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -214,13 +267,29 @@ export async function deleteProofAction(formData: FormData) {
   }
 
   const { supabase, user } = await requireUser();
+  const { data: proof } = await supabase
+    .from("proofs")
+    .select("group_id")
+    .eq("id", proofId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  const { data: member } = proof
+    ? await supabase
+        .from("group_members")
+        .select("status")
+        .eq("group_id", proof.group_id)
+        .eq("user_id", user.id)
+        .maybeSingle()
+    : { data: null };
+  if (member?.status !== "ACTIVE")
+    redirect(withStatus(groupPath, "error", "풀이를 삭제할 권한이 없습니다."));
   const { data, error } = await supabase
     .from("proofs")
     .delete()
     .eq("id", proofId)
     .eq("user_id", user.id)
     .eq("verification_status", "PENDING")
-    .select("id");
+    .select("id, evidence_path");
 
   if (error || !data?.length) {
     redirect(
@@ -232,6 +301,20 @@ export async function deleteProofAction(formData: FormData) {
     );
   }
 
+  const paths = data
+    .map((row) => row.evidence_path)
+    .filter((path): path is string => Boolean(path));
+  const { error: storageError } = paths.length
+    ? await supabase.storage.from("proof-evidence").remove(paths)
+    : { error: null };
   revalidatePath(groupPath);
-  redirect(withStatus(groupPath, "message", "풀이를 삭제했습니다."));
+  redirect(
+    withStatus(
+      groupPath,
+      "message",
+      storageError
+        ? "풀이 기록은 삭제했지만 사진 파일 정리는 완료하지 못했습니다."
+        : "풀이와 사진을 삭제했습니다.",
+    ),
+  );
 }
