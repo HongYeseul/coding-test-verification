@@ -108,21 +108,18 @@ export default async function GroupPage({
     redirect("/dashboard");
   }
 
+  const isOwner = currentMembership.role === "OWNER";
   const [
     { data: membershipData },
-    { data: accountData },
     { data: proofData },
     overviewResult,
+    { data: invitation },
   ] = await Promise.all([
     supabase
       .from("group_members")
       .select("user_id, role, status, joined_at")
       .eq("group_id", group.id)
       .neq("status", "REVOKED")
-      .order("created_at"),
-    supabase
-      .from("platform_accounts")
-      .select("id, user_id, platform, handle, verification_status")
       .order("created_at"),
     supabase
       .from("proofs")
@@ -133,6 +130,14 @@ export default async function GroupPage({
       .order("accepted_at", { ascending: false })
       .limit(50),
     supabase.rpc("get_group_overview", { target_group_id: group.id }),
+    isOwner
+      ? supabase
+          .from("group_invite_codes")
+          .select("code, expires_at")
+          .eq("group_id", group.id)
+          .gt("expires_at", "now")
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   const overview = overviewResult.error
@@ -140,21 +145,38 @@ export default async function GroupPage({
     : (overviewResult.data as GroupOverviewData | null);
 
   const memberships = (membershipData ?? []) as MembershipRow[];
-  const accounts = (accountData ?? []) as PlatformAccountRow[];
   const proofs = (proofData ?? []) as ProofRow[];
   const memberIds = memberships.map((membership) => membership.user_id);
   const proofIds = proofs.map((proof) => proof.id);
-  const [{ data: profileData }, { data: reviewData }] = await Promise.all([
-    memberIds.length
-      ? supabase.from("profiles").select("id, display_name").in("id", memberIds)
-      : Promise.resolve({ data: [] }),
-    proofIds.length
-      ? supabase
-          .from("proof_reviews")
-          .select("proof_id, decision, note")
-          .in("proof_id", proofIds)
-      : Promise.resolve({ data: [] }),
-  ]);
+  const accountIds = [
+    ...new Set(
+      proofs.flatMap((proof) =>
+        proof.platform_account_id ? [proof.platform_account_id] : [],
+      ),
+    ),
+  ];
+  const [{ data: profileData }, { data: reviewData }, { data: accountData }] =
+    await Promise.all([
+      memberIds.length
+        ? supabase
+            .from("profiles")
+            .select("id, display_name")
+            .in("id", memberIds)
+        : Promise.resolve({ data: [] }),
+      proofIds.length
+        ? supabase
+            .from("proof_reviews")
+            .select("proof_id, decision, note")
+            .in("proof_id", proofIds)
+        : Promise.resolve({ data: [] }),
+      accountIds.length
+        ? supabase
+            .from("platform_accounts")
+            .select("id, user_id, platform, handle, verification_status")
+            .in("id", accountIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+  const accounts = (accountData ?? []) as PlatformAccountRow[];
   const profiles = (profileData ?? []) as ProfileRow[];
   const reviews = (reviewData ?? []) as ReviewRow[];
   const profileById = new Map(
@@ -166,15 +188,6 @@ export default async function GroupPage({
   );
 
   const canReview = ["OWNER", "REVIEWER"].includes(currentMembership.role);
-  const isOwner = currentMembership.role === "OWNER";
-  const { data: invitation } = isOwner
-    ? await supabase
-        .from("group_invite_codes")
-        .select("code, expires_at")
-        .eq("group_id", group.id)
-        .gt("expires_at", "now")
-        .maybeSingle()
-    : { data: null };
   const validInvitation = Boolean(invitation);
 
   return (

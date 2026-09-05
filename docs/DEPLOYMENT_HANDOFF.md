@@ -4,12 +4,13 @@
 
 ## 운영 연결
 
-- GitHub: `HongYeseul/coding-test-verification` (Private, `main`)
+- GitHub: `HongYeseul/coding-test-verification` (Public, `main`)
 - Vercel: `hongyeseuls-projects/coding-test-verification`
 - Vercel 프로젝트 ID: `prj_F67rErRW8oBwkLTComzHn4g23qzi`
 - 운영 URL: https://coding-test-verification.vercel.app
 - Supabase 프로젝트: `lfukmjprduxmesciplrx` (`coding-test-verification`, Free)
 - Supabase 리전: Sydney (`ap-southeast-2`)
+- Vercel 함수 리전: `vercel.json`의 Sydney (`syd1`) 한 곳. Hobby 무료 플랜을 유지합니다.
 - GitHub OAuth 앱: https://github.com/settings/applications/3837795
 
 `main` push 시 Vercel Production에 자동 배포됩니다. GitHub OAuth 제공자는 활성화되어 있으며 Client Secret은 Supabase에만 저장했습니다. Vercel Production에 프로젝트 URL, Publishable Key, 사이트 URL을 등록했습니다. Preview에는 운영 DB 환경변수를 등록하지 않았습니다.
@@ -68,3 +69,11 @@ Node.js 24에서 `pnpm test`, `pnpm check`를 실행합니다. 로컬 `.env.loca
 - 최근 50개 풀이 기록은 현재 그룹 전체 작성자의 기록이며, 현황판 집계에는 이 개수 제한을 적용하지 않습니다.
 - 회귀 테스트: `supabase/tests/group_overview.sql`의 1,000건 초과 집계, 주간 경계, 상태 구분, 비로그인·가입 대기·탈퇴·타 그룹 접근 차단.
 - 스터디 소통 채널은 카카오톡입니다. 카카오톡 알림, 공동 목표, 응원 반응, 연속 참여 집계는 아직 구현하지 않았습니다.
+
+## 화면 전환과 무료 운영
+
+- DB 프로젝트·리전·인증·사진은 이전하지 않습니다. Vercel 함수만 기존 DB와 가까운 `syd1`에 배포합니다.
+- 목록과 그룹 화면에 `loading.tsx`가 있으며 데이터 조회 중 로딩 화면을 표시합니다.
+- 초대코드는 본문과 병렬 조회하고 플랫폼 계정은 표시할 풀이에서 참조한 계정만 조회합니다. ACTIVE 멤버십 검사와 RLS는 유지합니다.
+- 유료 이미지 변환·관측 도구·추가 DB를 사용하지 않습니다. Vercel Hobby는 비상업적 개인 용도이며 무료 사용량 초과 시 제한될 수 있습니다.
+- Supabase Free의 주요 한도는 DB 500MB, 파일 1GB, egress 5GB와 cached egress 5GB입니다. 한도와 사용량은 운영 대시보드에서 확인하며 자동 유료 전환은 신청하지 않습니다.
