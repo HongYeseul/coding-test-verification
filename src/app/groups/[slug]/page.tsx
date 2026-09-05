@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { InvitePopover } from "@/components/invite-popover";
 import { PhotoProofForm } from "@/components/photo-proof-form";
 import { getSiteUrl } from "@/lib/supabase/config";
 import { notFound, redirect } from "next/navigation";
@@ -310,7 +311,6 @@ export default async function GroupPage({
   );
 
   const canReview = ["OWNER", "REVIEWER"].includes(currentMembership.role);
-  const validInvitation = Boolean(invitation);
   const pendingMemberships = memberships.filter(
     (membership) => membership.status === "PENDING",
   );
@@ -341,9 +341,54 @@ export default async function GroupPage({
                 {group.name}
               </h1>
             </div>
-            <span className="rounded-full bg-[var(--ink)] px-3 py-1.5 font-mono text-xs font-bold text-[var(--accent)]">
-              {currentMembership.role}
-            </span>
+            <div className="flex w-full items-center justify-between gap-3 sm:w-auto">
+              <span className="rounded-full bg-[var(--ink)] px-3 py-1.5 font-mono text-xs font-bold text-[var(--accent)]">
+                {currentMembership.role}
+              </span>
+              {isOwner && (
+                <InvitePopover
+                  inviteUrl={
+                    invitation
+                      ? `${getSiteUrl()}/join/${invitation.code}`
+                      : undefined
+                  }
+                >
+                  <form
+                    action={rotateInviteCodeAction}
+                    className="mt-4 border-t border-[var(--line)] pt-4"
+                  >
+                    <input type="hidden" name="groupId" value={group.id} />
+                    <input type="hidden" name="groupSlug" value={group.slug} />
+                    {invitation ? (
+                      <div className="space-y-3 rounded-xl bg-[var(--surface-subtle)] p-4">
+                        <p className="select-all font-mono text-2xl font-black tracking-widest">
+                          {invitation.code}
+                        </p>
+                        <p className="text-xs text-[var(--muted)]">
+                          {displayDate(invitation.expires_at)}까지 사용 가능
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="rounded-xl bg-[var(--surface-subtle)] p-4 text-sm text-[var(--muted)]">
+                        사용 가능한 초대코드가 없습니다.
+                      </p>
+                    )}
+                    <button
+                      type="submit"
+                      className="mt-3 w-full rounded-xl border border-[var(--line-strong)] px-3 py-2 text-sm font-bold text-[var(--muted-strong)]"
+                    >
+                      {invitation
+                        ? "새 초대코드 만들기"
+                        : "5자리 초대코드 만들기"}
+                    </button>
+                    <p className="mt-2 text-xs text-[var(--muted)]">
+                      여러 사람이 7일 동안 사용할 수 있습니다. 새로 만들면 이전
+                      코드는 만료됩니다.
+                    </p>
+                  </form>
+                </InvitePopover>
+              )}
+            </div>
           </div>
         </header>
 
@@ -639,87 +684,43 @@ export default async function GroupPage({
           </div>
         </section>
 
-        {isOwner && (
+        {isOwner && pendingMemberships.length > 0 && (
           <section className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
-            <h2 className="text-xl font-extrabold">멤버 초대</h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-              상대방에게 코드를 공유하세요. 가입 신청은 아래에서 승인할 수
-              있습니다.
-            </p>
-
-            {pendingMemberships.length > 0 && (
-              <div className="mt-5">
-                <h3 className="text-sm font-extrabold">
-                  가입 승인 대기 {pendingMemberships.length}명
-                </h3>
-                <ul className="mt-2 space-y-2">
-                  {pendingMemberships.map((membership) => (
-                    <li
-                      key={membership.user_id}
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[var(--surface-subtle)] px-4 py-3"
+            <h2 className="text-xl font-extrabold">
+              가입 승인 대기 {pendingMemberships.length}명
+            </h2>
+            <ul className="mt-2 space-y-2">
+              {pendingMemberships.map((membership) => (
+                <li
+                  key={membership.user_id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[var(--surface-subtle)] px-4 py-3"
+                >
+                  <span className="font-bold">
+                    {profileById.get(membership.user_id) ??
+                      `멤버 ${membership.user_id.slice(0, 8)}`}
+                  </span>
+                  <form action={approveMembershipAction}>
+                    <input type="hidden" name="groupId" value={group.id} />
+                    <input
+                      type="hidden"
+                      name="groupSlug"
+                      value={group.slug}
+                    />
+                    <input
+                      type="hidden"
+                      name="userId"
+                      value={membership.user_id}
+                    />
+                    <button
+                      type="submit"
+                      className="rounded-xl bg-[var(--ink)] px-3 py-2 text-sm font-bold text-white"
                     >
-                      <span className="font-bold">
-                        {profileById.get(membership.user_id) ??
-                          `멤버 ${membership.user_id.slice(0, 8)}`}
-                      </span>
-                      <form action={approveMembershipAction}>
-                        <input type="hidden" name="groupId" value={group.id} />
-                        <input
-                          type="hidden"
-                          name="groupSlug"
-                          value={group.slug}
-                        />
-                        <input
-                          type="hidden"
-                          name="userId"
-                          value={membership.user_id}
-                        />
-                        <button
-                          type="submit"
-                          className="rounded-xl bg-[var(--ink)] px-3 py-2 text-sm font-bold text-white"
-                        >
-                          가입 승인
-                        </button>
-                      </form>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <form action={rotateInviteCodeAction} className="mt-5">
-              <input type="hidden" name="groupId" value={group.id} />
-              <input type="hidden" name="groupSlug" value={group.slug} />
-              {invitation ? (
-                <div className="space-y-3 rounded-xl bg-[var(--surface-subtle)] p-4">
-                  <p className="font-mono text-4xl font-black tracking-widest">
-                    {invitation.code}
-                  </p>
-                  <p className="break-all text-sm">
-                    {getSiteUrl()}/join/{invitation.code}
-                  </p>
-                  <p className="text-xs text-[var(--muted)]">
-                    {displayDate(invitation.expires_at)}까지 사용 가능
-                  </p>
-                </div>
-              ) : (
-                <p className="rounded-xl bg-[var(--surface-subtle)] p-4 text-sm text-[var(--muted)]">
-                  사용 가능한 초대코드가 없습니다.
-                </p>
-              )}
-              <button
-                type="submit"
-                className="mt-4 w-full rounded-xl bg-[var(--accent)] px-4 py-3 font-bold text-[var(--accent-ink)]"
-              >
-                {validInvitation
-                  ? "새 초대코드 만들기"
-                  : "5자리 초대코드 만들기"}
-              </button>
-              <p className="mt-2 text-xs text-[var(--muted)]">
-                여러 사람이 7일 동안 사용할 수 있습니다. 새로 만들면 이전 코드는
-                만료됩니다.
-              </p>
-            </form>
+                      가입 승인
+                    </button>
+                  </form>
+                </li>
+              ))}
+            </ul>
           </section>
         )}
       </div>
