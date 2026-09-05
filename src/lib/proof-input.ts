@@ -1,5 +1,6 @@
 export const INVITE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-export const MAX_PHOTO_BYTES = 6 * 1024 * 1024;
+// proof-evidence 버킷의 file_size_limit과 함께 변경합니다.
+export const MAX_PHOTO_BYTES = 300 * 1024;
 export const MAX_SOURCE_PHOTO_BYTES = 20 * 1024 * 1024;
 export const PHOTO_EXTENSIONS: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -28,7 +29,7 @@ export function photoError(
 ) {
   if (!Object.hasOwn(PHOTO_EXTENSIONS, file.type))
     return "JPG, PNG, WebP 사진만 올릴 수 있습니다.";
-  if (file.size < 1 || file.size > maxBytes)
-    return `사진은 ${maxBytes / 1024 / 1024}MB 이하로 올려주세요.`;
+  if (!Number.isFinite(file.size) || file.size < 1 || file.size > maxBytes)
+    return `사진은 ${maxBytes < 1024 * 1024 ? `${maxBytes / 1024}KB` : `${maxBytes / 1024 / 1024}MB`} 이하로 올려주세요.`;
   return null;
 }

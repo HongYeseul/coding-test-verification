@@ -17,7 +17,7 @@ test("사진 비율을 유지하며 긴 변을 1920으로 줄이고 작은 사�
   ])
     assert.throws(() => photoDimensions(w, h));
 });
-test("압축 전 원본은 20MB, 저장 사진은 기존 6MB 제한을 사용한다", () => {
+test("압축 전 원본은 20MB, 저장 사진은 300KB 제한을 사용한다", () => {
   assert.equal(
     photoError(
       { type: "image/jpeg", size: MAX_SOURCE_PHOTO_BYTES },
@@ -51,7 +51,12 @@ function mockBrowser(
     height: 0,
     getContext: () => (noContext ? null : context),
     toBlob(callback, type, quality) {
-      encodes.push({ type, quality });
+      encodes.push({
+        type,
+        quality,
+        width: canvas.width,
+        height: canvas.height,
+      });
       callback(outputs.shift() ?? null);
     },
   };
@@ -79,20 +84,20 @@ const photo = (size = 2 * 1024 * 1024) =>
 const blob = (size, type = "image/webp") =>
   new Blob([new Uint8Array(size)], { type });
 
-test("목표 용량을 넘으면 품질을 한 번 더 조절하고 자원을 해제한다", async (t) => {
-  const small = blob(400000);
+test("150KB 목표를 넘으면 품질을 조절하고 자원을 해제한다", async (t) => {
+  const small = blob(140000);
   const state = mockBrowser(t, { outputs: [blob(700000), small] });
   assert.equal(await compressPhoto(photo()), small);
   assert.deepEqual(
     state.encodes.map((x) => x.quality),
-    [0.82, 0.72],
+    [0.86, 0.76],
   );
   assert.equal(state.revoke.mock.callCount(), 1);
   assert.equal(state.canvas.width, 0);
   assert.equal(state.canvas.height, 0);
 });
 test("WebP 미지원 브라우저에서는 JPEG를 사용한다", async (t) => {
-  const jpeg = blob(300000, "image/jpeg");
+  const jpeg = blob(140000, "image/jpeg");
   const state = mockBrowser(t, { outputs: [blob(600000, "image/png"), jpeg] });
   assert.equal(await compressPhoto(photo()), jpeg);
   assert.deepEqual(
@@ -105,10 +110,14 @@ test("작은 원본은 재인코딩 결과보다 작으면 그대로 사용한�
   const original = photo(20000);
   assert.equal(await compressPhoto(original), original);
 });
-test("품질 조절 결과가 더 크면 첫 압축 결과를 사용한다", async (t) => {
-  const first = blob(700000);
-  mockBrowser(t, { outputs: [first, blob(800000)] });
+test("목표에 도달하지 못해도 300KB 이내 가장 작은 결과를 사용한다", async (t) => {
+  const first = blob(200000);
+  const state = mockBrowser(t, {
+    outputs: [first, ...Array(8).fill(blob(250000))],
+  });
   assert.equal(await compressPhoto(photo()), first);
+  assert.equal(state.encodes.length, 9);
+  assert.equal(state.encodes.at(-1).width, 1280);
 });
 test("손상된 파일과 인코딩 실패에서도 자원을 해제한다", async (t) => {
   const state = mockBrowser(t, { decodeFails: true });
@@ -123,7 +132,28 @@ test("압축 후 저장 한도를 넘는 사진은 거부한다", async (t) => {
   mockBrowser(t, {
     width: 1920,
     height: 1920,
-    outputs: [blob(9 * 1024 * 1024), blob(9 * 1024 * 1024)],
+    outputs: Array(9).fill(blob(307201)),
   });
   await assert.rejects(compressPhoto(photo(8 * 1024 * 1024)), /압축 후에도/);
+});
+test("해상도를 단계적으로 낮추고 목표 도달 시 중단한다", async (t) => {
+  const final = blob(150 * 1024);
+  const state = mockBrowser(t, {
+    outputs: [...Array(3).fill(blob(400000)), final],
+  });
+  assert.equal(await compressPhoto(photo()), final);
+  assert.deepEqual(
+    state.encodes.map((x) => x.width),
+    [1920, 1920, 1920, 1600],
+  );
+});
+test("작은 사진은 추가 축소하지 않고 300KB 경계를 허용한다", async (t) => {
+  const final = blob(300 * 1024);
+  const state = mockBrowser(t, {
+    width: 640,
+    height: 480,
+    outputs: [final, final, final],
+  });
+  assert.equal(await compressPhoto(photo()), final);
+  assert.equal(state.encodes.length, 3);
 });

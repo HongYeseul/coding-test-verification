@@ -86,7 +86,7 @@
           await img.decode();
           if (
             Math.max(img.naturalWidth, img.naturalHeight) > 1920 ||
-            compressed.size > source.size
+            compressed.size > 300 * 1024
           )
             throw Error("해상도 또는 용량 검증 실패");
           const summary = `${width}×${height} → ${img.naturalWidth}×${img.naturalHeight}: ${(source.size / 1024).toFixed(1)}KB → ${(compressed.size / 1024).toFixed(1)}KB (${compressed.type})`;
