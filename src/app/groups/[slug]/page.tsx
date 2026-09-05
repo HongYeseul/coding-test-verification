@@ -15,6 +15,7 @@ import { requireUser } from "@/lib/auth";
 import { firstQueryValue } from "@/lib/form";
 import { GroupOverview } from "@/components/group-overview";
 import type { GroupOverviewData } from "@/lib/group-overview";
+import { CancelProofButton } from "@/components/cancel-proof-button";
 
 type MembershipRow = {
   user_id: string;
@@ -68,6 +69,7 @@ const proofStatusLabels: Record<string, string> = {
   MANUAL_REVIEWED: "승인",
   API_VERIFIED: "자동 확인",
   REJECTED: "반려",
+  CANCELING: "취소 처리 중",
 };
 
 function displayDate(value: string) {
@@ -355,7 +357,7 @@ export default async function GroupPage({
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold text-[var(--muted)]">
-                  최근 50개
+                  이 그룹의 전체 멤버 · 최근 50개
                 </p>
                 <h2 className="mt-1 text-xl font-extrabold">풀이 기록</h2>
               </div>
@@ -384,8 +386,10 @@ export default async function GroupPage({
                         <div>
                           <a
                             href={
-                              proof.problem_url ??
-                              `/proofs/${proof.id}/evidence`
+                              proof.verification_status === "CANCELING"
+                                ? undefined
+                                : (proof.problem_url ??
+                                  `/proofs/${proof.id}/evidence`)
                             }
                             target="_blank"
                             rel="noreferrer"
@@ -413,26 +417,27 @@ export default async function GroupPage({
                         </span>
                       </div>
 
-                      {proof.evidence_path && (
-                        <a
-                          href={`/proofs/${proof.id}/evidence`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="mt-4 block"
-                        >
-                          <Image
-                            src={`/proofs/${proof.id}/evidence`}
-                            alt="풀이 인증 사진"
-                            width={720}
-                            height={480}
-                            unoptimized
-                            className="max-h-80 w-full rounded-xl bg-[var(--surface-subtle)] object-contain"
-                          />
-                          <span className="mt-1 block text-xs text-[var(--muted)]">
-                            사진 크게 보기
-                          </span>
-                        </a>
-                      )}
+                      {proof.evidence_path &&
+                        proof.verification_status !== "CANCELING" && (
+                          <a
+                            href={`/proofs/${proof.id}/evidence`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-4 block"
+                          >
+                            <Image
+                              src={`/proofs/${proof.id}/evidence`}
+                              alt="풀이 인증 사진"
+                              width={720}
+                              height={480}
+                              unoptimized
+                              className="max-h-80 w-full rounded-xl bg-[var(--surface-subtle)] object-contain"
+                            />
+                            <span className="mt-1 block text-xs text-[var(--muted)]">
+                              사진 크게 보기
+                            </span>
+                          </a>
+                        )}
 
                       {review && (
                         <p className="mt-3 rounded-xl bg-[var(--surface-subtle)] px-4 py-3 text-sm text-[var(--muted-strong)]">
@@ -485,7 +490,9 @@ export default async function GroupPage({
                       )}
 
                       {proof.user_id === user.id &&
-                        proof.verification_status === "PENDING" && (
+                        ["PENDING", "CANCELING"].includes(
+                          proof.verification_status,
+                        ) && (
                           <form action={deleteProofAction} className="mt-3">
                             <input
                               type="hidden"
@@ -497,12 +504,9 @@ export default async function GroupPage({
                               name="groupSlug"
                               value={group.slug}
                             />
-                            <button
-                              type="submit"
-                              className="text-sm font-bold text-red-700"
-                            >
-                              검수 요청 취소
-                            </button>
+                            <CancelProofButton
+                              retry={proof.verification_status === "CANCELING"}
+                            />
                           </form>
                         )}
                     </li>

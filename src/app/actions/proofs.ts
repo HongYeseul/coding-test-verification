@@ -50,6 +50,7 @@ export async function createPhotoProofAction(input: {
             .eq("evidence_path", evidencePath)
             .eq("user_id", user.id)
             .eq("group_id", groupId)
+            .neq("verification_status", "CANCELING")
             .maybeSingle()
         : { data: null };
     if (!existing)
@@ -258,63 +259,71 @@ export async function reviewProofAction(formData: FormData) {
 export async function deleteProofAction(formData: FormData) {
   const proofId = getRequiredText(formData, "proofId");
   const groupSlug = getRequiredText(formData, "groupSlug");
-  const groupPath = SLUG_PATTERN.test(groupSlug)
-    ? `/groups/${groupSlug}`
-    : "/dashboard";
-
-  if (!UUID_PATTERN.test(proofId)) {
-    redirect(withStatus(groupPath, "error", "삭제할 풀이를 확인해주세요."));
+  if (!UUID_PATTERN.test(proofId) || !SLUG_PATTERN.test(groupSlug)) {
+    redirect(withStatus("/dashboard", "error", "삭제할 풀이를 확인해주세요."));
   }
-
-  const { supabase, user } = await requireUser();
-  const { data: proof } = await supabase
-    .from("proofs")
-    .select("group_id")
-    .eq("id", proofId)
-    .eq("user_id", user.id)
+  const groupPath = `/groups/${groupSlug}`;
+  const { supabase, user } = await requireUser(groupPath);
+  const { data: group } = await supabase
+    .from("groups")
+    .select("id")
+    .eq("slug", groupSlug)
     .maybeSingle();
-  const { data: member } = proof
+  const { data: member } = group
     ? await supabase
         .from("group_members")
         .select("status")
-        .eq("group_id", proof.group_id)
+        .eq("group_id", group.id)
         .eq("user_id", user.id)
         .maybeSingle()
     : { data: null };
-  if (member?.status !== "ACTIVE")
+  if (!group || member?.status !== "ACTIVE") {
     redirect(withStatus(groupPath, "error", "풀이를 삭제할 권한이 없습니다."));
-  const { data, error } = await supabase
-    .from("proofs")
-    .delete()
-    .eq("id", proofId)
-    .eq("user_id", user.id)
-    .eq("verification_status", "PENDING")
-    .select("id, evidence_path");
-
-  if (error || !data?.length) {
+  }
+  const args = { target_group_id: group.id, target_proof_id: proofId };
+  const { data: cancellation, error: beginError } = await supabase.rpc(
+    "begin_proof_cancellation",
+    args,
+  );
+  if (beginError)
     redirect(
       withStatus(
         groupPath,
         "error",
-        "검수 대기 중인 풀이만 삭제할 수 있습니다.",
+        "검수 대기 중인 본인 기록만 취소할 수 있습니다.",
       ),
     );
+  if (cancellation) {
+    if (cancellation.evidence_path) {
+      try {
+        await supabase.storage
+          .from("proof-evidence")
+          .remove([cancellation.evidence_path]);
+      } catch {
+        // 응답이 유실됐더라도 DB에서 사진 삭제 여부를 확인합니다.
+      }
+    }
+    const { error: finishError } = await supabase.rpc(
+      "finish_proof_cancellation",
+      args,
+    );
+    if (finishError) {
+      revalidatePath(groupPath);
+      redirect(
+        withStatus(
+          groupPath,
+          "error",
+          "사진 삭제를 완료하지 못했습니다. 기록의 ‘삭제 다시 시도’를 눌러주세요.",
+        ),
+      );
+    }
   }
-
-  const paths = data
-    .map((row) => row.evidence_path)
-    .filter((path): path is string => Boolean(path));
-  const { error: storageError } = paths.length
-    ? await supabase.storage.from("proof-evidence").remove(paths)
-    : { error: null };
   revalidatePath(groupPath);
   redirect(
     withStatus(
       groupPath,
       "message",
-      storageError
-        ? "풀이 기록은 삭제했지만 사진 파일 정리는 완료하지 못했습니다."
-        : "풀이와 사진을 삭제했습니다.",
+      "검수 요청이 취소됐습니다. 사진과 업로드 기록을 삭제했습니다.",
     ),
   );
 }

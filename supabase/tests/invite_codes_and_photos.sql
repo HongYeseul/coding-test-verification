@@ -70,11 +70,12 @@ select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000011
 insert into public.proof_reviews(proof_id,reviewer_id,decision) values
  ('00000000-0000-4000-8000-000000000041','00000000-0000-4000-8000-000000000011','APPROVED');
 select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000012', true);
-do $$ declare removed integer; begin
+do $$ begin
  assert (select verification_status = 'MANUAL_REVIEWED' from public.proofs where id = '00000000-0000-4000-8000-000000000041');
- delete from public.proofs where id = '00000000-0000-4000-8000-000000000041';
- get diagnostics removed = row_count;
- assert removed = 0, '검수된 기록 삭제 차단';
+ begin
+  perform public.begin_proof_cancellation('00000000-0000-4000-8000-000000000021','00000000-0000-4000-8000-000000000041');
+  raise exception '검수된 기록 취소 허용';
+ exception when insufficient_privilege then null; end;
 end $$;
 select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000013', true);
 do $$ begin
