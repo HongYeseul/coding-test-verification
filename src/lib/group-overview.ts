@@ -13,6 +13,8 @@ export type OverviewMember = {
   weekApproved: number;
   totalApproved: number;
   pending: number;
+  featuredProofId: string | null;
+  featuredDate: string | null;
   days: OverviewDay[];
 };
 

@@ -1,5 +1,6 @@
 import type { GroupOverviewData } from "@/lib/group-overview";
 import { RefreshOverviewButton } from "@/components/refresh-overview-button";
+import Image from "next/image";
 
 const weekdays = ["월", "화", "수", "목", "금", "토", "일"];
 const roleLabels: Record<string, string> = {
@@ -174,56 +175,91 @@ export function GroupOverview({
                   const isFuture = date > data.today;
                   const isToday = date === data.today;
                   const hasRecords = approved + waiting + rejected > 0;
+                  const hasFeaturedPhoto =
+                    member.featuredProofId && member.featuredDate === date;
                   const description = `${date} ${weekdays[index]}요일${isToday ? ", 오늘" : ""}: ${
                     isFuture
                       ? "예정"
                       : `승인 ${approved}건, 검수 대기 ${waiting}건, 반려 ${rejected}건`
                   }`;
-                  const cellStyle = isFuture
-                    ? "bg-slate-100 text-slate-400"
-                    : approved > 0
-                      ? "bg-[var(--accent-soft)] text-[var(--accent-ink)]"
-                      : waiting > 0
-                        ? "bg-amber-50 text-amber-900"
-                        : rejected > 0
-                          ? "bg-rose-50 text-rose-700"
-                          : "bg-[var(--surface-subtle)] text-[var(--muted)]";
+                  const cellStyle = hasFeaturedPhoto
+                    ? "bg-[var(--ink)] text-white"
+                    : isFuture
+                      ? "bg-slate-100 text-slate-400"
+                      : approved > 0
+                        ? "bg-[var(--accent-soft)] text-[var(--accent-ink)]"
+                        : waiting > 0
+                          ? "bg-amber-50 text-amber-900"
+                          : rejected > 0
+                            ? "bg-rose-50 text-rose-700"
+                            : "bg-[var(--surface-subtle)] text-[var(--muted)]";
 
                   return (
                     <li key={date} title={description}>
                       <span className="sr-only">{description}</span>
-                      <div aria-hidden="true" className="text-center">
+                      <div className="text-center">
                         <p
+                          aria-hidden="true"
                           className={`text-xs ${isToday ? "font-black text-[var(--accent-strong)]" : "text-[var(--muted)]"}`}
                         >
                           {weekdays[index]}
                         </p>
-                        <p className="mt-0.5 text-[10px] text-[var(--muted)]">
+                        <p
+                          aria-hidden="true"
+                          className="mt-0.5 text-[10px] text-[var(--muted)]"
+                        >
                           {shortDate(date)}
                         </p>
-                        <div
-                          className={`mt-1 flex min-h-14 flex-col items-center justify-center rounded-lg px-0.5 py-1 text-xs font-bold tabular-nums ${cellStyle} ${isToday ? "ring-2 ring-[var(--accent-strong)] ring-offset-1" : ""}`}
-                        >
-                          {isFuture ? (
-                            "—"
-                          ) : hasRecords ? (
-                            <>
+                        {hasFeaturedPhoto ? (
+                          <a
+                            href={`/proofs/${member.featuredProofId}/evidence`}
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-label={`${description}. 대표 인증 사진 크게 보기`}
+                            className={`relative mt-1 flex min-h-14 overflow-hidden rounded-lg ${cellStyle} ${isToday ? "ring-2 ring-[var(--accent-strong)] ring-offset-1" : ""}`}
+                          >
+                            <Image
+                              src={`/proofs/${member.featuredProofId}/evidence`}
+                              alt=""
+                              fill
+                              sizes="96px"
+                              loading="lazy"
+                              unoptimized
+                              className="object-cover"
+                            />
+                            <span className="absolute inset-0 bg-black/55" />
+                            <span className="relative z-10 flex min-h-14 w-full flex-col items-center justify-center px-0.5 py-1 text-xs font-bold text-white tabular-nums">
                               {approved > 0 && <span>✓{approved}</span>}
-                              {waiting > 0 && (
-                                <span className="text-amber-800">
-                                  …{waiting}
-                                </span>
-                              )}
-                              {rejected > 0 && (
-                                <span className="text-rose-700">
-                                  ×{rejected}
-                                </span>
-                              )}
-                            </>
-                          ) : (
-                            "·"
-                          )}
-                        </div>
+                              {waiting > 0 && <span>…{waiting}</span>}
+                              {rejected > 0 && <span>×{rejected}</span>}
+                            </span>
+                          </a>
+                        ) : (
+                          <div
+                            aria-hidden="true"
+                            className={`mt-1 flex min-h-14 flex-col items-center justify-center rounded-lg px-0.5 py-1 text-xs font-bold tabular-nums ${cellStyle} ${isToday ? "ring-2 ring-[var(--accent-strong)] ring-offset-1" : ""}`}
+                          >
+                            {isFuture ? (
+                              "—"
+                            ) : hasRecords ? (
+                              <>
+                                {approved > 0 && <span>✓{approved}</span>}
+                                {waiting > 0 && (
+                                  <span className="text-amber-800">
+                                    …{waiting}
+                                  </span>
+                                )}
+                                {rejected > 0 && (
+                                  <span className="text-rose-700">
+                                    ×{rejected}
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              "·"
+                            )}
+                          </div>
+                        )}
                       </div>
                     </li>
                   );
@@ -237,7 +273,8 @@ export function GroupOverview({
       <p className="mt-4 text-xs leading-5 text-[var(--muted)]">
         한국시간 인증 등록일 기준 · 현재 활동 중인 멤버의 기록만 집계합니다.
         승인 수에는 검수 대기·반려를 포함하지 않습니다. 사진을 올린 날짜에
-        표시되며, 검수 결과에 따라 현황이 바뀝니다.
+        표시되며, 검수 결과에 따라 현황이 바뀝니다. 이번 주 첫 사진은 대표
+        썸네일로 표시하며 누르면 크게 볼 수 있습니다.
       </p>
     </section>
   );

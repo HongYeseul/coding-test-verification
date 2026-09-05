@@ -27,6 +27,10 @@ from (values
  ('today-pending',now(),'PENDING'),
  ('today-rejected',now(),'REJECTED')
 ) item(key,created_at,status);
+insert into storage.objects(bucket_id,name,metadata) values
+ ('proof-evidence','00000000-0000-4000-8000-000000000081/00000000-0000-4000-8000-000000000092/00000000-0000-4000-8000-000000000061.webp','{"mimetype":"image/webp","size":1024}');
+insert into public.proofs(id,group_id,user_id,problem_key,evidence_path,accepted_at,created_at,verification_status) values
+ ('00000000-0000-4000-8000-000000000061','00000000-0000-4000-8000-000000000081','00000000-0000-4000-8000-000000000092','photo-proof','00000000-0000-4000-8000-000000000081/00000000-0000-4000-8000-000000000092/00000000-0000-4000-8000-000000000061.webp',now(),now(),'PENDING');
 insert into public.proofs(group_id,user_id,platform_account_id,problem_key,problem_url,accepted_at,created_at,verification_status) values
  ('00000000-0000-4000-8000-000000000082','00000000-0000-4000-8000-000000000092','00000000-0000-4000-8000-000000000071','other-group','https://example.invalid',now(),now(),'MANUAL_REVIEWED'),
  ('00000000-0000-4000-8000-000000000081','00000000-0000-4000-8000-000000000093','00000000-0000-4000-8000-000000000072','pending-member','https://example.invalid',now(),now(),'MANUAL_REVIEWED');
@@ -44,13 +48,16 @@ begin
  select value into owner from jsonb_array_elements(overview->'members') where value->>'userId'='00000000-0000-4000-8000-000000000091';
  assert (member->>'totalApproved')::int=1108,'50개/1000개 제한 없이 승인 전체 집계 및 타 그룹 제외';
  assert (member->>'weekApproved')::int=2,'한국 주간 경계';
- assert (member->>'pending')::int=1,'검수 대기 별도 집계';
- assert (member->>'todaySubmitted')::int=2+case when today=week_start then 1 else 0 end,'반려 제외한 오늘 참여';
+ assert (member->>'pending')::int=2,'검수 대기 별도 집계';
+ assert (member->>'todaySubmitted')::int=3+case when today=week_start then 1 else 0 end,'반려 제외한 오늘 참여';
+ assert member->>'featuredProofId'='00000000-0000-4000-8000-000000000061','이번 주 첫 사진 대표 인증';
+ assert member->>'featuredDate'=today::text,'대표 사진 등록일';
+ assert owner->>'featuredProofId' is null and owner->>'featuredDate' is null,'사진 없는 멤버 대표 인증 없음';
  assert (owner->>'totalApproved')::int=0 and (owner->>'pending')::int=0,'기록 없는 멤버도 0건 표시';
  assert jsonb_array_length(owner->'days')=7,'기록 없는 멤버의 달력';
  select value into day from jsonb_array_elements(member->'days') where value->>'date'=today::text;
  assert (day->>'approved')::int=1+case when today=week_start then 1 else 0 end;
- assert (day->>'pending')::int=1 and (day->>'rejected')::int=1,'일별 상태 구분';
+ assert (day->>'pending')::int=2 and (day->>'rejected')::int=1,'일별 상태 구분';
 end $$;
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000092',true);
 do $$ begin
