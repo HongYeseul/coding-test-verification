@@ -1,6 +1,8 @@
 import type { GroupOverviewData } from "@/lib/group-overview";
 import { RefreshOverviewButton } from "@/components/refresh-overview-button";
 import Image from "next/image";
+import Link from "next/link";
+import { setMemberRoleAction } from "@/app/actions/groups";
 
 const weekdays = ["월", "화", "수", "목", "금", "토", "일"];
 const roleLabels: Record<string, string> = {
@@ -17,9 +19,15 @@ function shortDate(value: string) {
 export function GroupOverview({
   data,
   currentUserId,
+  groupId,
+  groupSlug,
+  canManageMembers,
 }: {
   data: GroupOverviewData;
   currentUserId: string;
+  groupId: string;
+  groupSlug: string;
+  canManageMembers: boolean;
 }) {
   const todayParticipants = data.members.filter(
     (member) => member.todaySubmitted > 0,
@@ -54,10 +62,13 @@ export function GroupOverview({
         <RefreshOverviewButton />
       </div>
 
-      <dl className="mt-5 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl bg-[var(--accent-soft)] px-4 py-4 text-[var(--accent-ink)]">
-          <dt className="text-sm font-bold">오늘 인증한 멤버</dt>
-          <dd className="mt-2">
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <Link
+          href={`/groups/${groupSlug}?proofPeriod=today&proofStatus=participating#proof-records`}
+          className="rounded-2xl bg-[var(--accent-soft)] px-4 py-4 text-[var(--accent-ink)] transition hover:brightness-95"
+        >
+          <p className="text-sm font-bold">오늘 인증한 멤버</p>
+          <div className="mt-2">
             <p className="text-3xl font-black tabular-nums">
               {todayParticipants}
               <span className="ml-1 text-base font-semibold">
@@ -65,13 +76,13 @@ export function GroupOverview({
               </span>
             </p>
             <p className="mt-1 text-xs">승인·검수 대기 포함</p>
-          </dd>
-        </div>
+          </div>
+        </Link>
         <div className="rounded-2xl bg-[var(--surface-subtle)] px-4 py-4">
-          <dt className="text-sm font-bold text-[var(--muted-strong)]">
+          <p className="text-sm font-bold text-[var(--muted-strong)]">
             이번 주 승인
-          </dt>
-          <dd className="mt-2">
+          </p>
+          <div className="mt-2">
             <p className="text-3xl font-black tabular-nums">
               {weekApproved}
               <span className="ml-1 text-base font-semibold">건</span>
@@ -79,19 +90,22 @@ export function GroupOverview({
             <p className="mt-1 text-xs text-[var(--muted)]">
               이번 주 등록한 인증 중 승인된 기록
             </p>
-          </dd>
+          </div>
         </div>
-        <div className="rounded-2xl bg-amber-50 px-4 py-4 text-amber-900">
-          <dt className="text-sm font-bold">검수를 기다리는 인증</dt>
-          <dd className="mt-2">
+        <Link
+          href={`/groups/${groupSlug}?proofStatus=pending&proofPeriod=all#proof-records`}
+          className="rounded-2xl bg-amber-50 px-4 py-4 text-amber-900 transition hover:brightness-95"
+        >
+          <p className="text-sm font-bold">검수를 기다리는 인증</p>
+          <div className="mt-2">
             <p className="text-3xl font-black tabular-nums">
               {pending}
               <span className="ml-1 text-base font-semibold">건</span>
             </p>
             <p className="mt-1 text-xs">전체 기간의 검수 대기 기록</p>
-          </dd>
-        </div>
-      </dl>
+          </div>
+        </Link>
+      </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-base font-extrabold">멤버별 이번 주 발자취</h3>
@@ -107,61 +121,95 @@ export function GroupOverview({
           아직 활동 중인 멤버가 없습니다.
         </p>
       ) : (
-        <ul className="mt-3 grid gap-4 lg:grid-cols-2">
+        <ul className="mt-3 space-y-3">
           {data.members.map((member) => (
             <li
               key={member.userId}
-              className="min-w-0 rounded-2xl border border-[var(--line)] p-4"
+              className="grid min-w-0 gap-4 rounded-2xl border border-[var(--line)] p-4 lg:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1.28fr)] lg:items-center"
             >
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h4 className="break-all font-extrabold">
-                      {member.displayName}
-                    </h4>
-                    {member.userId === currentUserId && (
-                      <span className="rounded-full bg-[var(--ink)] px-2 py-0.5 text-xs font-bold text-white">
-                        나
-                      </span>
-                    )}
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h4 className="break-all font-extrabold">
+                        {member.displayName}
+                      </h4>
+                      {member.userId === currentUserId && (
+                        <span className="rounded-full bg-[var(--ink)] px-2 py-0.5 text-xs font-bold text-white">
+                          나
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-[var(--muted)]">
+                      {roleLabels[member.role] ?? "멤버"}
+                    </p>
                   </div>
-                  <p className="mt-1 text-xs text-[var(--muted)]">
-                    {roleLabels[member.role] ?? "멤버"}
-                  </p>
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                      member.todaySubmitted > 0
+                        ? "bg-[var(--accent-soft)] text-[var(--accent-ink)]"
+                        : "bg-[var(--surface-subtle)] text-[var(--muted-strong)]"
+                    }`}
+                  >
+                    {member.todaySubmitted > 0
+                      ? `오늘 인증 ${member.todaySubmitted}건`
+                      : "오늘 아직 인증 전"}
+                  </span>
                 </div>
-                <span
-                  className={`rounded-full px-2.5 py-1 text-xs font-bold ${
-                    member.todaySubmitted > 0
-                      ? "bg-[var(--accent-soft)] text-[var(--accent-ink)]"
-                      : "bg-[var(--surface-subtle)] text-[var(--muted-strong)]"
-                  }`}
-                >
-                  {member.todaySubmitted > 0
-                    ? `오늘 인증 ${member.todaySubmitted}건`
-                    : "오늘 아직 인증 전"}
-                </span>
-              </div>
 
-              <dl className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-[var(--surface-subtle)] px-3 py-3 text-center">
-                <div>
-                  <dt className="text-xs text-[var(--muted)]">주간 승인</dt>
-                  <dd className="mt-1 font-extrabold tabular-nums">
-                    {member.weekApproved}건
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-[var(--muted)]">누적 승인</dt>
-                  <dd className="mt-1 font-extrabold tabular-nums">
-                    {member.totalApproved}건
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-[var(--muted)]">검수 대기</dt>
-                  <dd className="mt-1 font-extrabold tabular-nums text-amber-800">
-                    {member.pending}건
-                  </dd>
-                </div>
-              </dl>
+                {canManageMembers &&
+                  member.userId !== currentUserId &&
+                  member.role !== "OWNER" && (
+                    <form
+                      action={setMemberRoleAction}
+                      className="mt-3 flex gap-2"
+                    >
+                      <input type="hidden" name="groupId" value={groupId} />
+                      <input type="hidden" name="groupSlug" value={groupSlug} />
+                      <input
+                        type="hidden"
+                        name="userId"
+                        value={member.userId}
+                      />
+                      <select
+                        name="role"
+                        aria-label={`${member.displayName} 역할`}
+                        defaultValue={member.role}
+                        className="min-w-0 flex-1 rounded-xl border border-[var(--line-strong)] bg-white px-3 py-2 text-sm"
+                      >
+                        <option value="MEMBER">멤버</option>
+                        <option value="REVIEWER">검수자</option>
+                      </select>
+                      <button
+                        type="submit"
+                        className="rounded-xl bg-[var(--ink)] px-3 py-2 text-sm font-bold text-white"
+                      >
+                        변경
+                      </button>
+                    </form>
+                  )}
+
+                <dl className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-[var(--surface-subtle)] px-3 py-3 text-center">
+                  <div>
+                    <dt className="text-xs text-[var(--muted)]">주간 승인</dt>
+                    <dd className="mt-1 font-extrabold tabular-nums">
+                      {member.weekApproved}건
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-[var(--muted)]">누적 승인</dt>
+                    <dd className="mt-1 font-extrabold tabular-nums">
+                      {member.totalApproved}건
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-[var(--muted)]">검수 대기</dt>
+                    <dd className="mt-1 font-extrabold tabular-nums text-amber-800">
+                      {member.pending}건
+                    </dd>
+                  </div>
+                </dl>
+              </div>
 
               <ul
                 aria-label={`${member.displayName}의 주간 인증 기록`}
@@ -210,54 +258,56 @@ export function GroupOverview({
                         >
                           {shortDate(date)}
                         </p>
-                        {hasFeaturedPhoto ? (
-                          <a
-                            href={`/proofs/${member.featuredProofId}/evidence`}
-                            target="_blank"
-                            rel="noreferrer"
-                            aria-label={`${description}. 대표 인증 사진 크게 보기`}
+                        {hasRecords ? (
+                          <Link
+                            href={`/groups/${groupSlug}?proofMember=${member.userId}&proofDate=${date}#proof-records`}
+                            aria-label={`${description}. 풀이 기록 보기`}
                             className={`relative mt-1 flex min-h-14 overflow-hidden rounded-lg ${cellStyle} ${isToday ? "ring-2 ring-[var(--accent-strong)] ring-offset-1" : ""}`}
                           >
-                            <Image
-                              src={`/proofs/${member.featuredProofId}/evidence`}
-                              alt=""
-                              fill
-                              sizes="96px"
-                              loading="lazy"
-                              unoptimized
-                              className="object-cover"
-                            />
-                            <span className="absolute inset-0 bg-black/55" />
-                            <span className="relative z-10 flex min-h-14 w-full flex-col items-center justify-center px-0.5 py-1 text-xs font-bold text-white tabular-nums">
+                            {hasFeaturedPhoto && (
+                              <>
+                                <Image
+                                  src={`/proofs/${member.featuredProofId}/evidence`}
+                                  alt=""
+                                  fill
+                                  sizes="96px"
+                                  loading="lazy"
+                                  unoptimized
+                                  className="object-cover"
+                                />
+                                <span className="absolute inset-0 bg-black/55" />
+                              </>
+                            )}
+                            <span
+                              className={`relative z-10 flex min-h-14 w-full flex-col items-center justify-center px-0.5 py-1 text-xs font-bold tabular-nums ${hasFeaturedPhoto ? "text-white" : ""}`}
+                            >
                               {approved > 0 && <span>✓{approved}</span>}
-                              {waiting > 0 && <span>…{waiting}</span>}
-                              {rejected > 0 && <span>×{rejected}</span>}
+                              {waiting > 0 && (
+                                <span
+                                  className={
+                                    hasFeaturedPhoto ? "" : "text-amber-800"
+                                  }
+                                >
+                                  …{waiting}
+                                </span>
+                              )}
+                              {rejected > 0 && (
+                                <span
+                                  className={
+                                    hasFeaturedPhoto ? "" : "text-rose-700"
+                                  }
+                                >
+                                  ×{rejected}
+                                </span>
+                              )}
                             </span>
-                          </a>
+                          </Link>
                         ) : (
                           <div
                             aria-hidden="true"
                             className={`mt-1 flex min-h-14 flex-col items-center justify-center rounded-lg px-0.5 py-1 text-xs font-bold tabular-nums ${cellStyle} ${isToday ? "ring-2 ring-[var(--accent-strong)] ring-offset-1" : ""}`}
                           >
-                            {isFuture ? (
-                              "—"
-                            ) : hasRecords ? (
-                              <>
-                                {approved > 0 && <span>✓{approved}</span>}
-                                {waiting > 0 && (
-                                  <span className="text-amber-800">
-                                    …{waiting}
-                                  </span>
-                                )}
-                                {rejected > 0 && (
-                                  <span className="text-rose-700">
-                                    ×{rejected}
-                                  </span>
-                                )}
-                              </>
-                            ) : (
-                              "·"
-                            )}
+                            {isFuture ? "—" : "·"}
                           </div>
                         )}
                       </div>
@@ -274,7 +324,7 @@ export function GroupOverview({
         한국시간 인증 등록일 기준 · 현재 활동 중인 멤버의 기록만 집계합니다.
         승인 수에는 검수 대기·반려를 포함하지 않습니다. 사진을 올린 날짜에
         표시되며, 검수 결과에 따라 현황이 바뀝니다. 이번 주 첫 사진은 대표
-        썸네일로 표시하며 누르면 크게 볼 수 있습니다.
+        썸네일로 표시하며 날짜를 누르면 해당 풀이 기록으로 이동합니다.
       </p>
     </section>
   );

@@ -5,7 +5,13 @@ import ts from "typescript";
 
 async function renderGroup(
   t,
-  { status = "ACTIVE", role = "OWNER", proofs = [] } = {},
+  {
+    status = "ACTIVE",
+    role = "OWNER",
+    proofs = [],
+    searchParams = {},
+    profiles = [{ id: "user", display_name: "멤버" }],
+  } = {},
 ) {
   const calls = [];
   const supabase = {
@@ -31,6 +37,14 @@ async function renderGroup(
         gt() {
           return query;
         },
+        gte(...args) {
+          filters.push(["gte", ...args]);
+          return query;
+        },
+        lt(...args) {
+          filters.push(["lt", ...args]);
+          return query;
+        },
         order() {
           return query;
         },
@@ -49,7 +63,7 @@ async function renderGroup(
               ? { role, status }
               : [{ user_id: "user", role, status }],
             proofs,
-            profiles: [{ id: "user", display_name: "멤버" }],
+            profiles,
             proof_reviews: [],
             platform_accounts: [],
             group_invite_codes: null,
@@ -105,7 +119,7 @@ async function renderGroup(
   const render = () =>
     page.default({
       params: Promise.resolve({ slug: "study" }),
-      searchParams: Promise.resolve({}),
+      searchParams: Promise.resolve(searchParams),
     });
   return { calls, render };
 }
@@ -162,4 +176,46 @@ test("화면에 표시할 풀이의 플랫폼 계정만 조회한다", async (t)
   await render();
   const accountQuery = calls.find((c) => c.table === "platform_accounts");
   assert.deepEqual(accountQuery.filters, [["in", "id", ["account"]]]);
+});
+
+test("현황판 조건을 풀이 기록 서버 조회에 적용한다", async (t) => {
+  const { calls, render } = await renderGroup(t, {
+    searchParams: {
+      proofMember: "user",
+      proofStatus: "pending",
+      proofDate: "2026-09-05",
+    },
+  });
+  await render();
+  const proofQuery = calls.find((call) => call.table === "proofs");
+  assert.deepEqual(proofQuery.filters, [
+    ["eq", "group_id", "group"],
+    ["eq", "user_id", "user"],
+    ["eq", "verification_status", "PENDING"],
+    ["gte", "created_at", "2026-09-04T15:00:00.000Z"],
+    ["lt", "created_at", "2026-09-05T15:00:00.000Z"],
+  ]);
+});
+
+test("이름 검색은 일치하는 활성 사용자만 조회한다", async (t) => {
+  const { calls, render } = await renderGroup(t, {
+    searchParams: { proofQuery: "멤" },
+  });
+  await render();
+  const proofQuery = calls.find((call) => call.table === "proofs");
+  assert.deepEqual(proofQuery.filters, [
+    ["eq", "group_id", "group"],
+    ["in", "user_id", ["user"]],
+  ]);
+});
+
+test("일치하지 않는 사용자 검색은 풀이를 조회하지 않는다", async (t) => {
+  const { calls, render } = await renderGroup(t, {
+    searchParams: { proofQuery: "없는 사용자" },
+  });
+  await render();
+  assert.equal(
+    calls.some((call) => call.table === "proofs"),
+    false,
+  );
 });
