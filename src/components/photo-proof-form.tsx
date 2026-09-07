@@ -67,6 +67,12 @@ export function PhotoProofForm({
     if (open && !dialog.open) dialog.showModal();
     if (!open && dialog.open) dialog.close();
   }, [open]);
+  // 등록을 마치면 모달이 닫히므로 결과는 잠깐 뜨는 알림으로 알립니다.
+  useEffect(() => {
+    if (open || !message) return;
+    const timer = setTimeout(() => setMessage(""), 4500);
+    return () => clearTimeout(timer);
+  }, [open, message]);
   const upload = useRef<{ file: File; path: string; size: number } | null>(
     null,
   );
@@ -189,7 +195,11 @@ export function PhotoProofForm({
         <span aria-hidden="true">+</span> 풀이 인증하기
       </button>
       {!open && message && (
-        <p role="status" aria-live="polite" className="sr-only">
+        <p
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-5 left-1/2 z-10 w-max max-w-[calc(100%-32px)] -translate-x-1/2 rounded-[10px] border border-line bg-canvas px-[18px] py-3 text-[13px] shadow-[0_4px_20px_rgba(0,0,0,0.13)]"
+        >
           {message}
         </p>
       )}

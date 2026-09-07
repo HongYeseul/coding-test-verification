@@ -105,7 +105,7 @@ export function InvitePopover({
               value={inviteUrl}
               readOnly
               onFocus={(event) => event.target.select()}
-              className="mt-1 !py-2 !text-xs"
+              className="mt-1"
             />
             <button
               type="button"

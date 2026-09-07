@@ -607,7 +607,7 @@ export default async function GroupPage({
             defaultValue={proofNameQuery}
             maxLength={80}
             placeholder="이름 검색"
-            className="!w-36 !min-h-[34px] !py-1.5 !text-xs"
+            className="w-36"
           />
           <select
             name="proofMember"
@@ -635,7 +635,7 @@ export default async function GroupPage({
             <option value="today">오늘</option>
             <option value="week">이번 주</option>
           </select>
-          <button type="submit" className="btn !min-h-[34px] !py-1.5 !text-xs">
+          <button type="submit" className="btn">
             적용
           </button>
           {hasProofFilters && (

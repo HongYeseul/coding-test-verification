@@ -33,88 +33,103 @@
   --font-sans: var(--font-app-sans);
 }
 
-* {
-  box-sizing: border-box;
-}
+/* 기본 스타일은 base 레이어에 둬야 Tailwind 유틸리티로 덮을 수 있습니다. */
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
 
-body {
-  margin: 0;
-  background: var(--canvas);
-  color: var(--ink);
-  font: 14px/1.5 var(--font-app-sans);
-}
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--ink);
+    font: 14px/1.5 var(--font-app-sans);
+  }
 
-h1,
-h2,
-h3,
-p {
-  margin: 0;
-}
+  h1,
+  h2,
+  h3,
+  p {
+    margin: 0;
+  }
 
-h1 {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -1px;
-}
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -1px;
+  }
 
-h2 {
-  font-size: 16px;
-  font-weight: 650;
-}
+  h2 {
+    font-size: 16px;
+    font-weight: 650;
+  }
 
-h3 {
-  font-size: 18px;
-  font-weight: 650;
-}
+  h3 {
+    font-size: 18px;
+    font-weight: 650;
+  }
 
-button,
-select,
-input,
-textarea {
-  font: inherit;
-}
+  button,
+  select,
+  input,
+  textarea {
+    font: inherit;
+  }
 
-button {
-  cursor: pointer;
-}
+  button {
+    cursor: pointer;
+  }
 
-button:disabled {
-  cursor: default;
-  opacity: 0.45;
-}
+  button:disabled {
+    cursor: default;
+    opacity: 0.45;
+  }
 
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
-}
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
 
-button:focus-visible,
-a:focus-visible,
-select:focus-visible,
-input:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
-}
+  button:focus-visible,
+  a:focus-visible,
+  select:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
 
-input:where(:not([type="checkbox"], [type="file"])),
-textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  background: var(--canvas);
-  color: var(--ink);
-}
+  input:where(:not([type="checkbox"], [type="file"])),
+  textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: var(--canvas);
+    color: var(--ink);
+  }
 
-select {
-  padding: 6px 10px;
-  min-height: 34px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: var(--canvas);
-  color: var(--ink);
-  font-size: 12px;
+  select {
+    min-height: 34px;
+    padding: 6px 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--canvas);
+    color: var(--ink);
+    font-size: 12px;
+  }
+
+  @media (pointer: coarse) {
+    .btn,
+    select {
+      min-height: 44px;
+    }
+
+    input,
+    textarea {
+      font-size: 16px;
+    }
+  }
 }
 
 /* 참고 시안의 버튼 3종. 여러 화면에서 반복되어 클래스로 둡니다. */
@@ -154,17 +169,5 @@ select {
     border: 0;
     background: none;
     color: var(--sub);
-  }
-}
-
-@media (pointer: coarse) {
-  .btn,
-  select {
-    min-height: 44px;
-  }
-
-  input,
-  textarea {
-    font-size: 16px;
   }
 }
