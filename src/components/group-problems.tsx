@@ -58,7 +58,7 @@ export function GroupProblems({
                   href={problem.url}
                   target="_blank"
                   rel="noreferrer"
-                  className={solvedByMe ? "btn shrink-0" : "btn btn-primary shrink-0"}
+                  className="btn shrink-0"
                 >
                   풀어보기 ↗
                 </a>

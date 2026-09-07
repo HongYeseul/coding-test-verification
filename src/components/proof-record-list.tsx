@@ -35,6 +35,13 @@ const toneClass = {
   rejected: "text-danger",
 } as const;
 
+/** 목록을 훑을 때 상태가 먼저 보이도록 행 왼쪽에 색 막대를 둡니다. */
+const toneBar = {
+  approved: "border-l-primary",
+  pending: "border-l-warn",
+  rejected: "border-l-danger",
+} as const;
+
 export function ProofRecordList({
   records,
   groupSlug,
@@ -84,21 +91,21 @@ export function ProofRecordList({
           type="button"
           onClick={() => open(item.id)}
           aria-label={`${item.title} ${item.memberName} ${item.statusLabel} 상세 보기`}
-          className="grid w-full grid-cols-[30px_minmax(0,1fr)_60px_12px] items-center gap-2 border-b border-line px-0.5 py-[14px] text-left hover:bg-soft sm:grid-cols-[36px_minmax(0,1fr)_100px_74px_18px] sm:gap-[14px]"
+          className={`grid w-full grid-cols-[44px_minmax(0,1fr)_60px_12px] items-center gap-3 border-b border-l-[3px] border-line py-[10px] pr-0.5 pl-2 text-left hover:bg-soft sm:grid-cols-[52px_minmax(0,1fr)_100px_74px_18px] sm:gap-[14px] sm:pl-3 ${toneBar[item.statusTone]}`}
         >
-          <span className="relative grid size-[30px] place-items-center overflow-hidden rounded-[7px] bg-soft text-sub sm:size-[34px]">
+          <span className="relative grid size-[44px] place-items-center overflow-hidden rounded-[9px] bg-soft text-sub sm:size-[52px]">
             {item.hasPhoto ? (
               <Image
                 src={`/proofs/${item.id}/evidence`}
                 alt=""
                 fill
-                sizes="34px"
+                sizes="52px"
                 loading="lazy"
                 unoptimized
                 className="object-cover"
               />
             ) : (
-              <span aria-hidden="true" className="text-[13px]">
+              <span aria-hidden="true" className="text-[15px] opacity-60">
                 ▤
               </span>
             )}

@@ -422,9 +422,6 @@ export default async function GroupPage({
     proofPeriod !== "all",
   );
 
-  const weekApproved =
-    overview?.members.reduce((total, member) => total + member.weekApproved, 0) ??
-    0;
   const groupPending =
     overview?.members.reduce((total, member) => total + member.pending, 0) ?? 0;
 
@@ -593,11 +590,8 @@ export default async function GroupPage({
       )}
 
       <section id="proof-records" aria-label="풀이 기록" className="scroll-mt-4">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="mb-3">
           <h2>풀이 기록</h2>
-          <span className="text-xs text-sub tabular-nums">
-            이번 주 승인 {weekApproved}건
-          </span>
         </div>
 
         <nav aria-label="기록 분류" className="flex gap-[22px] border-b border-line">

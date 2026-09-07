@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import {
   shiftWeek,
@@ -21,6 +22,28 @@ function dayOfMonth(value: string) {
 
 function initials(name: string) {
   return name.trim().slice(0, 2).toUpperCase();
+}
+
+/** 카드 상단에서 한눈에 읽어야 하는 숫자 한 칸입니다. */
+function Stat({
+  label,
+  tone,
+  children,
+}: {
+  label: string;
+  tone?: string;
+  children: ReactNode;
+}) {
+  return (
+    <span className="grid min-w-max gap-0.5">
+      <strong
+        className={`text-[28px] leading-[1.1] font-bold tracking-[-1px] tabular-nums ${tone ?? ""}`}
+      >
+        {children}
+      </strong>
+      <span className="text-[11px] text-sub">{label}</span>
+    </span>
+  );
 }
 
 /**
@@ -96,6 +119,14 @@ export function GroupOverview({
   const todayParticipants = data.members.filter(
     (member) => member.todaySubmitted > 0,
   ).length;
+  const weekApproved = data.members.reduce(
+    (total, member) => total + member.weekApproved,
+    0,
+  );
+  const groupPending = data.members.reduce(
+    (total, member) => total + member.pending,
+    0,
+  );
 
   function weekHref(week: string) {
     const params = new URLSearchParams(proofFilterQuery);
@@ -109,9 +140,22 @@ export function GroupOverview({
       aria-labelledby="group-overview-title"
       className="mb-7 rounded-xl border border-line"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-t-[11px] bg-soft px-3 py-3 sm:px-5 sm:py-4">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <h2 id="group-overview-title">{weekLabel}</h2>
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-t-[11px] bg-soft px-3 py-4 sm:px-5">
+        <h2 id="group-overview-title" className="sr-only">
+          {weekLabel} 인증 현황
+        </h2>
+        <div className="flex items-center gap-6 sm:gap-8">
+          <Stat label="오늘 인증" tone="text-brand">
+            {todayParticipants}
+            <span className="text-[15px] font-[550]">/{data.members.length}</span>
+          </Stat>
+          <Stat label={`${weekLabel} 승인`}>{weekApproved}</Stat>
+          <Stat label="검수 대기" tone={groupPending ? "text-warn" : undefined}>
+            {groupPending}
+          </Stat>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[13px] font-[650]">{weekLabel}</span>
           <span className="text-xs text-sub tabular-nums">
             {shortDate(data.weekStart)} — {shortDate(data.weekEnd)}
           </span>
@@ -137,14 +181,6 @@ export function GroupOverview({
               이번 주로
             </Link>
           )}
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-[13px] text-sub">
-            오늘 인증{" "}
-            <strong className="font-[650] text-brand tabular-nums">
-              {todayParticipants} / {data.members.length}명
-            </strong>
-          </span>
           <RefreshOverviewButton />
         </div>
       </div>
@@ -185,7 +221,9 @@ export function GroupOverview({
                     <th
                       scope="col"
                       key={date}
-                      className="py-[7px] text-center text-[11px] font-medium text-sub"
+                      className={`py-[7px] text-center text-[11px] font-medium text-sub ${
+                        isToday ? "rounded-t-lg bg-brand-soft/50" : ""
+                      }`}
                     >
                       <span className={isToday ? "font-[650] text-brand" : ""}>
                         {weekdays[index]}
@@ -214,21 +252,31 @@ export function GroupOverview({
                     const rejected = day?.rejected ?? 0;
                     const total = approved + waiting + rejected;
                     const isFuture = date > data.today;
+                    const isToday = date === data.today;
                     const marker =
                       waiting > 0 ? "◷" : approved > 0 ? "✓" : "×";
+                    // 승인만 채우고 대기·반려는 테두리로 둡니다. 채워진 칸이 곧 성과입니다.
+                    const cellTone =
+                      waiting > 0
+                        ? "border border-line bg-canvas text-warn"
+                        : approved > 0
+                          ? "bg-primary text-primary-ink"
+                          : "border border-line bg-canvas text-danger";
                     const description = `${member.displayName} ${shortDate(date)} 승인 ${approved}건, 검수 대기 ${waiting}건, 반려 ${rejected}건`;
 
                     return (
                       <td
                         key={date}
-                        className="h-[52px] border-t border-line text-center text-[13px]"
+                        className={`h-[52px] border-t border-line text-center text-[13px] ${
+                          isToday ? "bg-brand-soft/50" : ""
+                        }`}
                       >
                         {total > 0 ? (
                           <Link
                             href={`/groups/${groupSlug}?proofMember=${member.userId}&proofDate=${date}${weekParam}#proof-records`}
                             title={description}
                             aria-label={`${description}. 풀이 기록 보기`}
-                            className="inline-grid h-[29px] w-6 place-items-center rounded-lg bg-brand-soft font-[650] text-brand sm:size-[30px]"
+                            className={`inline-grid h-[29px] w-6 place-items-center rounded-lg font-[650] sm:size-[30px] ${cellTone}`}
                           >
                             <span aria-hidden="true">
                               {marker}
@@ -238,7 +286,9 @@ export function GroupOverview({
                         ) : (
                           <span
                             title={isFuture ? "예정" : "미등록"}
-                            className="inline-grid h-[29px] w-6 place-items-center text-sub sm:size-[30px]"
+                            className={`inline-grid h-[29px] w-6 place-items-center text-sub sm:size-[30px] ${
+                              isFuture ? "opacity-25" : "opacity-45"
+                            }`}
                           >
                             {isFuture ? "–" : "·"}
                           </span>
@@ -246,7 +296,11 @@ export function GroupOverview({
                       </td>
                     );
                   })}
-                  <td className="h-[52px] border-t border-line text-center text-[13px] tabular-nums">
+                  <td
+                    className={`h-[52px] border-t border-line text-center text-[13px] tabular-nums ${
+                      member.weekApproved ? "font-[650]" : "text-sub opacity-60"
+                    }`}
+                  >
                     {member.weekApproved}
                   </td>
                 </tr>

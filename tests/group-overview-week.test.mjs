@@ -99,7 +99,9 @@ test("이번 주에서는 다음 주로 이동할 수 없다", () => {
   const html = render({ weekStart: "2026-09-07" });
   assert.match(html, /aria-disabled="true"[^>]*aria-label="다음 주 보기 \(이동할 주 없음\)"/);
   assert.doesNotMatch(html, /이번 주로/);
-  assert.match(html, /이번 주<\/h2>/);
+  // 표 제목은 읽기 전용으로 두고 주 표시는 이동 컨트롤 옆에 둡니다.
+  assert.match(html, /sr-only[^>]*>이번 주 인증 현황<\/h2>/);
+  assert.match(html, /font-\[650\]">이번 주</);
   assert.match(html, /9\.7 — 9\.13/);
 });
 
