@@ -128,6 +128,8 @@ Node.js 24에서 `pnpm test`, `pnpm check`를 실행합니다. 로컬 `.env.loca
 - `get_group_overview`는 시그니처를 바꾸지 않고 `members`에 `githubLogin`·`bio`만 더했습니다. 구버전 화면은 이 값을 읽지 않으므로 배포 전에 적용해도 문제가 없습니다.
 - 회귀 테스트: `tests/profile-input.test.mjs`의 공백·제어문자·길이·GitHub 아이디 형식, `tests/group-page-queries.test.mjs`의 프로필 조회 컬럼, `tests/group-overview-week.test.mjs`의 이름 칸 표시. DB 제약과 컬럼 권한, 아이디 동기화는 `supabase/tests/member_profiles.sql`로 검증하며 데이터는 롤백합니다.
 - 프로필 사진 업로드는 범위에 넣지 않았습니다. `avatar_url`은 가입 때 받은 GitHub 값이 그대로 남아 있고 화면에서 쓰지 않습니다.
+- 프로필 배포(2026-09-07): 마이그레이션을 `main` 배포보다 먼저 적용하고 `schema_migrations` 버전을 `20260907020000`으로 맞췄습니다. 적용 후 프로필 6건 모두 `github_login`이 GitHub 아이디 소문자로 채워졌고 `display_name`·`bio`는 그대로입니다. `information_schema.column_privileges`에서 `authenticated`의 UPDATE 권한이 `display_name`·`bio` 두 컬럼뿐인 것과 `on_auth_identity_github_synced` 트리거를 확인했으며, 새 CHECK를 읽기 전용으로 평가해 공백만인 이름·앞뒤 공백·제어문자·길이 초과·형식이 틀린 GitHub 아이디가 걸러지는 것을 확인했습니다. 적용 후 새로 생긴 보안 권고는 없습니다. 커밋 `85b0769`가 Production에 배포됐고(배포 `6310323371`, 상태 `success`) `/`, `/dashboard`, `/settings/profile`이 200을 반환합니다. 로그아웃 상태에서 `/settings/profile`은 프로필 내용을 내려주지 않고 `next=%2Fsettings%2Fprofile`로 로그인에 복귀합니다.
+- 운영 브라우저에서 로그인 후 닉네임·소개 저장과 다른 멤버 화면 반영은 아직 확인하지 않았습니다. `supabase/tests/member_profiles.sql`은 `auth.users`에 데이터를 넣으므로 MCP가 아니라 SQL Editor에서 실행합니다.
 
 ## 화면 전환과 무료 운영
 
