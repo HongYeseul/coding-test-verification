@@ -11,9 +11,11 @@ async function renderGroup(
     proofs = [],
     searchParams = {},
     profiles = [{ id: "user", display_name: "멤버" }],
+    overview = null,
   } = {},
 ) {
   const calls = [];
+  const rpcCalls = [];
   const supabase = {
     from(table) {
       const filters = [];
@@ -76,8 +78,9 @@ async function renderGroup(
       };
       return query;
     },
-    rpc() {
-      return Promise.resolve({ data: null, error: null });
+    rpc(name, args) {
+      rpcCalls.push({ name, args });
+      return Promise.resolve({ data: overview, error: null });
     },
   };
   globalThis.__groupPageImports = {
@@ -121,7 +124,22 @@ async function renderGroup(
       params: Promise.resolve({ slug: "study" }),
       searchParams: Promise.resolve(searchParams),
     });
-  return { calls, render };
+  return { calls, rpcCalls, render };
+}
+
+function weekOverview({
+  weekStart = "2026-08-31",
+  currentWeekStart = "2026-09-07",
+} = {}) {
+  return {
+    today: "2026-09-07",
+    weekStart,
+    weekEnd: "2026-09-06",
+    currentWeekStart,
+    firstWeekStart: "2026-08-24",
+    days: [],
+    members: [],
+  };
 }
 
 test("초대코드 조회는 프로필 조회가 끝날 때까지 기다리지 않는다", async (t) => {
@@ -219,3 +237,74 @@ test("일치하지 않는 사용자 검색은 풀이를 조회하지 않는다",
     false,
   );
 });
+
+test("선택한 주를 현황판 조회 인자로 넘긴다", async (t) => {
+  const { rpcCalls, render } = await renderGroup(t, {
+    searchParams: { week: "2026-09-02" },
+    overview: weekOverview(),
+  });
+  await render();
+  assert.deepEqual(rpcCalls, [
+    {
+      name: "get_group_overview",
+      args: { target_group_id: "group", target_week_start: "2026-09-02" },
+    },
+  ]);
+});
+
+test("형식이 잘못된 주는 현황판 조회에서 무시한다", async (t) => {
+  const { rpcCalls, render } = await renderGroup(t, {
+    searchParams: { week: "2026-9-2" },
+    overview: weekOverview({ weekStart: "2026-09-07" }),
+  });
+  await render();
+  assert.equal(rpcCalls[0].args.target_week_start, null);
+});
+
+test("주간 기간 필터는 선택한 주의 마지막 날까지만 조회한다", async (t) => {
+  const { calls, render } = await renderGroup(t, {
+    searchParams: { week: "2026-08-31", proofPeriod: "week" },
+    overview: weekOverview(),
+  });
+  await render();
+  const proofQuery = calls.find((call) => call.table === "proofs");
+  assert.deepEqual(proofQuery.filters, [
+    ["eq", "group_id", "group"],
+    ["gte", "created_at", "2026-08-30T15:00:00.000Z"],
+    ["lt", "created_at", "2026-09-06T15:00:00.000Z"],
+  ]);
+});
+
+test("이번 주를 보는 중에는 주소에 주를 남기지 않는다", async (t) => {
+  const { render } = await renderGroup(t, {
+    overview: weekOverview({ weekStart: "2026-09-07" }),
+  });
+  const tree = await render();
+  assert.equal(findOverview(tree).props.proofFilterQuery, "");
+});
+
+test("과거 주에서도 적용한 필터를 주간 이동 링크에 유지한다", async (t) => {
+  const { render } = await renderGroup(t, {
+    searchParams: { week: "2026-08-31", proofStatus: "pending" },
+    overview: weekOverview(),
+  });
+  const tree = await render();
+  assert.equal(
+    findOverview(tree).props.proofFilterQuery,
+    "proofStatus=pending",
+  );
+});
+
+function findOverview(node) {
+  if (!node || typeof node !== "object") return null;
+  if (node.type === "section" && node.props?.data) return node;
+  const children = [
+    ...(Array.isArray(node.children) ? node.children : []),
+    ...(Array.isArray(node.props?.children) ? node.props.children : []),
+  ];
+  for (const child of children.flat(Infinity)) {
+    const found = findOverview(child);
+    if (found) return found;
+  }
+  return null;
+}

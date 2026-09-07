@@ -1,4 +1,4 @@
-import type { GroupOverviewData } from "@/lib/group-overview";
+import { shiftWeek, type GroupOverviewData } from "@/lib/group-overview";
 import { RefreshOverviewButton } from "@/components/refresh-overview-button";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,13 +22,30 @@ export function GroupOverview({
   groupId,
   groupSlug,
   canManageMembers,
+  proofFilterQuery,
 }: {
   data: GroupOverviewData;
   currentUserId: string;
   groupId: string;
   groupSlug: string;
   canManageMembers: boolean;
+  proofFilterQuery: string;
 }) {
+  const isCurrentWeek = data.weekStart === data.currentWeekStart;
+  const weekRange = `${shortDate(data.weekStart)}(월) ~ ${shortDate(data.weekEnd)}(일)`;
+  const weekName = isCurrentWeek
+    ? "이번 주"
+    : `${shortDate(data.weekStart)}~${shortDate(data.weekEnd)}`;
+  // 선택한 주를 유지한 채 풀이 기록 필터로 이동하기 위한 조각입니다.
+  const weekParam = isCurrentWeek ? "" : `&week=${data.weekStart}`;
+
+  function weekHref(week: string) {
+    const params = new URLSearchParams(proofFilterQuery);
+    if (week !== data.currentWeekStart) params.set("week", week);
+    const query = params.toString();
+    return `/groups/${groupSlug}${query ? `?${query}` : ""}`;
+  }
+
   const todayParticipants = data.members.filter(
     (member) => member.todaySubmitted > 0,
   ).length;
@@ -54,17 +71,45 @@ export function GroupOverview({
           <h2 id="group-overview-title" className="mt-1 text-xl font-extrabold">
             우리 그룹 인증 현황
           </h2>
-          <p className="mt-2 text-sm text-[var(--muted)]">
-            이번 주 {shortDate(data.weekStart)}(월) ~{" "}
-            {shortDate(data.days.at(-1) ?? data.weekStart)}(일)
-          </p>
+          <nav
+            aria-label="주간 이동"
+            className="mt-2 flex flex-wrap items-center gap-1.5"
+          >
+            <WeekArrow
+              href={
+                data.weekStart > data.firstWeekStart
+                  ? weekHref(shiftWeek(data.weekStart, -1))
+                  : null
+              }
+              label="이전 주 보기"
+              symbol="←"
+            />
+            <p className="min-w-[9.5rem] text-center text-sm font-bold text-[var(--muted-strong)] tabular-nums">
+              {isCurrentWeek ? `이번 주 ${weekRange}` : weekRange}
+            </p>
+            <WeekArrow
+              href={
+                isCurrentWeek ? null : weekHref(shiftWeek(data.weekStart, 1))
+              }
+              label="다음 주 보기"
+              symbol="→"
+            />
+            {!isCurrentWeek && (
+              <Link
+                href={weekHref(data.currentWeekStart)}
+                className="ml-1 rounded-full border border-[var(--line-strong)] px-3 py-1 text-xs font-bold text-[var(--muted-strong)] transition hover:bg-[var(--surface-subtle)]"
+              >
+                이번 주로
+              </Link>
+            )}
+          </nav>
         </div>
         <RefreshOverviewButton />
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         <Link
-          href={`/groups/${groupSlug}?proofPeriod=today&proofStatus=participating#proof-records`}
+          href={`/groups/${groupSlug}?proofPeriod=today&proofStatus=participating${weekParam}#proof-records`}
           className="rounded-2xl bg-[var(--accent-soft)] px-4 py-4 text-[var(--accent-ink)] transition hover:brightness-95"
         >
           <p className="text-sm font-bold">오늘 인증한 멤버</p>
@@ -80,7 +125,7 @@ export function GroupOverview({
         </Link>
         <div className="rounded-2xl bg-[var(--surface-subtle)] px-4 py-4">
           <p className="text-sm font-bold text-[var(--muted-strong)]">
-            이번 주 승인
+            {weekName} 승인
           </p>
           <div className="mt-2">
             <p className="text-3xl font-black tabular-nums">
@@ -88,12 +133,12 @@ export function GroupOverview({
               <span className="ml-1 text-base font-semibold">건</span>
             </p>
             <p className="mt-1 text-xs text-[var(--muted)]">
-              이번 주 등록한 인증 중 승인된 기록
+              {weekName}에 등록한 인증 중 승인된 기록
             </p>
           </div>
         </div>
         <Link
-          href={`/groups/${groupSlug}?proofStatus=pending&proofPeriod=all#proof-records`}
+          href={`/groups/${groupSlug}?proofStatus=pending&proofPeriod=all${weekParam}#proof-records`}
           className="rounded-2xl bg-amber-50 px-4 py-4 text-amber-900 transition hover:brightness-95"
         >
           <p className="text-sm font-bold">검수를 기다리는 인증</p>
@@ -108,7 +153,7 @@ export function GroupOverview({
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-base font-extrabold">멤버별 이번 주 발자취</h3>
+        <h3 className="text-base font-extrabold">멤버별 {weekName} 발자취</h3>
         <p className="flex flex-wrap gap-3 text-xs font-semibold">
           <span className="text-[var(--accent-strong)]">✓ 승인</span>
           <span className="text-amber-800">… 대기</span>
@@ -260,7 +305,7 @@ export function GroupOverview({
                         </p>
                         {hasRecords ? (
                           <Link
-                            href={`/groups/${groupSlug}?proofMember=${member.userId}&proofDate=${date}#proof-records`}
+                            href={`/groups/${groupSlug}?proofMember=${member.userId}&proofDate=${date}${weekParam}#proof-records`}
                             aria-label={`${description}. 풀이 기록 보기`}
                             className={`relative mt-1 flex min-h-14 overflow-hidden rounded-lg ${cellStyle} ${isToday ? "ring-2 ring-[var(--accent-strong)] ring-offset-1" : ""}`}
                           >
@@ -323,9 +368,46 @@ export function GroupOverview({
       <p className="mt-4 text-xs leading-5 text-[var(--muted)]">
         한국시간 인증 등록일 기준 · 현재 활동 중인 멤버의 기록만 집계합니다.
         승인 수에는 검수 대기·반려를 포함하지 않습니다. 사진을 올린 날짜에
-        표시되며, 검수 결과에 따라 현황이 바뀝니다. 이번 주 첫 사진은 대표
-        썸네일로 표시하며 날짜를 누르면 해당 풀이 기록으로 이동합니다.
+        표시되며, 검수 결과에 따라 현황이 바뀝니다. 선택한 주의 첫 사진은 대표
+        썸네일로 표시하며 날짜를 누르면 해당 풀이 기록으로 이동합니다. 화살표로
+        지난 주와 이후 주를 볼 수 있습니다.
       </p>
     </section>
+  );
+}
+
+/** 이동할 주가 없으면 링크 대신 비활성 표시를 렌더링합니다. */
+function WeekArrow({
+  href,
+  label,
+  symbol,
+}: {
+  href: string | null;
+  label: string;
+  symbol: string;
+}) {
+  const shape =
+    "flex h-8 w-8 items-center justify-center rounded-full border text-sm font-bold";
+
+  if (!href) {
+    return (
+      <span
+        aria-disabled="true"
+        aria-label={`${label} (이동할 주 없음)`}
+        className={`${shape} border-[var(--line)] text-[var(--muted)] opacity-40`}
+      >
+        {symbol}
+      </span>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      className={`${shape} border-[var(--line-strong)] text-[var(--muted-strong)] transition hover:bg-[var(--surface-subtle)]`}
+    >
+      {symbol}
+    </Link>
   );
 }

@@ -148,6 +148,7 @@ export default async function GroupPage({
     "all",
   );
   const proofDate = validDate(firstQueryValue(query.proofDate) ?? "");
+  const requestedWeek = validDate(firstQueryValue(query.week) ?? "");
   const { supabase, user } = await requireUser(`/groups/${slug}`);
   const { data: group } = await supabase
     .from("groups")
@@ -179,7 +180,10 @@ export default async function GroupPage({
         .eq("group_id", group.id)
         .neq("status", "REVOKED")
         .order("created_at"),
-      supabase.rpc("get_group_overview", { target_group_id: group.id }),
+      supabase.rpc("get_group_overview", {
+        target_group_id: group.id,
+        target_week_start: requestedWeek || null,
+      }),
       isOwner
         ? supabase
             .from("group_invite_codes")
@@ -268,11 +272,15 @@ export default async function GroupPage({
         "created_at",
         new Date(`${dateStart}T00:00:00+09:00`).toISOString(),
       );
-    if (proofDate || proofPeriod === "today")
-      proofRequest = proofRequest.lt(
-        "created_at",
-        nextDate(proofDate || today),
-      );
+    const dateEnd =
+      proofDate ||
+      (proofPeriod === "today"
+        ? today
+        : proofPeriod === "week"
+          ? (overview?.weekEnd ?? "")
+          : "");
+    if (dateEnd)
+      proofRequest = proofRequest.lt("created_at", nextDate(dateEnd));
 
     const response = await proofRequest
       .order("accepted_at", { ascending: false })
@@ -314,6 +322,18 @@ export default async function GroupPage({
   const pendingMemberships = memberships.filter(
     (membership) => membership.status === "PENDING",
   );
+  // 이번 주가 아닐 때만 주소에 주를 남겨 링크와 폼 사이에서 유지합니다.
+  const weekQuery =
+    overview && overview.weekStart !== overview.currentWeekStart
+      ? `week=${overview.weekStart}`
+      : "";
+  const proofFilterParams = new URLSearchParams();
+  if (proofNameQuery) proofFilterParams.set("proofQuery", proofNameQuery);
+  if (memberFilter) proofFilterParams.set("proofMember", memberFilter);
+  if (proofStatus !== "all") proofFilterParams.set("proofStatus", proofStatus);
+  if (proofPeriod !== "all") proofFilterParams.set("proofPeriod", proofPeriod);
+  if (proofDate) proofFilterParams.set("proofDate", proofDate);
+  const proofFilterQuery = proofFilterParams.toString();
   const hasProofFilters = Boolean(
     memberFilter ||
     proofNameQuery ||
@@ -404,6 +424,7 @@ export default async function GroupPage({
             groupId={group.id}
             groupSlug={group.slug}
             canManageMembers={isOwner}
+            proofFilterQuery={proofFilterQuery}
           />
         ) : (
           <p
@@ -446,6 +467,9 @@ export default async function GroupPage({
             >
               {proofDate && (
                 <input type="hidden" name="proofDate" value={proofDate} />
+              )}
+              {weekQuery && overview && (
+                <input type="hidden" name="week" value={overview.weekStart} />
               )}
               <label className="text-xs font-bold text-[var(--muted-strong)]">
                 사용자 이름 검색
@@ -518,7 +542,7 @@ export default async function GroupPage({
                 </button>
                 {hasProofFilters && (
                   <Link
-                    href={`/groups/${group.slug}#proof-records`}
+                    href={`/groups/${group.slug}${weekQuery ? `?${weekQuery}` : ""}#proof-records`}
                     className="rounded-xl border border-[var(--line-strong)] px-4 py-2 text-sm font-bold"
                   >
                     초기화

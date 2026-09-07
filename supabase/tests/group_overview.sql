@@ -4,9 +4,9 @@ insert into auth.users(id,email) values
  ('00000000-0000-4000-8000-000000000091','overview-owner@example.invalid'),
  ('00000000-0000-4000-8000-000000000092','overview-member@example.invalid'),
  ('00000000-0000-4000-8000-000000000093','overview-pending@example.invalid');
-insert into public.groups(id,name,slug,owner_id) values
- ('00000000-0000-4000-8000-000000000081','현황판 검증','overview-test','00000000-0000-4000-8000-000000000091'),
- ('00000000-0000-4000-8000-000000000082','다른 그룹','overview-other-test','00000000-0000-4000-8000-000000000091');
+insert into public.groups(id,name,slug,owner_id,created_at) values
+ ('00000000-0000-4000-8000-000000000081','현황판 검증','overview-test','00000000-0000-4000-8000-000000000091',now()-interval '60 days'),
+ ('00000000-0000-4000-8000-000000000082','다른 그룹','overview-other-test','00000000-0000-4000-8000-000000000091',now());
 insert into public.group_members(group_id,user_id,role,status) values
  ('00000000-0000-4000-8000-000000000081','00000000-0000-4000-8000-000000000092','MEMBER','ACTIVE'),
  ('00000000-0000-4000-8000-000000000081','00000000-0000-4000-8000-000000000093','MEMBER','PENDING');
@@ -59,6 +59,36 @@ begin
  assert (day->>'approved')::int=1+case when today=week_start then 1 else 0 end;
  assert (day->>'pending')::int=2 and (day->>'rejected')::int=1,'일별 상태 구분';
 end $$;
+do $$ declare overview jsonb; member jsonb;
+ week_start date := date_trunc('week',now() at time zone 'Asia/Seoul')::date;
+ group_week date := date_trunc('week',(now()-interval '60 days') at time zone 'Asia/Seoul')::date;
+begin
+ -- 지난주는 주 경계 직전 기록만 집계하고 이번 주 기록은 제외합니다.
+ overview := public.get_group_overview('00000000-0000-4000-8000-000000000081', week_start-7);
+ assert overview->>'weekStart'=(week_start-7)::text,'지난주 조회';
+ assert overview->>'weekEnd'=(week_start-1)::text,'주 마지막 날';
+ assert overview->>'currentWeekStart'=week_start::text,'이번 주 기준일';
+ assert overview->>'firstWeekStart'=group_week::text,'그룹 생성 주';
+ assert overview->'days'->>0=(week_start-7)::text,'지난주 달력 시작';
+ select value into member from jsonb_array_elements(overview->'members') where value->>'userId'='00000000-0000-4000-8000-000000000092';
+ assert (member->>'weekApproved')::int=1,'주 경계 직전 기록만 지난주 집계';
+ assert (select sum((entry->>'approved')::int) from jsonb_array_elements(member->'days') entry)=1,'지난주 달력에서 이번 주 기록 제외';
+ assert (member->>'totalApproved')::int=1108,'누적 승인은 조회한 주와 무관';
+ assert (member->>'pending')::int=2,'검수 대기는 조회한 주와 무관';
+ assert member->>'featuredProofId' is null,'다른 주 사진은 대표로 쓰지 않음';
+
+ -- 2주 전 기록은 그 주에서만 보입니다.
+ overview := public.get_group_overview('00000000-0000-4000-8000-000000000081', week_start-14);
+ select value into member from jsonb_array_elements(overview->'members') where value->>'userId'='00000000-0000-4000-8000-000000000092';
+ assert (member->>'weekApproved')::int=1105,'2주 전 승인 집계';
+
+ -- 주 중간 날짜는 그 주 월요일로 맞춥니다.
+ assert public.get_group_overview('00000000-0000-4000-8000-000000000081', week_start-11)->>'weekStart'=(week_start-14)::text,'월요일 정규화';
+ -- 아직 오지 않은 주와 그룹 생성 이전 주는 볼 수 있는 범위로 되돌립니다.
+ assert public.get_group_overview('00000000-0000-4000-8000-000000000081', week_start+7)->>'weekStart'=week_start::text,'미래 주 차단';
+ assert public.get_group_overview('00000000-0000-4000-8000-000000000081', group_week-70)->>'weekStart'=group_week::text,'그룹 생성 주로 제한';
+ assert public.get_group_overview('00000000-0000-4000-8000-000000000081', null)->>'weekStart'=week_start::text,'인자 없이 이번 주';
+end $$;
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000092',true);
 do $$ begin
  assert jsonb_array_length(public.get_group_overview('00000000-0000-4000-8000-000000000081')->'members')=2;
@@ -94,4 +124,4 @@ do $$ begin
 end $$;
 reset role;
 rollback;
-select '현황판 전체 집계·주간 경계·권한 검증 통과, 테스트 데이터 롤백 완료' as result;
+select '현황판 전체 집계·주간 이동 경계·권한 검증 통과, 테스트 데이터 롤백 완료' as result;
