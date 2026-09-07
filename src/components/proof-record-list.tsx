@@ -207,7 +207,12 @@ export function ProofRecordList({
                 )}
 
                 {record.reviewable ? (
-                  <form action={reviewProofAction} className="grid gap-2">
+                  // 이전·다음으로 기록을 넘길 때 앞 기록의 피드백이 남지 않도록 다시 그립니다.
+                  <form
+                    key={record.id}
+                    action={reviewProofAction}
+                    className="grid gap-2"
+                  >
                     <input type="hidden" name="proofId" value={record.id} />
                     <input type="hidden" name="groupSlug" value={groupSlug} />
                     <label
