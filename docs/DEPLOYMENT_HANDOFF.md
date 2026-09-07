@@ -115,6 +115,7 @@ Node.js 24에서 `pnpm test`, `pnpm check`를 실행합니다. 로컬 `.env.loca
 - 최근 50개 풀이 기록은 현재 그룹 전체 작성자의 기록이며, 현황판 집계에는 이 개수 제한을 적용하지 않습니다.
 - 회귀 테스트: `tests/group-overview-week.test.mjs`의 주간·누적·닉네임 정렬 순서와 머리글 정렬 안내. `supabase/tests/group_overview.sql`의 1,000건 초과 집계, 주간 경계, 지난 주 집계와 월요일 정규화, 미래 주·생성 이전 주 제한, 상태 구분, 비로그인·가입 대기·탈퇴·타 그룹 접근 차단. 화면의 주간 이동 링크는 `tests/group-overview-week.test.mjs`로 확인합니다.
 - 활동순 정렬 배포(2026-09-07): 마이그레이션을 운영에 적용하고 `schema_migrations` 버전을 `20260907030000`으로 맞췄습니다. MCP `apply_migration`이 응답을 돌려주기 전에 끊겼지만 `pg_get_functiondef`로 정렬 절이 반영된 것을 확인했습니다. 운영 데이터로 새 순서를 계산해 이번 주 승인 1건인 `hyunn515`가 4번째에서 1번째로 올라오고 0건인 다섯 명은 닉네임순을 유지하는 것을 확인했습니다. 적용 후 새로 생긴 보안 권고는 없습니다. 커밋 `5ce2ac2`가 Production에 배포됐고(배포 `6316763259`, 상태 `success`) `/`, `/dashboard`, `/settings/profile`이 200을 반환합니다. 화면 코드 변경은 없어 마이그레이션 적용 시점부터 순서가 바뀌었습니다.
+- 정렬 위치 이동 배포(2026-09-08): 마이그레이션을 운영에 적용하고 `schema_migrations` 버전을 `20260907040000`으로 맞췄습니다. `pg_get_functiondef`로 응답 정렬이 `user_id`만 남고 활동 정렬이 사라진 것을 확인했습니다. 커밋 `cd72f73`이 Production에 배포됐고(배포 `6316898600`, 상태 `success`) `/`, `/dashboard`, `/settings/profile`이 200을 반환하며 배포된 CSS에 `group-hover/sort:block`이 들어 있습니다. 빌드 CSS 기반 정적 미리보기에서 운영과 같은 값으로 순서(hyunn515 → 홍예슬 → 5bus123 → angyeongjin → Apeirogon99 → swprk)와 머리글 안내 카드를 확인했습니다.
 - 스터디 소통 채널은 카카오톡입니다. 카카오톡 알림, 공동 목표, 응원 반응, 연속 참여 집계는 아직 구현하지 않았습니다.
 
 ## 화면 개편
