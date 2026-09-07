@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { signOutAction } from "@/app/actions/auth";
 import { createGroupAction, joinByCodeAction } from "@/app/actions/groups";
+import { AppShell } from "@/components/app-shell";
 import { StatusMessage } from "@/components/status-message";
 import { requireUser } from "@/lib/auth";
 import { firstQueryValue } from "@/lib/form";
@@ -16,6 +17,12 @@ type GroupRow = {
   id: string;
   name: string;
   slug: string;
+};
+
+const roleLabels: Record<string, string> = {
+  OWNER: "소유자",
+  REVIEWER: "검수자",
+  MEMBER: "멤버",
 };
 
 export default async function DashboardPage({
@@ -58,38 +65,82 @@ export default async function DashboardPage({
   ).length;
 
   return (
-    <main className="min-h-screen bg-[var(--background)] px-5 py-6 sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <header className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-[var(--line)] bg-[var(--surface)] px-6 py-5 shadow-sm">
-          <div>
-            <p className="font-mono text-xs font-bold tracking-[0.14em] text-[var(--accent-strong)]">
-              CODING PROOF
-            </p>
-            <h1 className="mt-1 text-2xl font-black tracking-[-0.03em]">
-              {profile?.display_name ?? "멤버"}님의 그룹
-            </h1>
-          </div>
-          <form action={signOutAction}>
-            <button
-              type="submit"
-              className="rounded-xl border border-[var(--line-strong)] px-4 py-2 text-sm font-bold text-[var(--muted-strong)] hover:bg-[var(--surface-subtle)]"
-            >
-              로그아웃
-            </button>
-          </form>
-        </header>
+    <AppShell
+      actions={
+        <form action={signOutAction}>
+          <button type="submit" className="text-xs text-sub">
+            로그아웃
+          </button>
+        </form>
+      }
+    >
+      <header className="mb-6">
+        <h1>{profile?.display_name ?? "멤버"}님의 그룹</h1>
+        <p className="mt-[5px] text-[13px] text-sub">
+          활성 그룹 {groups.length}개
+          {pendingCount > 0 ? ` · 가입 승인 대기 ${pendingCount}개` : ""}
+        </p>
+      </header>
 
+      <div className="mb-5 empty:mb-0">
         <StatusMessage
           error={firstQueryValue(query.error)}
           message={firstQueryValue(query.message)}
         />
+      </div>
 
+      <section aria-label="참여 중인 그룹" className="mb-7">
+        {groups.length ? (
+          <ul className="rounded-xl border border-line">
+            {groups.map((group) => {
+              const membership = membershipByGroupId.get(group.id);
+              return (
+                <li key={group.id} className="border-b border-line last:border-b-0">
+                  <Link
+                    href={`/groups/${group.slug}`}
+                    className="flex items-center justify-between gap-3 px-4 py-[14px] hover:bg-soft"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate font-semibold">
+                        {group.name}
+                      </span>
+                      <span className="mt-[3px] block truncate text-xs text-sub">
+                        /{group.slug} ·{" "}
+                        {roleLabels[membership?.role ?? "MEMBER"] ?? "멤버"}
+                      </span>
+                    </span>
+                    <span aria-hidden="true" className="text-xs text-sub">
+                      ›
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <div className="flex min-h-[180px] flex-col justify-center rounded-xl border border-line px-4 py-8 text-center text-sub">
+            <strong className="mb-[5px] block text-[15px] font-semibold text-ink">
+              아직 참여 중인 그룹이 없어요
+            </strong>
+            <span className="text-xs">
+              초대코드로 가입하거나 새 그룹을 만들어보세요.
+            </span>
+          </div>
+        )}
+      </section>
+
+      <section className="grid gap-5 sm:grid-cols-2">
         <form
           action={joinByCodeAction}
-          className="flex flex-wrap items-center gap-3 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5"
+          className="grid gap-[7px] rounded-xl border border-line bg-soft p-5"
         >
-          <label htmlFor="invite-code" className="font-bold">
-            초대코드로 가입
+          <h2>초대코드로 가입</h2>
+          <p className="text-xs text-sub">
+            받은 5자리 코드를 넣으면 가입을 신청합니다. 소유자가 승인해야 기록을
+            볼 수 있어요.
+          </p>
+          <label htmlFor="invite-code" className="mt-2 text-[13px]">
+            초대코드
           </label>
           <input
             id="invite-code"
@@ -100,99 +151,47 @@ export default async function DashboardPage({
             autoCapitalize="characters"
             autoComplete="off"
             placeholder="5자리 코드"
-            className="w-40 rounded-xl border border-[var(--line-strong)] px-4 py-3 font-mono uppercase"
+            className="font-mono tracking-widest uppercase"
           />
-          <button className="rounded-xl bg-[var(--ink)] px-4 py-3 font-bold text-white">
+          <button type="submit" className="btn mt-2 justify-self-start">
             가입 신청
           </button>
         </form>
 
-        {pendingCount > 0 && (
-          <section className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-semibold text-amber-800">
-            가입 승인 대기 중인 그룹이 {pendingCount}개 있습니다.
-          </section>
-        )}
-
-        <section className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
-          <div className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold text-[var(--muted)]">
-                  활성 그룹
-                </p>
-                <h2 className="mt-1 text-xl font-extrabold">함께 푸는 공간</h2>
-              </div>
-              <span className="rounded-full bg-[var(--accent-soft)] px-3 py-1 font-mono text-xs font-bold text-[var(--accent-ink)]">
-                {groups.length} GROUPS
-              </span>
-            </div>
-
-            {groups.length ? (
-              <ul className="mt-5 grid gap-3 sm:grid-cols-2">
-                {groups.map((group) => {
-                  const membership = membershipByGroupId.get(group.id);
-                  return (
-                    <li key={group.id}>
-                      <Link
-                        href={`/groups/${group.slug}`}
-                        className="block rounded-2xl border border-[var(--line)] bg-[var(--surface-subtle)] p-5 transition hover:-translate-y-0.5 hover:border-[var(--line-strong)]"
-                      >
-                        <p className="font-bold">{group.name}</p>
-                        <p className="mt-2 font-mono text-xs text-[var(--muted)]">
-                          /{group.slug} · {membership?.role ?? "MEMBER"}
-                        </p>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <p className="mt-5 rounded-2xl bg-[var(--surface-subtle)] px-5 py-8 text-center text-sm text-[var(--muted)]">
-                아직 활성 그룹이 없습니다. 새 그룹을 만들거나 초대 링크를
-                받아주세요.
-              </p>
-            )}
-          </div>
-
-          <form
-            action={createGroupAction}
-            className="rounded-3xl border border-[var(--line)] bg-[var(--ink)] p-6 text-white shadow-sm"
-          >
-            <p className="font-mono text-xs font-bold tracking-[0.14em] text-[var(--accent)]">
-              NEW GROUP
-            </p>
-            <h2 className="mt-2 text-xl font-extrabold">스터디 그룹 만들기</h2>
-            <label className="mt-5 block text-sm font-semibold" htmlFor="name">
-              그룹 이름
-            </label>
-            <input
-              id="name"
-              name="name"
-              required
-              maxLength={60}
-              className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-white placeholder:text-white/45"
-              placeholder="알고리즘 스터디"
-            />
-            <label className="mt-4 block text-sm font-semibold" htmlFor="slug">
-              그룹 주소
-            </label>
-            <input
-              id="slug"
-              name="slug"
-              required
-              pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
-              className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 font-mono text-white placeholder:text-white/45"
-              placeholder="algorithm-study"
-            />
-            <button
-              type="submit"
-              className="mt-5 w-full rounded-xl bg-[var(--accent)] px-4 py-3 font-bold text-[var(--accent-ink)] hover:bg-[#d0fa86]"
-            >
-              그룹 만들기
-            </button>
-          </form>
-        </section>
-      </div>
-    </main>
+        <form
+          action={createGroupAction}
+          className="grid gap-[7px] rounded-xl border border-line bg-soft p-5"
+        >
+          <h2>스터디 그룹 만들기</h2>
+          <p className="text-xs text-sub">
+            그룹을 만들면 소유자가 되어 초대코드를 발급하고 인증을 검수합니다.
+          </p>
+          <label htmlFor="name" className="mt-2 text-[13px]">
+            그룹 이름
+          </label>
+          <input
+            id="name"
+            name="name"
+            required
+            maxLength={60}
+            placeholder="알고리즘 스터디"
+          />
+          <label htmlFor="slug" className="mt-1 text-[13px]">
+            그룹 주소
+          </label>
+          <input
+            id="slug"
+            name="slug"
+            required
+            pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+            placeholder="algorithm-study"
+            className="font-mono"
+          />
+          <button type="submit" className="btn btn-primary mt-2 justify-self-start">
+            그룹 만들기
+          </button>
+        </form>
+      </section>
+    </AppShell>
   );
 }

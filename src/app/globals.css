@@ -1,30 +1,36 @@
 @import "tailwindcss";
 
 :root {
-  --background: #eef2f6;
-  --surface: #ffffff;
-  --surface-subtle: #f7f9fb;
-  --foreground: #101827;
-  --ink: #111827;
-  --muted: #687386;
-  --muted-strong: #465166;
-  --line: #e1e6ed;
-  --line-strong: #cbd3dd;
-  --accent: #bef264;
-  --accent-soft: #e8fac8;
-  --accent-strong: #4d7c0f;
-  --accent-ink: #365314;
-  --font-app-sans: "Pretendard Variable", Pretendard, -apple-system,
-    BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI",
-    sans-serif;
-  --font-app-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  color-scheme: light dark;
+  --canvas: light-dark(#ffffff, #191d1b);
+  --ink: light-dark(#202923, #edf2ed);
+  --sub: light-dark(#737c75, #a5afa7);
+  --line: light-dark(#e7ebe6, #363d37);
+  --soft: light-dark(#f6f8f4, #222923);
+  --brand: light-dark(#386e2d, #b6db9c);
+  --brand-soft: light-dark(#edf5e6, #2c3d26);
+  --warn: light-dark(#97611d, #e9bd79);
+  --danger: light-dark(#a94c46, #e7a19c);
+  --primary: light-dark(#315d2b, #b7d89b);
+  --primary-hover: light-dark(#284e23, #c6e5ad);
+  --primary-ink: light-dark(#ffffff, #1b2a14);
+  --font-app-sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Noto Sans KR", sans-serif;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-canvas: var(--canvas);
+  --color-ink: var(--ink);
+  --color-sub: var(--sub);
+  --color-line: var(--line);
+  --color-soft: var(--soft);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --color-primary: var(--primary);
+  --color-primary-ink: var(--primary-ink);
   --font-sans: var(--font-app-sans);
-  --font-mono: var(--font-app-mono);
 }
 
 * {
@@ -33,9 +39,48 @@
 
 body {
   margin: 0;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-app-sans);
+  background: var(--canvas);
+  color: var(--ink);
+  font: 14px/1.5 var(--font-app-sans);
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+h2 {
+  font-size: 16px;
+  font-weight: 650;
+}
+
+h3 {
+  font-size: 18px;
+  font-weight: 650;
+}
+
+button,
+select,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.45;
 }
 
 button,
@@ -44,7 +89,82 @@ a {
 }
 
 button:focus-visible,
-a:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--accent-strong) 45%, transparent);
-  outline-offset: 3px;
+a:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+input:where(:not([type="checkbox"], [type="file"])),
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+select {
+  padding: 6px 10px;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--canvas);
+  color: var(--ink);
+  font-size: 12px;
+}
+
+/* 참고 시안의 버튼 3종. 여러 화면에서 반복되어 클래스로 둡니다. */
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--canvas);
+    color: var(--ink);
+    font-weight: 550;
+    white-space: nowrap;
+  }
+
+  .btn:not(:disabled):hover {
+    background: var(--soft);
+  }
+
+  .btn-primary {
+    border-color: transparent;
+    background: var(--primary);
+    color: var(--primary-ink);
+  }
+
+  .btn-primary:not(:disabled):hover {
+    background: var(--primary-hover);
+  }
+
+  .btn-ghost {
+    min-height: 0;
+    padding: 6px;
+    border: 0;
+    background: none;
+    color: var(--sub);
+  }
+}
+
+@media (pointer: coarse) {
+  .btn,
+  select {
+    min-height: 44px;
+  }
+
+  input,
+  textarea {
+    font-size: 16px;
+  }
 }

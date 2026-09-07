@@ -54,12 +54,12 @@ export function GithubSignInButton({
         type="button"
         disabled={!configured || loading}
         onClick={signIn}
-        className="flex min-h-12 w-full items-center justify-center rounded-xl bg-[var(--ink)] px-5 py-3 text-base font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#253148] disabled:cursor-not-allowed disabled:bg-[#9ca5b4] disabled:hover:translate-y-0"
+        className="btn btn-primary min-h-12 w-full"
       >
         {loading ? "GitHub로 이동 중..." : "GitHub로 계속하기"}
       </button>
       {error && (
-        <p role="alert" className="mt-3 text-sm font-medium text-red-700">
+        <p role="alert" className="mt-3 text-[13px] text-danger">
           {error}
         </p>
       )}

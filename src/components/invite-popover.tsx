@@ -67,7 +67,7 @@ export function InvitePopover({
           setCopyMessage("");
           setOpen(!open);
         }}
-        className="inline-flex items-center gap-2 rounded-xl border border-[var(--line-strong)] px-3 py-2 text-sm font-bold text-[var(--muted-strong)] hover:bg-[var(--surface-subtle)]"
+        className="btn"
       >
         <svg
           width="16"
@@ -86,16 +86,16 @@ export function InvitePopover({
       <div
         id={panelId}
         hidden={!open}
-        className="absolute right-0 top-full z-20 mt-2 w-80 max-w-[calc(100vw-5.5rem)] rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-lg"
+        className="absolute top-full right-0 z-20 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-line bg-canvas p-5 shadow-[0_4px_20px_rgba(0,0,0,0.12)]"
       >
-        <p className="font-extrabold">멤버 초대</p>
-        <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+        <h3>멤버 초대</h3>
+        <p className="mt-1 text-xs text-sub">
           링크나 코드를 공유하세요. 가입 신청 후 승인이 필요합니다.
         </p>
         {inviteUrl && (
           <div className="mt-4">
             <label
-              className="text-xs font-bold text-[var(--muted)]"
+              className="text-xs text-sub"
               htmlFor={`${panelId}-url`}
             >
               초대 링크
@@ -105,16 +105,16 @@ export function InvitePopover({
               value={inviteUrl}
               readOnly
               onFocus={(event) => event.target.select()}
-              className="mt-1 w-full rounded-lg border border-[var(--line-strong)] px-3 py-2 text-sm"
+              className="mt-1 !py-2 !text-xs"
             />
             <button
               type="button"
               onClick={copyLink}
-              className="mt-2 w-full rounded-xl bg-[var(--accent)] px-3 py-2 text-sm font-bold text-[var(--accent-ink)]"
+              className="btn btn-primary mt-2 w-full"
             >
               링크 복사
             </button>
-            <p role="status" className="mt-2 text-xs text-[var(--muted)]">
+            <p role="status" className="mt-2 text-xs text-sub">
               {copyMessage}
             </p>
           </div>

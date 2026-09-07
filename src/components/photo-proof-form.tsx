@@ -37,6 +37,7 @@ export function PhotoProofForm({
   userId: string;
 }) {
   const router = useRouter();
+  const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [preparing, setPreparing] = useState(false);
@@ -46,6 +47,7 @@ export function PhotoProofForm({
     url: string;
   } | null>(null);
   const [confirmed, setConfirmed] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const selection = useRef(0);
   useEffect(
     () => () => {
@@ -59,6 +61,12 @@ export function PhotoProofForm({
     },
     [],
   );
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (open && !dialog.open) dialog.showModal();
+    if (!open && dialog.open) dialog.close();
+  }, [open]);
   const upload = useRef<{ file: File; path: string; size: number } | null>(
     null,
   );
@@ -156,6 +164,7 @@ export function PhotoProofForm({
       form.reset();
       setPrepared(null);
       setConfirmed(false);
+      setOpen(false);
       setMessage(
         `사진을 풀이 기록으로 등록했습니다 (${displaySize(file.size)} → ${displaySize(storedSize)}). 검수 승인을 기다려주세요.`,
       );
@@ -171,124 +180,156 @@ export function PhotoProofForm({
   }
 
   return (
-    <form
-      onSubmit={submit}
-      className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm"
-    >
-      <h2 className="text-xl font-extrabold">사진으로 풀이 등록</h2>
-      <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-        플랫폼 계정 등록 없이 어느 플랫폼의 사진이든 올릴 수 있습니다. 사진을
-        올리면 검수 대기 기록이 생기고, 그룹 소유자나 검수자가 확인합니다.
-      </p>
-      <label htmlFor="proof-photo" className="mt-5 block text-sm font-bold">
-        풀이 인증 사진
-      </label>
-      <input
-        id="proof-photo"
-        name="photo"
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        required
-        disabled={busy}
-        onChange={prepare}
-        className="mt-2 w-full rounded-xl border border-[var(--line-strong)] p-3 text-sm"
-        aria-describedby="photo-help"
-      />
-      <p id="photo-help" className="mt-2 text-xs text-[var(--muted)]">
-        JPG, PNG, WebP · 원본 최대 20MB · 업로드 전 자동 압축
-      </p>
-      <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
-        긴 변 최대 1,920px · 150KB 목표 · 저장 최대 300KB. 글자가 흐리면 필요한
-        부분만 잘라 다시 선택해주세요. 기존 사진은 변경하지 않습니다.
-      </p>
-      {preparing && (
-        <p role="status" className="mt-3 text-sm">
-          사진 용량을 줄이고 있습니다…
+    <>
+      <button
+        type="button"
+        className="btn btn-primary"
+        onClick={() => setOpen(true)}
+      >
+        <span aria-hidden="true">+</span> 풀이 인증하기
+      </button>
+      {!open && message && (
+        <p role="status" aria-live="polite" className="sr-only">
+          {message}
         </p>
       )}
-      {prepared && (
-        <div className="mt-4">
-          <p className="text-sm font-bold">
-            저장될 사진: {displaySize(prepared.file.size)} →{" "}
-            {displaySize(prepared.blob.size)}
-          </p>
-          <a
-            href={prepared.url}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-2 block text-sm underline"
-          >
-            <Image
-              src={prepared.url}
-              alt="업로드할 압축 사진 미리보기"
-              width={640}
-              height={480}
-              unoptimized
-              className="mb-2 max-h-80 w-full rounded-xl object-contain"
-            />
-            크게 열어 글자 확인
-          </a>
-          <label className="mt-3 flex items-start gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={confirmed}
-              onChange={(event) => setConfirmed(event.target.checked)}
+
+      <dialog
+        ref={dialogRef}
+        aria-label="풀이 인증 등록"
+        onClose={() => setOpen(false)}
+        onClick={(event) => {
+          if (event.target === dialogRef.current && !busy) setOpen(false);
+        }}
+        className="m-auto max-h-[calc(100dvh-40px)] w-[min(620px,calc(100%-32px))] overflow-y-auto rounded-[14px] border border-line bg-canvas p-6 text-ink backdrop:bg-black/40"
+      >
+        <form onSubmit={submit}>
+          <div className="flex items-center justify-between gap-3">
+            <h3>오늘 푼 문제를 공유해요</h3>
+            <button
+              type="button"
+              className="btn btn-ghost"
               disabled={busy}
-              className="mt-1"
-            />
-            문제명·아이디·통과 결과 등 검수에 필요한 글자가 읽힙니다.
-          </label>
-        </div>
-      )}
-      <label htmlFor="proof-title" className="mt-4 block text-sm font-bold">
-        제목 (선택)
-      </label>
-      <input
-        id="proof-title"
-        name="title"
-        maxLength={160}
-        disabled={busy}
-        placeholder="예: 프로그래머스 두 수의 합"
-        className="mt-2 w-full rounded-xl border border-[var(--line-strong)] px-4 py-3"
-      />
-      <label
-        htmlFor="proof-problem-url"
-        className="mt-4 block text-sm font-bold"
-      >
-        문제 링크 (선택)
-      </label>
-      <input
-        id="proof-problem-url"
-        name="problemUrl"
-        inputMode="url"
-        maxLength={MAX_PROBLEM_URL_LENGTH}
-        disabled={busy}
-        placeholder="https://school.programmers.co.kr/learn/courses/30/lessons/12345"
-        className="mt-2 w-full rounded-xl border border-[var(--line-strong)] px-4 py-3"
-        aria-describedby="problem-url-help"
-      />
-      <p
-        id="problem-url-help"
-        className="mt-2 text-xs leading-5 text-[var(--muted)]"
-      >
-        넣으면 다른 멤버가 같은 문제를 바로 풀어볼 수 있습니다. 프로그래머스,
-        백준, LeetCode, Codeforces, AtCoder, HackerRank, Codewars의 https 주소만
-        받습니다.
-      </p>
-      <p className="mt-3 text-xs leading-5 text-[var(--muted)]">
-        등록 시각이 기록됩니다. 사진 속 문제명·풀이 날짜는 자동으로 추출하지
-        않습니다. 문제 링크는 참고용이며 검수 대상은 사진입니다.
-      </p>
-      <button
-        type="submit"
-        disabled={busy || preparing || !prepared || !confirmed}
-        className="mt-4 w-full rounded-xl bg-[var(--accent)] px-4 py-3 font-bold text-[var(--accent-ink)] disabled:opacity-50"
-      >
-        {busy ? "등록 중…" : "사진 올리고 검수 요청"}
-      </button>
-      <p role="status" aria-live="polite" className="mt-3 text-sm">
-        {message}
-      </p>
-    </form>
+              onClick={() => setOpen(false)}
+            >
+              닫기
+            </button>
+          </div>
+
+          <div className="my-[18px] grid gap-5">
+            <div className="grid justify-items-center gap-2 rounded-lg border border-dashed border-line px-4 py-6 text-center text-sub">
+              <label htmlFor="proof-photo" className="text-[13px]">
+                풀이 결과가 보이는 사진 한 장
+              </label>
+              <input
+                id="proof-photo"
+                name="photo"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                required
+                disabled={busy}
+                onChange={prepare}
+                className="text-xs"
+                aria-describedby="photo-help"
+              />
+              <p id="photo-help" className="text-xs">
+                JPG, PNG, WebP · 최대 20MB · 업로드 전 자동 압축
+              </p>
+              <p className="text-[11px]">
+                긴 변 1,920px · 150KB 목표 · 저장 최대 300KB. 글자가 흐리면
+                필요한 부분만 잘라 다시 선택해주세요.
+              </p>
+            </div>
+
+            {preparing && (
+              <p role="status" className="text-[13px]">
+                사진 용량을 줄이고 있습니다…
+              </p>
+            )}
+
+            {prepared && (
+              <div className="grid gap-2">
+                <p className="text-[13px] font-medium">
+                  저장될 사진: {displaySize(prepared.file.size)} →{" "}
+                  {displaySize(prepared.blob.size)}
+                </p>
+                <a href={prepared.url} target="_blank" rel="noreferrer">
+                  <Image
+                    src={prepared.url}
+                    alt="업로드할 압축 사진 미리보기"
+                    width={640}
+                    height={480}
+                    unoptimized
+                    className="max-h-72 w-full rounded-lg bg-soft object-contain"
+                  />
+                  <span className="mt-1 block text-xs text-sub underline">
+                    크게 열어 글자 확인
+                  </span>
+                </a>
+                <label className="flex items-start gap-2 text-[13px]">
+                  <input
+                    type="checkbox"
+                    checked={confirmed}
+                    onChange={(event) => setConfirmed(event.target.checked)}
+                    disabled={busy}
+                    className="mt-1"
+                  />
+                  문제명·아이디·통과 결과 등 검수에 필요한 글자가 읽힙니다.
+                </label>
+              </div>
+            )}
+
+            <div className="grid gap-[7px]">
+              <label htmlFor="proof-title" className="text-[13px]">
+                문제 이름 <span className="text-xs text-sub">선택 사항</span>
+              </label>
+              <input
+                id="proof-title"
+                name="title"
+                maxLength={160}
+                disabled={busy}
+                placeholder="예: 프로그래머스 더 맵게"
+              />
+            </div>
+
+            <div className="grid gap-[7px]">
+              <label htmlFor="proof-problem-url" className="text-[13px]">
+                문제 링크 <span className="text-xs text-sub">선택 사항</span>
+              </label>
+              <input
+                id="proof-problem-url"
+                name="problemUrl"
+                inputMode="url"
+                maxLength={MAX_PROBLEM_URL_LENGTH}
+                disabled={busy}
+                placeholder="https://school.programmers.co.kr/learn/courses/30/lessons/12345"
+                aria-describedby="problem-url-help"
+              />
+              <p id="problem-url-help" className="text-xs text-sub">
+                프로그래머스, 백준, LeetCode, Codeforces, AtCoder, HackerRank,
+                Codewars의 https 주소만 받습니다. 넣으면 다른 멤버가 같은 문제를
+                바로 풀어볼 수 있어요.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="text-xs text-sub">
+              등록 시각이 기록되고 검수 대기 상태가 됩니다.
+            </span>
+            <button
+              type="submit"
+              disabled={busy || preparing || !prepared || !confirmed}
+              className="btn btn-primary"
+            >
+              {busy ? "등록 중…" : "검수 요청하기"}
+            </button>
+          </div>
+          <p role="status" aria-live="polite" className="mt-3 text-[13px]">
+            {message}
+          </p>
+        </form>
+      </dialog>
+    </>
   );
 }

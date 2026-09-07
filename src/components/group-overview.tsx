@@ -1,43 +1,40 @@
+import Link from "next/link";
+
 import { shiftWeek, type GroupOverviewData } from "@/lib/group-overview";
 import { RefreshOverviewButton } from "@/components/refresh-overview-button";
-import Image from "next/image";
-import Link from "next/link";
-import { setMemberRoleAction } from "@/app/actions/groups";
 
 const weekdays = ["월", "화", "수", "목", "금", "토", "일"];
-const roleLabels: Record<string, string> = {
-  OWNER: "소유자",
-  REVIEWER: "검수자",
-  MEMBER: "멤버",
-};
 
 function shortDate(value: string) {
   const [, month, day] = value.split("-");
   return `${Number(month)}.${Number(day)}`;
 }
 
+function dayOfMonth(value: string) {
+  return Number(value.split("-")[2]);
+}
+
+function initials(name: string) {
+  return name.trim().slice(0, 2).toUpperCase();
+}
+
 export function GroupOverview({
   data,
   currentUserId,
-  groupId,
   groupSlug,
-  canManageMembers,
   proofFilterQuery,
 }: {
   data: GroupOverviewData;
   currentUserId: string;
-  groupId: string;
   groupSlug: string;
-  canManageMembers: boolean;
   proofFilterQuery: string;
 }) {
   const isCurrentWeek = data.weekStart === data.currentWeekStart;
-  const weekRange = `${shortDate(data.weekStart)}(월) ~ ${shortDate(data.weekEnd)}(일)`;
-  const weekName = isCurrentWeek
-    ? "이번 주"
-    : `${shortDate(data.weekStart)}~${shortDate(data.weekEnd)}`;
   // 선택한 주를 유지한 채 풀이 기록 필터로 이동하기 위한 조각입니다.
   const weekParam = isCurrentWeek ? "" : `&week=${data.weekStart}`;
+  const todayParticipants = data.members.filter(
+    (member) => member.todaySubmitted > 0,
+  ).length;
 
   function weekHref(week: string) {
     const params = new URLSearchParams(proofFilterQuery);
@@ -46,332 +43,179 @@ export function GroupOverview({
     return `/groups/${groupSlug}${query ? `?${query}` : ""}`;
   }
 
-  const todayParticipants = data.members.filter(
-    (member) => member.todaySubmitted > 0,
-  ).length;
-  const weekApproved = data.members.reduce(
-    (total, member) => total + member.weekApproved,
-    0,
-  );
-  const pending = data.members.reduce(
-    (total, member) => total + member.pending,
-    0,
-  );
-
   return (
     <section
       aria-labelledby="group-overview-title"
-      className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-sm sm:p-6"
+      className="mb-7 overflow-hidden rounded-xl border border-line"
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-bold tracking-wide text-[var(--accent-strong)]">
-            함께 쌓는 코딩 습관
-          </p>
-          <h2 id="group-overview-title" className="mt-1 text-xl font-extrabold">
-            우리 그룹 인증 현황
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-soft px-3 py-3 sm:px-5 sm:py-4">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <h2 id="group-overview-title">
+            {isCurrentWeek ? "이번 주" : "선택한 주"}
           </h2>
-          <nav
-            aria-label="주간 이동"
-            className="mt-2 flex flex-wrap items-center gap-1.5"
-          >
-            <WeekArrow
-              href={
-                data.weekStart > data.firstWeekStart
-                  ? weekHref(shiftWeek(data.weekStart, -1))
-                  : null
-              }
-              label="이전 주 보기"
-              symbol="←"
-            />
-            <p className="min-w-[9.5rem] text-center text-sm font-bold text-[var(--muted-strong)] tabular-nums">
-              {isCurrentWeek ? `이번 주 ${weekRange}` : weekRange}
-            </p>
-            <WeekArrow
-              href={
-                isCurrentWeek ? null : weekHref(shiftWeek(data.weekStart, 1))
-              }
-              label="다음 주 보기"
-              symbol="→"
-            />
-            {!isCurrentWeek && (
-              <Link
-                href={weekHref(data.currentWeekStart)}
-                className="ml-1 rounded-full border border-[var(--line-strong)] px-3 py-1 text-xs font-bold text-[var(--muted-strong)] transition hover:bg-[var(--surface-subtle)]"
-              >
-                이번 주로
-              </Link>
-            )}
-          </nav>
+          <span className="text-xs text-sub tabular-nums">
+            {shortDate(data.weekStart)} — {shortDate(data.weekEnd)}
+          </span>
+          <WeekArrow
+            href={
+              data.weekStart > data.firstWeekStart
+                ? weekHref(shiftWeek(data.weekStart, -1))
+                : null
+            }
+            label="이전 주 보기"
+            symbol="‹"
+          />
+          <WeekArrow
+            href={isCurrentWeek ? null : weekHref(shiftWeek(data.weekStart, 1))}
+            label="다음 주 보기"
+            symbol="›"
+          />
+          {!isCurrentWeek && (
+            <Link
+              href={weekHref(data.currentWeekStart)}
+              className="text-xs text-sub underline"
+            >
+              이번 주로
+            </Link>
+          )}
         </div>
-        <RefreshOverviewButton />
-      </div>
-
-      <div className="mt-5 grid gap-3 sm:grid-cols-3">
-        <Link
-          href={`/groups/${groupSlug}?proofPeriod=today&proofStatus=participating${weekParam}#proof-records`}
-          className="rounded-2xl bg-[var(--accent-soft)] px-4 py-4 text-[var(--accent-ink)] transition hover:brightness-95"
-        >
-          <p className="text-sm font-bold">오늘 인증한 멤버</p>
-          <div className="mt-2">
-            <p className="text-3xl font-black tabular-nums">
-              {todayParticipants}
-              <span className="ml-1 text-base font-semibold">
-                / {data.members.length}명
-              </span>
-            </p>
-            <p className="mt-1 text-xs">승인·검수 대기 포함</p>
-          </div>
-        </Link>
-        <div className="rounded-2xl bg-[var(--surface-subtle)] px-4 py-4">
-          <p className="text-sm font-bold text-[var(--muted-strong)]">
-            {weekName} 승인
-          </p>
-          <div className="mt-2">
-            <p className="text-3xl font-black tabular-nums">
-              {weekApproved}
-              <span className="ml-1 text-base font-semibold">건</span>
-            </p>
-            <p className="mt-1 text-xs text-[var(--muted)]">
-              {weekName}에 등록한 인증 중 승인된 기록
-            </p>
-          </div>
+        <div className="flex items-center gap-3">
+          <span className="text-[13px] text-sub">
+            오늘 인증{" "}
+            <strong className="font-[650] text-brand tabular-nums">
+              {todayParticipants} / {data.members.length}명
+            </strong>
+          </span>
+          <RefreshOverviewButton />
         </div>
-        <Link
-          href={`/groups/${groupSlug}?proofStatus=pending&proofPeriod=all${weekParam}#proof-records`}
-          className="rounded-2xl bg-amber-50 px-4 py-4 text-amber-900 transition hover:brightness-95"
-        >
-          <p className="text-sm font-bold">검수를 기다리는 인증</p>
-          <div className="mt-2">
-            <p className="text-3xl font-black tabular-nums">
-              {pending}
-              <span className="ml-1 text-base font-semibold">건</span>
-            </p>
-            <p className="mt-1 text-xs">전체 기간의 검수 대기 기록</p>
-          </div>
-        </Link>
-      </div>
-
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-base font-extrabold">멤버별 {weekName} 발자취</h3>
-        <p className="flex flex-wrap gap-3 text-xs font-semibold">
-          <span className="text-[var(--accent-strong)]">✓ 승인</span>
-          <span className="text-amber-800">… 대기</span>
-          <span className="text-rose-700">× 반려</span>
-        </p>
       </div>
 
       {data.members.length === 0 ? (
-        <p className="mt-4 rounded-2xl bg-[var(--surface-subtle)] p-5 text-sm text-[var(--muted)]">
+        <p className="px-5 py-10 text-center text-xs text-sub">
           아직 활동 중인 멤버가 없습니다.
         </p>
       ) : (
-        <ul className="mt-3 space-y-3">
-          {data.members.map((member) => (
-            <li
-              key={member.userId}
-              className="grid min-w-0 gap-4 rounded-2xl border border-[var(--line)] p-4 lg:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1.28fr)] lg:items-center"
-            >
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h4 className="break-all font-extrabold">
-                        {member.displayName}
-                      </h4>
-                      {member.userId === currentUserId && (
-                        <span className="rounded-full bg-[var(--ink)] px-2 py-0.5 text-xs font-bold text-white">
-                          나
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-1 text-xs text-[var(--muted)]">
-                      {roleLabels[member.role] ?? "멤버"}
-                    </p>
-                  </div>
-                  <span
-                    className={`rounded-full px-2.5 py-1 text-xs font-bold ${
-                      member.todaySubmitted > 0
-                        ? "bg-[var(--accent-soft)] text-[var(--accent-ink)]"
-                        : "bg-[var(--surface-subtle)] text-[var(--muted-strong)]"
-                    }`}
-                  >
-                    {member.todaySubmitted > 0
-                      ? `오늘 인증 ${member.todaySubmitted}건`
-                      : "오늘 아직 인증 전"}
-                  </span>
-                </div>
-
-                {canManageMembers &&
-                  member.userId !== currentUserId &&
-                  member.role !== "OWNER" && (
-                    <form
-                      action={setMemberRoleAction}
-                      className="mt-3 flex gap-2"
-                    >
-                      <input type="hidden" name="groupId" value={groupId} />
-                      <input type="hidden" name="groupSlug" value={groupSlug} />
-                      <input
-                        type="hidden"
-                        name="userId"
-                        value={member.userId}
-                      />
-                      <select
-                        name="role"
-                        aria-label={`${member.displayName} 역할`}
-                        defaultValue={member.role}
-                        className="min-w-0 flex-1 rounded-xl border border-[var(--line-strong)] bg-white px-3 py-2 text-sm"
-                      >
-                        <option value="MEMBER">멤버</option>
-                        <option value="REVIEWER">검수자</option>
-                      </select>
-                      <button
-                        type="submit"
-                        className="rounded-xl bg-[var(--ink)] px-3 py-2 text-sm font-bold text-white"
-                      >
-                        변경
-                      </button>
-                    </form>
-                  )}
-
-                <dl className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-[var(--surface-subtle)] px-3 py-3 text-center">
-                  <div>
-                    <dt className="text-xs text-[var(--muted)]">주간 승인</dt>
-                    <dd className="mt-1 font-extrabold tabular-nums">
-                      {member.weekApproved}건
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs text-[var(--muted)]">누적 승인</dt>
-                    <dd className="mt-1 font-extrabold tabular-nums">
-                      {member.totalApproved}건
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs text-[var(--muted)]">검수 대기</dt>
-                    <dd className="mt-1 font-extrabold tabular-nums text-amber-800">
-                      {member.pending}건
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-
-              <ul
-                aria-label={`${member.displayName}의 주간 인증 기록`}
-                className="mt-4 grid grid-cols-7 gap-1.5"
-              >
+        <div className="px-2 pt-2 sm:px-5">
+          <table className="w-full table-fixed border-collapse">
+            <caption className="sr-only">
+              멤버별 주간 인증 현황. 승인 열은 선택한 주의 승인 건수입니다.
+            </caption>
+            <thead>
+              <tr>
+                <th
+                  scope="col"
+                  className="w-[28%] py-[7px] text-left text-[11px] font-medium text-sub sm:w-[24%]"
+                >
+                  멤버
+                </th>
                 {data.days.map((date, index) => {
-                  const day = member.days.find((entry) => entry.date === date);
-                  const approved = day?.approved ?? 0;
-                  const waiting = day?.pending ?? 0;
-                  const rejected = day?.rejected ?? 0;
-                  const isFuture = date > data.today;
                   const isToday = date === data.today;
-                  const hasRecords = approved + waiting + rejected > 0;
-                  const hasFeaturedPhoto =
-                    member.featuredProofId && member.featuredDate === date;
-                  const description = `${date} ${weekdays[index]}요일${isToday ? ", 오늘" : ""}: ${
-                    isFuture
-                      ? "예정"
-                      : `승인 ${approved}건, 검수 대기 ${waiting}건, 반려 ${rejected}건`
-                  }`;
-                  const cellStyle = hasFeaturedPhoto
-                    ? "bg-[var(--ink)] text-white"
-                    : isFuture
-                      ? "bg-slate-100 text-slate-400"
-                      : approved > 0
-                        ? "bg-[var(--accent-soft)] text-[var(--accent-ink)]"
-                        : waiting > 0
-                          ? "bg-amber-50 text-amber-900"
-                          : rejected > 0
-                            ? "bg-rose-50 text-rose-700"
-                            : "bg-[var(--surface-subtle)] text-[var(--muted)]";
-
                   return (
-                    <li key={date} title={description}>
-                      <span className="sr-only">{description}</span>
-                      <div className="text-center">
-                        <p
-                          aria-hidden="true"
-                          className={`text-xs ${isToday ? "font-black text-[var(--accent-strong)]" : "text-[var(--muted)]"}`}
-                        >
-                          {weekdays[index]}
-                        </p>
-                        <p
-                          aria-hidden="true"
-                          className="mt-0.5 text-[10px] text-[var(--muted)]"
-                        >
-                          {shortDate(date)}
-                        </p>
-                        {hasRecords ? (
+                    <th
+                      scope="col"
+                      key={date}
+                      className="py-[7px] text-center text-[11px] font-medium text-sub"
+                    >
+                      <span className={isToday ? "font-[650] text-brand" : ""}>
+                        {weekdays[index]}
+                        <br />
+                        {dayOfMonth(date)}
+                      </span>
+                    </th>
+                  );
+                })}
+                <th
+                  scope="col"
+                  className="w-[9%] py-[7px] text-center text-[11px] font-medium text-sub sm:w-[10%]"
+                >
+                  승인
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.members.map((member) => (
+                <tr key={member.userId}>
+                  <td className="h-[52px] border-t border-line text-left text-[13px]">
+                    <span className="flex items-center gap-1 font-medium sm:gap-[9px]">
+                      <span
+                        aria-hidden="true"
+                        className="hidden size-7 shrink-0 place-items-center rounded-full bg-soft text-[11px] text-sub sm:grid"
+                      >
+                        {initials(member.displayName)}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-[11px] sm:text-[13px]">
+                          {member.displayName}
+                          {member.userId === currentUserId && (
+                            <span className="ml-[3px] text-[10px] text-sub">
+                              나
+                            </span>
+                          )}
+                        </span>
+                        <span className="block text-[11px] text-sub tabular-nums">
+                          누적 {member.totalApproved} · 대기 {member.pending}
+                        </span>
+                      </span>
+                    </span>
+                  </td>
+                  {data.days.map((date) => {
+                    const day = member.days.find((entry) => entry.date === date);
+                    const approved = day?.approved ?? 0;
+                    const waiting = day?.pending ?? 0;
+                    const rejected = day?.rejected ?? 0;
+                    const total = approved + waiting + rejected;
+                    const isFuture = date > data.today;
+                    const marker =
+                      waiting > 0 ? "◷" : approved > 0 ? "✓" : "×";
+                    const description = `${member.displayName} ${shortDate(date)} 승인 ${approved}건, 검수 대기 ${waiting}건, 반려 ${rejected}건`;
+
+                    return (
+                      <td
+                        key={date}
+                        className="h-[52px] border-t border-line text-center text-[13px]"
+                      >
+                        {total > 0 ? (
                           <Link
                             href={`/groups/${groupSlug}?proofMember=${member.userId}&proofDate=${date}${weekParam}#proof-records`}
+                            title={description}
                             aria-label={`${description}. 풀이 기록 보기`}
-                            className={`relative mt-1 flex min-h-14 overflow-hidden rounded-lg ${cellStyle} ${isToday ? "ring-2 ring-[var(--accent-strong)] ring-offset-1" : ""}`}
+                            className="inline-grid h-[29px] w-6 place-items-center rounded-lg bg-brand-soft font-[650] text-brand sm:size-[30px]"
                           >
-                            {hasFeaturedPhoto && (
-                              <>
-                                <Image
-                                  src={`/proofs/${member.featuredProofId}/evidence`}
-                                  alt=""
-                                  fill
-                                  sizes="96px"
-                                  loading="lazy"
-                                  unoptimized
-                                  className="object-cover"
-                                />
-                                <span className="absolute inset-0 bg-black/55" />
-                              </>
-                            )}
-                            <span
-                              className={`relative z-10 flex min-h-14 w-full flex-col items-center justify-center px-0.5 py-1 text-xs font-bold tabular-nums ${hasFeaturedPhoto ? "text-white" : ""}`}
-                            >
-                              {approved > 0 && <span>✓{approved}</span>}
-                              {waiting > 0 && (
-                                <span
-                                  className={
-                                    hasFeaturedPhoto ? "" : "text-amber-800"
-                                  }
-                                >
-                                  …{waiting}
-                                </span>
-                              )}
-                              {rejected > 0 && (
-                                <span
-                                  className={
-                                    hasFeaturedPhoto ? "" : "text-rose-700"
-                                  }
-                                >
-                                  ×{rejected}
-                                </span>
-                              )}
+                            <span aria-hidden="true">
+                              {marker}
+                              {total > 1 ? total : ""}
                             </span>
                           </Link>
                         ) : (
-                          <div
-                            aria-hidden="true"
-                            className={`mt-1 flex min-h-14 flex-col items-center justify-center rounded-lg px-0.5 py-1 text-xs font-bold tabular-nums ${cellStyle} ${isToday ? "ring-2 ring-[var(--accent-strong)] ring-offset-1" : ""}`}
+                          <span
+                            title={isFuture ? "예정" : "미등록"}
+                            className="inline-grid h-[29px] w-6 place-items-center text-sub sm:size-[30px]"
                           >
-                            {isFuture ? "—" : "·"}
-                          </div>
+                            {isFuture ? "–" : "·"}
+                          </span>
                         )}
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </li>
-          ))}
-        </ul>
+                      </td>
+                    );
+                  })}
+                  <td className="h-[52px] border-t border-line text-center text-[13px] tabular-nums">
+                    {member.weekApproved}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
-      <p className="mt-4 text-xs leading-5 text-[var(--muted)]">
-        한국시간 인증 등록일 기준 · 현재 활동 중인 멤버의 기록만 집계합니다.
-        승인 수에는 검수 대기·반려를 포함하지 않습니다. 사진을 올린 날짜에
-        표시되며, 검수 결과에 따라 현황이 바뀝니다. 선택한 주의 첫 사진은 대표
-        썸네일로 표시하며 날짜를 누르면 해당 풀이 기록으로 이동합니다. 화살표로
-        지난 주와 이후 주를 볼 수 있습니다.
-      </p>
+      <div className="flex flex-wrap justify-between gap-4 px-3 pt-[10px] pb-[13px] text-[11px] text-sub sm:px-5">
+        <span className="flex flex-wrap gap-3">
+          <span>✓ 승인</span>
+          <span>◷ 검수 대기</span>
+          <span>× 반려</span>
+          <span>· 미등록</span>
+        </span>
+        <span>한국시간 · 등록일 기준</span>
+      </div>
     </section>
   );
 }
@@ -386,15 +230,12 @@ function WeekArrow({
   label: string;
   symbol: string;
 }) {
-  const shape =
-    "flex h-8 w-8 items-center justify-center rounded-full border text-sm font-bold";
-
   if (!href) {
     return (
       <span
         aria-disabled="true"
         aria-label={`${label} (이동할 주 없음)`}
-        className={`${shape} border-[var(--line)] text-[var(--muted)] opacity-40`}
+        className="p-1.5 text-sub opacity-45"
       >
         {symbol}
       </span>
@@ -402,11 +243,7 @@ function WeekArrow({
   }
 
   return (
-    <Link
-      href={href}
-      aria-label={label}
-      className={`${shape} border-[var(--line-strong)] text-[var(--muted-strong)] transition hover:bg-[var(--surface-subtle)]`}
-    >
+    <Link href={href} aria-label={label} className="p-1.5 text-sub">
       {symbol}
     </Link>
   );

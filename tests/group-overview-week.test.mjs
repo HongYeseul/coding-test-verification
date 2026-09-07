@@ -13,9 +13,7 @@ const compiled = ts.transpileModule(
   `
   const { React, shiftWeek } = globalThis.__overviewImports;
   const Link = (props) => React.createElement("a", props);
-  const Image = () => null;
   const RefreshOverviewButton = () => null;
-  const setMemberRoleAction = () => {};
   ${source}
   export { GroupOverview };
 `,
@@ -72,9 +70,7 @@ function render({
         ],
       },
       currentUserId: "member",
-      groupId: "group",
       groupSlug: "study",
-      canManageMembers: false,
       proofFilterQuery,
     }),
   );
@@ -97,7 +93,8 @@ test("이번 주에서는 다음 주로 이동할 수 없다", () => {
   const html = render({ weekStart: "2026-09-07" });
   assert.match(html, /aria-disabled="true"[^>]*aria-label="다음 주 보기 \(이동할 주 없음\)"/);
   assert.doesNotMatch(html, /이번 주로/);
-  assert.match(html, /이번 주 9\.7\(월\) ~ 9\.13\(일\)/);
+  assert.match(html, /이번 주<\/h2>/);
+  assert.match(html, /9\.7 — 9\.13/);
 });
 
 test("그룹이 만들어진 주보다 이전으로는 이동할 수 없다", () => {

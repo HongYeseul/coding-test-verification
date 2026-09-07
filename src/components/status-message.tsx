@@ -11,10 +11,8 @@ export function StatusMessage({ error, message }: StatusMessageProps) {
   return (
     <p
       role={error ? "alert" : "status"}
-      className={`rounded-xl px-4 py-3 text-sm font-semibold ${
-        error
-          ? "bg-red-50 text-red-700"
-          : "bg-[var(--accent-soft)] text-[var(--accent-ink)]"
+      className={`rounded-lg bg-soft px-4 py-3 text-[13px] ${
+        error ? "text-danger" : "text-brand"
       }`}
     >
       {error ?? message}

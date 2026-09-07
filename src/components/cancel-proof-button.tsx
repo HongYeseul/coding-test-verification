@@ -9,7 +9,7 @@ export function CancelProofButton({ retry }: { retry: boolean }) {
       type="submit"
       disabled={pending}
       aria-busy={pending}
-      className="text-sm font-bold text-red-700 disabled:cursor-wait disabled:opacity-50"
+      className="text-xs text-danger underline disabled:cursor-wait"
     >
       {pending
         ? "사진과 기록 삭제 중…"

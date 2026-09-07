@@ -107,7 +107,7 @@ async function renderGroup(
     `
     const { requireUser, redirect, notFound } = globalThis.__groupPageImports;
     const React = { createElement: (type, props, ...children) => ({ type, props, children }) };
-    const Link='a', Image='img', PhotoProofForm='form', StatusMessage='div', GroupOverview='section', CancelProofButton='button', InvitePopover='div', GroupProblems='section';
+    const Link='a', PhotoProofForm='form', StatusMessage='div', GroupOverview='section', InvitePopover='div', GroupProblems='section', AppShell='main', ProofRecordList='div', ProofFilterForm='form';
     const problemLink=(value)=>value ? { url: value, platform: '플랫폼' } : null;
     const approveMembershipAction=()=>{}, rotateInviteCodeAction=()=>{}, setMemberRoleAction=()=>{}, deleteProofAction=()=>{}, reviewProofAction=()=>{};
     const firstQueryValue=(value)=>value, getSiteUrl=()=>"https://example.invalid";

@@ -1,20 +1,19 @@
 export function PageLoading() {
   return (
     <main
-      className="min-h-screen bg-[var(--background)] px-5 py-6 sm:px-8 lg:px-12"
+      className="mx-auto w-full max-w-[1024px] px-3 py-4 sm:px-8 sm:py-6"
       aria-busy="true"
     >
-      <div className="mx-auto max-w-6xl space-y-6">
-        <p role="status" className="font-semibold text-[var(--muted)]">
-          화면을 불러오는 중입니다…
-        </p>
-        <div aria-hidden="true" className="space-y-6 motion-safe:animate-pulse">
-          <div className="h-36 rounded-3xl bg-[var(--surface-subtle)]" />
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div className="h-64 rounded-3xl bg-[var(--surface-subtle)]" />
-            <div className="h-64 rounded-3xl bg-[var(--surface-subtle)]" />
-          </div>
-        </div>
+      <p role="status" className="text-[13px] text-sub">
+        화면을 불러오는 중입니다…
+      </p>
+      <div
+        aria-hidden="true"
+        className="mt-5 space-y-6 motion-safe:animate-pulse"
+      >
+        <div className="h-16 rounded-xl bg-soft" />
+        <div className="h-56 rounded-xl bg-soft" />
+        <div className="h-64 rounded-xl bg-soft" />
       </div>
     </main>
   );

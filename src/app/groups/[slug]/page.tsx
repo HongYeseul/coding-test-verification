@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { InvitePopover } from "@/components/invite-popover";
 import { PhotoProofForm } from "@/components/photo-proof-form";
 import { getSiteUrl } from "@/lib/supabase/config";
@@ -8,17 +7,20 @@ import { notFound, redirect } from "next/navigation";
 import {
   approveMembershipAction,
   rotateInviteCodeAction,
+  setMemberRoleAction,
 } from "@/app/actions/groups";
-import { deleteProofAction, reviewProofAction } from "@/app/actions/proofs";
+import { AppShell } from "@/components/app-shell";
 import { StatusMessage } from "@/components/status-message";
 import { requireUser } from "@/lib/auth";
 import { firstQueryValue } from "@/lib/form";
 import { GroupOverview } from "@/components/group-overview";
 import { GroupProblems } from "@/components/group-problems";
+import { ProofFilterForm } from "@/components/proof-filter-form";
+import { ProofRecordList } from "@/components/proof-record-list";
+import type { ProofRecord } from "@/components/proof-record-list";
 import { problemLink } from "@/lib/proof-input";
 import type { GroupOverviewData } from "@/lib/group-overview";
 import type { ProblemProofRow } from "@/lib/group-problems";
-import { CancelProofButton } from "@/components/cancel-proof-button";
 
 type MembershipRow = {
   user_id: string;
@@ -67,12 +69,26 @@ const platformLabels: Record<string, string> = {
   CODEWARS: "Codewars",
 };
 
+const roleLabels: Record<string, string> = {
+  OWNER: "소유자",
+  REVIEWER: "검수자",
+  MEMBER: "멤버",
+};
+
 const proofStatusLabels: Record<string, string> = {
-  PENDING: "검수 대기",
-  MANUAL_REVIEWED: "승인",
-  API_VERIFIED: "자동 확인",
-  REJECTED: "반려",
-  CANCELING: "취소 처리 중",
+  PENDING: "◷ 검수 대기",
+  MANUAL_REVIEWED: "✓ 승인",
+  API_VERIFIED: "✓ 자동 확인",
+  REJECTED: "× 반려",
+  CANCELING: "× 취소 처리 중",
+};
+
+const proofStatusTones: Record<string, ProofRecord["statusTone"]> = {
+  PENDING: "pending",
+  MANUAL_REVIEWED: "approved",
+  API_VERIFIED: "approved",
+  REJECTED: "rejected",
+  CANCELING: "rejected",
 };
 
 const proofStatusFilters = [
@@ -128,6 +144,24 @@ function displayDate(value: string) {
     timeStyle: "short",
     timeZone: "Asia/Seoul",
   }).format(new Date(value));
+}
+
+/** 목록에 짧게 보여줄 한국시간 날짜와 시각입니다. */
+function proofDateTime(value: string) {
+  const parts = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date(value));
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((item) => item.type === type)?.value ?? "";
+  return {
+    date: `${part("month")}.${part("day")}`,
+    time: `${part("hour")}:${part("minute")}`,
+  };
 }
 
 export default async function GroupPage({
@@ -340,6 +374,12 @@ export default async function GroupPage({
   const pendingMemberships = memberships.filter(
     (membership) => membership.status === "PENDING",
   );
+  const manageableMembers = memberships.filter(
+    (membership) =>
+      membership.status === "ACTIVE" &&
+      membership.role !== "OWNER" &&
+      membership.user_id !== user.id,
+  );
   // 이번 주가 아닐 때만 주소에 주를 남겨 링크와 폼 사이에서 유지합니다.
   const weekQuery =
     overview && overview.weekStart !== overview.currentWeekStart
@@ -360,431 +400,362 @@ export default async function GroupPage({
     proofPeriod !== "all",
   );
 
-  return (
-    <main className="min-h-screen bg-[var(--background)] px-5 py-6 sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <header className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] px-6 py-5 shadow-sm">
-          <Link
-            href="/dashboard"
-            className="text-sm font-bold text-[var(--accent-strong)]"
-          >
-            ← 그룹 목록
-          </Link>
-          <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="font-mono text-xs font-bold tracking-[0.14em] text-[var(--muted)]">
-                /{group.slug}
-              </p>
-              <h1 className="mt-1 text-3xl font-black tracking-[-0.04em]">
-                {group.name}
-              </h1>
-            </div>
-            <div className="flex w-full items-center justify-between gap-3 sm:w-auto">
-              <span className="rounded-full bg-[var(--ink)] px-3 py-1.5 font-mono text-xs font-bold text-[var(--accent)]">
-                {currentMembership.role}
-              </span>
-              {isOwner && (
-                <InvitePopover
-                  inviteUrl={
-                    invitation
-                      ? `${getSiteUrl()}/join/${invitation.code}`
-                      : undefined
-                  }
-                >
-                  <form
-                    action={rotateInviteCodeAction}
-                    className="mt-4 border-t border-[var(--line)] pt-4"
-                  >
-                    <input type="hidden" name="groupId" value={group.id} />
-                    <input type="hidden" name="groupSlug" value={group.slug} />
-                    {invitation ? (
-                      <div className="space-y-3 rounded-xl bg-[var(--surface-subtle)] p-4">
-                        <p className="select-all font-mono text-2xl font-black tracking-widest">
-                          {invitation.code}
-                        </p>
-                        <p className="text-xs text-[var(--muted)]">
-                          {displayDate(invitation.expires_at)}까지 사용 가능
-                        </p>
-                      </div>
-                    ) : (
-                      <p className="rounded-xl bg-[var(--surface-subtle)] p-4 text-sm text-[var(--muted)]">
-                        사용 가능한 초대코드가 없습니다.
-                      </p>
-                    )}
-                    <button
-                      type="submit"
-                      className="mt-3 w-full rounded-xl border border-[var(--line-strong)] px-3 py-2 text-sm font-bold text-[var(--muted-strong)]"
-                    >
-                      {invitation
-                        ? "새 초대코드 만들기"
-                        : "5자리 초대코드 만들기"}
-                    </button>
-                    <p className="mt-2 text-xs text-[var(--muted)]">
-                      여러 사람이 7일 동안 사용할 수 있습니다. 새로 만들면 이전
-                      코드는 만료됩니다.
-                    </p>
-                  </form>
-                </InvitePopover>
-              )}
-            </div>
-          </div>
-        </header>
+  const weekApproved =
+    overview?.members.reduce((total, member) => total + member.weekApproved, 0) ??
+    0;
+  const groupPending =
+    overview?.members.reduce((total, member) => total + member.pending, 0) ?? 0;
 
+  // 탭은 기간과 선택한 주만 유지하고 나머지 조건은 탭이 정합니다.
+  const groupSlug = group.slug;
+  function tabHref(extra: Record<string, string>) {
+    const params = new URLSearchParams();
+    if (proofPeriod !== "all") params.set("proofPeriod", proofPeriod);
+    if (weekQuery && overview) params.set("week", overview.weekStart);
+    for (const [key, value] of Object.entries(extra)) params.set(key, value);
+    const search = params.toString();
+    return `/groups/${groupSlug}${search ? `?${search}` : ""}#proof-records`;
+  }
+
+  const mineTab = memberFilter === user.id;
+  const pendingTab = !mineTab && proofStatus === "pending";
+  const tabs = [
+    { label: "전체 기록", count: null, active: !mineTab && !pendingTab, href: tabHref({}) },
+    {
+      label: "검수 대기",
+      count: groupPending,
+      active: pendingTab,
+      href: tabHref({ proofStatus: "pending" }),
+    },
+    {
+      label: "내 기록",
+      count: null,
+      active: mineTab,
+      href: tabHref({ proofMember: user.id }),
+    },
+  ];
+
+  const records: ProofRecord[] = proofs.map((proof) => {
+    const account = accountById.get(proof.platform_account_id ?? "");
+    const review = reviewByProofId.get(proof.id);
+    const active = proof.verification_status !== "CANCELING";
+    const link = active ? problemLink(proof.problem_url) : null;
+    const { date, time } = proofDateTime(proof.accepted_at);
+    return {
+      id: proof.id,
+      title:
+        proof.problem_title ||
+        (proof.evidence_path ? "사진 풀이 기록" : proof.problem_key),
+      memberName: profileById.get(proof.user_id) ?? "멤버",
+      isMine: proof.user_id === user.id,
+      date,
+      time,
+      registeredAt: displayDate(proof.accepted_at),
+      statusLabel:
+        proofStatusLabels[proof.verification_status] ??
+        proof.verification_status,
+      statusTone: proofStatusTones[proof.verification_status] ?? "pending",
+      source: account
+        ? `${platformLabels[account.platform]} ${account.handle}`
+        : "사진 인증",
+      hasPhoto: Boolean(proof.evidence_path) && active,
+      problemUrl: link?.url ?? null,
+      problemPlatform: link?.platform ?? null,
+      reviewLabel: review
+        ? review.decision === "APPROVED"
+          ? "승인"
+          : "반려"
+        : null,
+      reviewNote: review?.note ?? null,
+      reviewable:
+        canReview &&
+        proof.user_id !== user.id &&
+        proof.verification_status === "PENDING",
+      cancelable:
+        proof.user_id === user.id &&
+        ["PENDING", "CANCELING"].includes(proof.verification_status),
+      cancelRetry: proof.verification_status === "CANCELING",
+    };
+  });
+
+  return (
+    <AppShell
+      context={group.name}
+      actions={
+        <Link href="/dashboard" className="text-xs text-sub">
+          그룹 목록
+        </Link>
+      }
+    >
+      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1>{group.name}</h1>
+          <p className="mt-[5px] text-[13px] text-sub">
+            멤버 {activeMemberIds.length}명 · 내 역할:{" "}
+            {roleLabels[currentMembership.role] ?? "멤버"}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {isOwner && (
+            <InvitePopover
+              inviteUrl={
+                invitation ? `${getSiteUrl()}/join/${invitation.code}` : undefined
+              }
+            >
+              <form
+                action={rotateInviteCodeAction}
+                className="mt-4 border-t border-line pt-4"
+              >
+                <input type="hidden" name="groupId" value={group.id} />
+                <input type="hidden" name="groupSlug" value={group.slug} />
+                {invitation ? (
+                  <div className="rounded-lg bg-soft p-4">
+                    <p className="font-mono text-2xl font-bold tracking-widest select-all">
+                      {invitation.code}
+                    </p>
+                    <p className="mt-2 text-xs text-sub">
+                      {displayDate(invitation.expires_at)}까지 사용 가능
+                    </p>
+                  </div>
+                ) : (
+                  <p className="rounded-lg bg-soft p-4 text-xs text-sub">
+                    사용 가능한 초대코드가 없습니다.
+                  </p>
+                )}
+                <button type="submit" className="btn mt-3 w-full">
+                  {invitation ? "새 초대코드 만들기" : "5자리 초대코드 만들기"}
+                </button>
+                <p className="mt-2 text-xs text-sub">
+                  여러 사람이 7일 동안 사용할 수 있습니다. 새로 만들면 이전
+                  코드는 만료됩니다.
+                </p>
+              </form>
+            </InvitePopover>
+          )}
+          <PhotoProofForm
+            groupId={group.id}
+            groupSlug={group.slug}
+            userId={user.id}
+          />
+        </div>
+      </header>
+
+      <div className="mb-5 empty:mb-0">
         <StatusMessage
           error={firstQueryValue(query.error)}
           message={firstQueryValue(query.message)}
         />
+      </div>
 
-        {overview ? (
-          <GroupOverview
-            data={overview}
-            currentUserId={user.id}
-            groupId={group.id}
-            groupSlug={group.slug}
-            canManageMembers={isOwner}
-            proofFilterQuery={proofFilterQuery}
+      {overview ? (
+        <GroupOverview
+          data={overview}
+          currentUserId={user.id}
+          groupSlug={group.slug}
+          proofFilterQuery={proofFilterQuery}
+        />
+      ) : (
+        <p
+          role="alert"
+          className="mb-7 rounded-xl border border-line bg-soft p-5 text-[13px] text-warn"
+        >
+          인증 현황을 불러오지 못했습니다. 잠시 후 페이지를 새로고침해주세요.
+        </p>
+      )}
+
+      <section id="proof-records" aria-label="풀이 기록" className="scroll-mt-4">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h2>풀이 기록</h2>
+          <span className="text-xs text-sub tabular-nums">
+            이번 주 승인 {weekApproved}건
+          </span>
+        </div>
+
+        <nav aria-label="기록 분류" className="flex gap-[22px] border-b border-line">
+          {tabs.map((tab) => (
+            <Link
+              key={tab.label}
+              href={tab.href}
+              aria-current={tab.active ? "page" : undefined}
+              className={`border-b-2 pt-[10px] pb-3 text-[13px] ${
+                tab.active
+                  ? "border-ink font-[650] text-ink"
+                  : "border-transparent text-sub"
+              }`}
+            >
+              {tab.label}
+              {tab.count !== null && (
+                <span className="ml-[5px] text-[11px] text-sub tabular-nums">
+                  {tab.count}
+                </span>
+              )}
+            </Link>
+          ))}
+        </nav>
+
+        <ProofFilterForm action={`/groups/${group.slug}#proof-records`}>
+          {proofDate && (
+            <input type="hidden" name="proofDate" value={proofDate} />
+          )}
+          {weekQuery && overview && (
+            <input type="hidden" name="week" value={overview.weekStart} />
+          )}
+          <input
+            type="search"
+            name="proofQuery"
+            aria-label="멤버 이름 검색"
+            defaultValue={proofNameQuery}
+            maxLength={80}
+            placeholder="이름 검색"
+            className="!w-36 !min-h-[34px] !py-1.5 !text-xs"
           />
-        ) : (
-          <p
-            role="alert"
-            className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900"
+          <select
+            name="proofMember"
+            aria-label="멤버"
+            defaultValue={memberFilter}
           >
-            인증 현황을 불러오지 못했습니다. 잠시 후 페이지를 새로고침해주세요.
-          </p>
-        )}
+            <option value="">모든 멤버</option>
+            {memberships
+              .filter((membership) => membership.status === "ACTIVE")
+              .map((membership) => (
+                <option key={membership.user_id} value={membership.user_id}>
+                  {profileById.get(membership.user_id) ?? "멤버"}
+                </option>
+              ))}
+          </select>
+          <select name="proofStatus" aria-label="상태" defaultValue={proofStatus}>
+            <option value="all">전체 상태</option>
+            <option value="participating">승인·검수 대기</option>
+            <option value="pending">검수 대기</option>
+            <option value="approved">승인</option>
+            <option value="rejected">반려</option>
+          </select>
+          <select name="proofPeriod" aria-label="기간" defaultValue={proofPeriod}>
+            <option value="all">전체 기간</option>
+            <option value="today">오늘</option>
+            <option value="week">이번 주</option>
+          </select>
+          <button type="submit" className="btn !min-h-[34px] !py-1.5 !text-xs">
+            적용
+          </button>
+          {hasProofFilters && (
+            <Link
+              href={`/groups/${group.slug}${weekQuery ? `?${weekQuery}` : ""}#proof-records`}
+              className="text-xs text-sub underline"
+            >
+              초기화
+            </Link>
+          )}
+          <span className="ml-auto text-xs text-sub tabular-nums">
+            {proofDate ? `${proofDate} · ` : "최신순 · "}
+            {records.length}건
+          </span>
+        </ProofFilterForm>
 
+        <ProofRecordList
+          records={records}
+          groupSlug={group.slug}
+          emptyTitle={
+            hasProofFilters ? "해당하는 기록이 없어요" : "아직 등록된 풀이가 없어요"
+          }
+          emptyDescription={
+            hasProofFilters
+              ? "멤버 또는 기간을 바꿔보세요."
+              : "풀이 인증하기로 첫 기록을 남겨보세요."
+          }
+        />
+        <p className="mt-[17px] text-[11px] text-sub">
+          최근 등록순으로 최대 50개까지 보여줍니다. 기록을 누르면 사진과 검수
+          내용을 확인할 수 있어요.
+        </p>
+      </section>
+
+      <div className="mt-7">
         <GroupProblems
           rows={problemRows}
           profileById={profileById}
           currentUserId={user.id}
         />
-
-        <section className="grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">
-          <div>
-            <PhotoProofForm
-              groupId={group.id}
-              groupSlug={group.slug}
-              userId={user.id}
-            />
-          </div>
-
-          <div
-            id="proof-records"
-            className="scroll-mt-4 rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm"
-          >
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold text-[var(--muted)]">
-                  조건에 맞는 기록 · 최대 50개
-                </p>
-                <h2 className="mt-1 text-xl font-extrabold">풀이 기록</h2>
-              </div>
-              <span className="rounded-full bg-[var(--accent-soft)] px-3 py-1 font-mono text-xs font-bold text-[var(--accent-ink)]">
-                {proofs.length} PROOFS
-              </span>
-            </div>
-
-            <form
-              action={`/groups/${group.slug}#proof-records`}
-              method="get"
-              className="mt-5 grid gap-3 rounded-2xl bg-[var(--surface-subtle)] p-4 sm:grid-cols-2"
-            >
-              {proofDate && (
-                <input type="hidden" name="proofDate" value={proofDate} />
-              )}
-              {weekQuery && overview && (
-                <input type="hidden" name="week" value={overview.weekStart} />
-              )}
-              <label className="text-xs font-bold text-[var(--muted-strong)]">
-                사용자 이름 검색
-                <input
-                  type="search"
-                  name="proofQuery"
-                  defaultValue={proofNameQuery}
-                  maxLength={80}
-                  placeholder="이름 입력"
-                  className="mt-1 w-full rounded-xl border border-[var(--line-strong)] bg-white px-3 py-2 text-sm text-[var(--ink)]"
-                />
-              </label>
-              <label className="text-xs font-bold text-[var(--muted-strong)]">
-                사용자
-                <select
-                  name="proofMember"
-                  defaultValue={memberFilter}
-                  className="mt-1 w-full rounded-xl border border-[var(--line-strong)] bg-white px-3 py-2 text-sm text-[var(--ink)]"
-                >
-                  <option value="">전체 사용자</option>
-                  {memberships
-                    .filter((membership) => membership.status === "ACTIVE")
-                    .map((membership) => (
-                      <option
-                        key={membership.user_id}
-                        value={membership.user_id}
-                      >
-                        {profileById.get(membership.user_id) ?? "멤버"}
-                      </option>
-                    ))}
-                </select>
-              </label>
-              <label className="text-xs font-bold text-[var(--muted-strong)]">
-                상태
-                <select
-                  name="proofStatus"
-                  defaultValue={proofStatus}
-                  className="mt-1 w-full rounded-xl border border-[var(--line-strong)] bg-white px-3 py-2 text-sm text-[var(--ink)]"
-                >
-                  <option value="all">전체 상태</option>
-                  <option value="participating">승인·검수 대기</option>
-                  <option value="pending">검수 대기</option>
-                  <option value="approved">승인</option>
-                  <option value="rejected">반려</option>
-                </select>
-              </label>
-              <label className="text-xs font-bold text-[var(--muted-strong)]">
-                기간
-                <select
-                  name="proofPeriod"
-                  defaultValue={proofPeriod}
-                  className="mt-1 w-full rounded-xl border border-[var(--line-strong)] bg-white px-3 py-2 text-sm text-[var(--ink)]"
-                >
-                  <option value="all">전체 기간</option>
-                  <option value="today">오늘</option>
-                  <option value="week">이번 주</option>
-                </select>
-              </label>
-              {proofDate && (
-                <p className="text-xs font-bold text-[var(--accent-strong)] sm:col-span-2">
-                  선택한 날짜: {proofDate}
-                </p>
-              )}
-              <div className="flex flex-wrap gap-2 sm:col-span-2">
-                <button
-                  type="submit"
-                  className="rounded-xl bg-[var(--ink)] px-4 py-2 text-sm font-bold text-white"
-                >
-                  검색·필터 적용
-                </button>
-                {hasProofFilters && (
-                  <Link
-                    href={`/groups/${group.slug}${weekQuery ? `?${weekQuery}` : ""}#proof-records`}
-                    className="rounded-xl border border-[var(--line-strong)] px-4 py-2 text-sm font-bold"
-                  >
-                    초기화
-                  </Link>
-                )}
-              </div>
-            </form>
-
-            {proofs.length ? (
-              <ul className="mt-5 space-y-4">
-                {proofs.map((proof) => {
-                  const account = accountById.get(
-                    proof.platform_account_id ?? "",
-                  );
-                  const review = reviewByProofId.get(proof.id);
-                  const active = proof.verification_status !== "CANCELING";
-                  const link = active ? problemLink(proof.problem_url) : null;
-                  const reviewable =
-                    canReview &&
-                    proof.user_id !== user.id &&
-                    proof.verification_status === "PENDING";
-                  return (
-                    <li
-                      key={proof.id}
-                      className="rounded-2xl border border-[var(--line)] p-5"
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <a
-                            href={
-                              !active
-                                ? undefined
-                                : proof.evidence_path
-                                  ? `/proofs/${proof.id}/evidence`
-                                  : link?.url
-                            }
-                            target="_blank"
-                            rel="noreferrer"
-                            className="font-bold hover:text-[var(--accent-strong)]"
-                          >
-                            {proof.problem_title ||
-                              (proof.evidence_path
-                                ? "사진 풀이 기록"
-                                : proof.problem_key)}
-                          </a>
-                          <p className="mt-1 text-sm text-[var(--muted)]">
-                            {profileById.get(proof.user_id) ?? "멤버"} ·{" "}
-                            {account
-                              ? `${platformLabels[account.platform]} ${account.handle}`
-                              : "사진 인증"}
-                          </p>
-                          <p className="mt-1 font-mono text-xs text-[var(--muted)]">
-                            {proof.platform_account_id ? "풀이 " : "등록 "}
-                            {displayDate(proof.accepted_at)}
-                          </p>
-                        </div>
-                        <span className="rounded-full bg-[var(--surface-subtle)] px-3 py-1 text-xs font-bold">
-                          {proofStatusLabels[proof.verification_status] ??
-                            proof.verification_status}
-                        </span>
-                      </div>
-
-                      {proof.evidence_path && active && (
-                        <a
-                          href={`/proofs/${proof.id}/evidence`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="mt-4 block"
-                        >
-                          <Image
-                            src={`/proofs/${proof.id}/evidence`}
-                            alt="풀이 인증 사진"
-                            width={720}
-                            height={480}
-                            unoptimized
-                            className="max-h-80 w-full rounded-xl bg-[var(--surface-subtle)] object-contain"
-                          />
-                          <span className="mt-1 block text-xs text-[var(--muted)]">
-                            사진 크게 보기
-                          </span>
-                        </a>
-                      )}
-
-                      {link && (
-                        <a
-                          href={link.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="mt-3 inline-block rounded-xl border border-[var(--line-strong)] px-4 py-2 text-sm font-bold text-[var(--muted-strong)]"
-                        >
-                          {link.platform}에서 이 문제 풀어보기 ↗
-                        </a>
-                      )}
-
-                      {review && (
-                        <p className="mt-3 rounded-xl bg-[var(--surface-subtle)] px-4 py-3 text-sm text-[var(--muted-strong)]">
-                          {review.decision === "APPROVED" ? "승인" : "반려"}
-                          {review.note ? ` · ${review.note}` : ""}
-                        </p>
-                      )}
-
-                      {reviewable && (
-                        <form
-                          action={reviewProofAction}
-                          className="mt-4 border-t border-[var(--line)] pt-4"
-                        >
-                          <input
-                            type="hidden"
-                            name="proofId"
-                            value={proof.id}
-                          />
-                          <input
-                            type="hidden"
-                            name="groupSlug"
-                            value={group.slug}
-                          />
-                          <textarea
-                            name="note"
-                            maxLength={500}
-                            rows={2}
-                            className="w-full rounded-xl border border-[var(--line-strong)] px-4 py-3 text-sm"
-                            placeholder="검수 메모 (선택)"
-                          />
-                          <div className="mt-2 flex gap-2">
-                            <button
-                              type="submit"
-                              name="decision"
-                              value="APPROVED"
-                              className="rounded-xl bg-[var(--ink)] px-4 py-2 text-sm font-bold text-white"
-                            >
-                              승인
-                            </button>
-                            <button
-                              type="submit"
-                              name="decision"
-                              value="REJECTED"
-                              className="rounded-xl border border-red-200 px-4 py-2 text-sm font-bold text-red-700"
-                            >
-                              반려
-                            </button>
-                          </div>
-                        </form>
-                      )}
-
-                      {proof.user_id === user.id &&
-                        ["PENDING", "CANCELING"].includes(
-                          proof.verification_status,
-                        ) && (
-                          <form action={deleteProofAction} className="mt-3">
-                            <input
-                              type="hidden"
-                              name="proofId"
-                              value={proof.id}
-                            />
-                            <input
-                              type="hidden"
-                              name="groupSlug"
-                              value={group.slug}
-                            />
-                            <CancelProofButton
-                              retry={proof.verification_status === "CANCELING"}
-                            />
-                          </form>
-                        )}
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <p className="mt-5 rounded-2xl bg-[var(--surface-subtle)] px-5 py-10 text-center text-sm text-[var(--muted)]">
-                {hasProofFilters
-                  ? "조건에 맞는 풀이 기록이 없습니다."
-                  : "등록된 풀이가 없습니다."}
-              </p>
-            )}
-          </div>
-        </section>
-
-        {isOwner && pendingMemberships.length > 0 && (
-          <section className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-sm">
-            <h2 className="text-xl font-extrabold">
-              가입 승인 대기 {pendingMemberships.length}명
-            </h2>
-            <ul className="mt-2 space-y-2">
-              {pendingMemberships.map((membership) => (
-                <li
-                  key={membership.user_id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[var(--surface-subtle)] px-4 py-3"
-                >
-                  <span className="font-bold">
-                    {profileById.get(membership.user_id) ??
-                      `멤버 ${membership.user_id.slice(0, 8)}`}
-                  </span>
-                  <form action={approveMembershipAction}>
-                    <input type="hidden" name="groupId" value={group.id} />
-                    <input
-                      type="hidden"
-                      name="groupSlug"
-                      value={group.slug}
-                    />
-                    <input
-                      type="hidden"
-                      name="userId"
-                      value={membership.user_id}
-                    />
-                    <button
-                      type="submit"
-                      className="rounded-xl bg-[var(--ink)] px-3 py-2 text-sm font-bold text-white"
-                    >
-                      가입 승인
-                    </button>
-                  </form>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
       </div>
-    </main>
+
+      {isOwner && (pendingMemberships.length > 0 || manageableMembers.length > 0) && (
+        <section aria-label="멤버 관리" className="mt-7">
+          <h2>멤버 관리</h2>
+          {pendingMemberships.length > 0 && (
+            <>
+              <p className="mt-3 text-xs text-sub">
+                가입 승인 대기 {pendingMemberships.length}명
+              </p>
+              <ul className="mt-2 rounded-xl border border-line">
+                {pendingMemberships.map((membership) => (
+                  <li
+                    key={membership.user_id}
+                    className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 last:border-b-0"
+                  >
+                    <span className="text-[13px] font-medium">
+                      {profileById.get(membership.user_id) ??
+                        `멤버 ${membership.user_id.slice(0, 8)}`}
+                    </span>
+                    <form action={approveMembershipAction}>
+                      <input type="hidden" name="groupId" value={group.id} />
+                      <input type="hidden" name="groupSlug" value={group.slug} />
+                      <input
+                        type="hidden"
+                        name="userId"
+                        value={membership.user_id}
+                      />
+                      <button type="submit" className="btn btn-primary">
+                        가입 승인
+                      </button>
+                    </form>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+
+          {manageableMembers.length > 0 && (
+            <>
+              <p className="mt-4 text-xs text-sub">검수자 지정</p>
+              <ul className="mt-2 rounded-xl border border-line">
+                {manageableMembers.map((membership) => (
+                  <li
+                    key={membership.user_id}
+                    className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 last:border-b-0"
+                  >
+                    <span className="text-[13px] font-medium">
+                      {profileById.get(membership.user_id) ?? "멤버"}
+                    </span>
+                    <form
+                      action={setMemberRoleAction}
+                      className="flex items-center gap-2"
+                    >
+                      <input type="hidden" name="groupId" value={group.id} />
+                      <input type="hidden" name="groupSlug" value={group.slug} />
+                      <input
+                        type="hidden"
+                        name="userId"
+                        value={membership.user_id}
+                      />
+                      <select
+                        name="role"
+                        aria-label={`${profileById.get(membership.user_id) ?? "멤버"} 역할`}
+                        defaultValue={membership.role}
+                      >
+                        <option value="MEMBER">멤버</option>
+                        <option value="REVIEWER">검수자</option>
+                      </select>
+                      <button type="submit" className="btn">
+                        변경
+                      </button>
+                    </form>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
+      )}
+    </AppShell>
   );
 }
