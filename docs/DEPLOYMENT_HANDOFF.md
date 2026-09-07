@@ -36,6 +36,7 @@ SQL Editor 또는 Supabase MCP의 `apply_migration`으로 아래 마이그레이
 - `20260905050000_photo_storage_limit.sql`
 - `20260905060000_group_overview_featured_photo.sql`
 - `20260907000000_group_overview_week_range.sql`
+- `20260907010000_problem_links.sql`
 
 적용 버전은 `supabase_migrations.schema_migrations`에도 등록합니다. 기존 마이그레이션을 재실행하지 않고 새 마이그레이션부터 적용합니다.
 
@@ -43,7 +44,14 @@ MCP의 `apply_migration`은 버전을 실행 시각으로 기록하므로 저장
 
 `20260907000000_group_overview_week_range.sql`은 `get_group_overview`에 인자를 추가하므로 기존 1인자 함수를 지우고 다시 만듭니다. 두 정의가 공존하지 않도록 한 트랜잭션으로 실행하며, 새 코드가 2인자로 호출하기 때문에 `main` 배포보다 먼저 적용해야 합니다.
 
+`20260907010000_problem_links.sql`은 컬럼을 더하지 않고 기존 `problem_url`에 CHECK 제약과 부분 인덱스만 추가합니다. 구버전 코드는 이 컬럼을 비워두므로 배포 순서와 무관하게 동작하지만, 제약이 없는 상태로 새 코드가 뜨면 검증이 앱에만 남으므로 `main` 배포보다 먼저 적용했습니다. 적용 전 `problem_url`이 `https`가 아니거나 500자를 넘는 행이 없는지 확인해야 제약 추가가 실패하지 않습니다(적용 시점 운영 데이터는 기록 5건 중 링크 0건).
+
 그룹 생성·초대 수락·가입 승인·검수자 지정 함수가 연결되어 있습니다. 그룹 데이터는 ACTIVE 멤버만 조회하며, 작성자 본인의 풀이 검수는 차단됩니다.
+
+## 도구 접근 제약
+
+- Vercel MCP는 `hongyeseuls-projects` 스코프에 인증돼 있지 않아 `list_deployments`가 403을 반환합니다. 배포 상태는 `gh api repos/HongYeseul/coding-test-verification/deployments`와 커밋 상태로 확인했습니다. MCP로 배포를 다루려면 해당 스코프로 다시 인증해야 합니다.
+- 운영 DB에 쓰기 형태의 SQL은 실행 정책에서 차단됩니다. 제약 검증은 스키마 조회와 읽기 전용 평가로 대신하고, 데이터를 넣는 회귀 테스트는 SQL Editor에서 직접 실행합니다.
 
 ## 로컬 실행과 검증
 
@@ -57,6 +65,19 @@ Node.js 24에서 `pnpm test`, `pnpm check`를 실행합니다. 로컬 `.env.loca
 - 로그인 복귀 URL 검증 테스트 및 lint·타입 검사·빌드 통과
 - 운영 브라우저에서 GitHub 로그인, 대시보드 진입, 그룹 생성과 ACTIVE 소유자 화면 확인
 - 주간 이동 배포(2026-09-07): 운영 DB에서 지난 주 집계, 주 중간 날짜의 월요일 정규화, 미래 주와 그룹 생성 이전 주 제한 확인. 함수는 `get_group_overview(uuid, date)` 하나만 남고 `authenticated`만 실행 가능. 운영 화면에서 화살표 이동, 첫 주에서 `←` 비활성, `이번 주로` 복귀, 주소의 `week` 값과 풀이 기록 필터가 함께 유지되는 것까지 확인
+
+## 문제 링크
+
+- 풀이 등록 시 문제 링크를 선택으로 받습니다. 허용 플랫폼은 프로그래머스(`programmers.co.kr`, `school.programmers.co.kr`), 백준(`acmicpc.net`), LeetCode, Codeforces, AtCoder, HackerRank, Codewars입니다. 호스트는 `www.`만 떼고 정확히 비교하므로 `acmicpc.net.evil.com` 같은 주소는 통과하지 않습니다.
+- 저장할 때 쿼리·프래그먼트·끝 슬래시를 지워 언어 선택 파라미터가 달라도 같은 문제로 모입니다. 자격증명과 포트도 함께 떨어집니다.
+- 브라우저가 `proofs`에 직접 INSERT할 수 있으므로 검증을 두 겹으로 둡니다. DB의 `proofs_problem_url_format`은 `https` 시작과 500자 이하만 허용하고, 허용 호스트 판단은 저장할 때와 화면에 그릴 때 모두 앱에서 합니다. 허용 밖 링크가 어떤 경로로 들어와도 화면에서는 클릭 가능한 링크로 나오지 않습니다.
+- 호스트 목록을 SQL에 넣지 않았으므로 플랫폼 추가는 `src/lib/proof-input.ts` 수정만으로 끝나고 마이그레이션이 필요 없습니다.
+- 그룹 화면의 ‘우리 그룹이 푼 문제’는 링크를 남긴 기록을 최근 200건까지 모아 같은 문제로 묶고 등록한 멤버와 본인 등록 여부를 보여줍니다. 반려·취소 처리 중인 기록은 제외하며 풀이 기록 목록의 검색·필터와 무관하게 그룹 전체를 봅니다. 조회는 검수·플랫폼 계정 조회와 같은 `Promise.all`에 넣어 왕복이 늘지 않습니다.
+- 문제 제목은 사용자가 직접 입력합니다. 크롤링을 금지한 플랫폼이 있어 링크에서 제목을 가져오지 않습니다. 링크는 참고용이며 검수 대상은 사진입니다.
+- 등록한 기록의 링크는 나중에 고칠 수 없습니다. `proofs`에 UPDATE 권한과 정책이 없어 사후 편집을 열려면 RLS를 새로 설계해야 합니다.
+- 회귀 테스트: `tests/proof-input.test.mjs`의 스킴·호스트 위조·정규화·길이, `tests/group-problems.test.mjs`의 묶기와 제외, `tests/group-page-queries.test.mjs`의 문제 목록 조회 조건. DB 제약은 `supabase/tests/problem_links.sql`로 검증하며 데이터는 롤백합니다.
+- 문제 링크 배포(2026-09-07): 마이그레이션을 운영에 먼저 적용하고 `schema_migrations` 버전을 `20260907010000`으로 맞췄습니다. `pg_constraint`와 `pg_indexes`에서 제약식·인덱스 정의를 확인했고, 제약식을 읽기 전용으로 평가해 `http`·`javascript:`·500자 초과가 걸러지는 것을 확인했습니다. 적용 후 새로 생긴 보안 권고는 없습니다. 커밋 `c7e5939`가 Production에 배포됐고 `/`와 `/dashboard`가 200을 반환합니다.
+- 운영 브라우저에서 링크 입력·문제 목록 표시는 아직 확인하지 않았습니다. 적용 시점에 링크를 남긴 기록이 없어 문제 목록은 빈 상태 안내를 표시합니다.
 
 ## 사진 등록과 초대코드
 
