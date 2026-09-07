@@ -40,6 +40,7 @@ function render({
   proofFilterQuery = "",
   githubLogin = "member",
   bio = null,
+  members = null,
 } = {}) {
   const days = Array.from({ length: 7 }, (_, index) => {
     const date = new Date(`${weekStart}T00:00:00Z`);
@@ -55,7 +56,7 @@ function render({
         currentWeekStart,
         firstWeekStart,
         days,
-        members: [
+        members: members ?? [
           {
             userId: "member",
             displayName: "멤버",
@@ -125,12 +126,83 @@ test("한 줄 소개는 이름 칸에 마우스를 올렸을 때 나오는 카�
 
 test("한 줄 소개가 없으면 소개 카드를 만들지 않는다", () => {
   const html = render();
-  assert.doesNotMatch(html, /role="tooltip"/);
+  // 머리글의 정렬 안내와 구분하기 위해 멤버 카드 전용 클래스로 확인합니다.
+  assert.doesNotMatch(html, /group-hover\/member:block/);
 });
 
 test("형식이 잘못된 GitHub 아이디는 이름 칸에 넣지 않는다", () => {
   const html = render({ githubLogin: "Bad Login" });
   assert.doesNotMatch(html, /font-mono/);
+});
+
+/** 이름 칸에 그려진 닉네임을 화면에 나온 순서대로 모읍니다. */
+function memberOrder(html) {
+  return [
+    ...html.matchAll(/class="block truncate text-\[11px\] sm:text-\[13px\]">([^<]*)</g),
+  ].map((match) => match[1]);
+}
+
+function member(displayName, weekApproved, totalApproved) {
+  return {
+    userId: displayName,
+    displayName,
+    githubLogin: null,
+    bio: null,
+    role: "MEMBER",
+    todaySubmitted: 0,
+    weekApproved,
+    totalApproved,
+    pending: 0,
+    featuredProofId: null,
+    featuredDate: null,
+    days: [],
+  };
+}
+
+test("멤버는 선택한 주의 승인이 많은 순으로 놓는다", () => {
+  const html = render({
+    members: [
+      member("alpha", 0, 0),
+      member("beta", 2, 0),
+      member("gamma", 1, 9),
+    ],
+  });
+  assert.deepEqual(memberOrder(html), ["beta", "gamma", "alpha"]);
+});
+
+test("주간 승인이 같으면 누적 승인이 많은 멤버를 위에 놓는다", () => {
+  const html = render({
+    members: [
+      member("alpha", 0, 0),
+      member("zulu", 0, 5),
+    ],
+  });
+  assert.deepEqual(memberOrder(html), ["zulu", "alpha"]);
+});
+
+test("주간과 누적이 모두 같으면 한국어 닉네임순으로 놓는다", () => {
+  const html = render({
+    members: [
+      member("zulu", 0, 0),
+      member("홍예슬", 0, 0),
+      member("alpha", 0, 0),
+    ],
+  });
+  assert.deepEqual(memberOrder(html), ["홍예슬", "alpha", "zulu"]);
+});
+
+test("멤버 열 머리글에 정렬 기준을 적고 동점 규칙은 마우스를 올리면 보여준다", () => {
+  const html = render({ weekStart: "2026-09-07" });
+  assert.match(html, /· 이번 주 승인순</);
+  assert.match(
+    html,
+    /role="tooltip"[^>]*group-hover\/sort:block[^>]*>이번 주 승인이 많은 순서입니다\. 같으면 누적 승인이 많은 순서, 그다음 닉네임순입니다\.</,
+  );
+});
+
+test("지난 주를 볼 때는 정렬 기준 표시도 선택한 주로 바뀐다", () => {
+  const html = render();
+  assert.match(html, /· 선택한 주 승인순</);
 });
 
 test("날짜 셀 링크는 보고 있는 주를 유지한다", () => {

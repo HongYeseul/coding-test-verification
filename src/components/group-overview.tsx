@@ -23,6 +23,21 @@ function initials(name: string) {
   return name.trim().slice(0, 2).toUpperCase();
 }
 
+/**
+ * 멤버를 보여줄 순서로 놓습니다. 이번 주 승인이 많은 순서이고,
+ * 같으면 누적 승인이 많은 순서, 그다음 닉네임순입니다.
+ * 닉네임까지 같을 때 순서가 흔들리지 않도록 userId로 마지막을 고정합니다.
+ */
+function sortedMembers(members: OverviewMember[]) {
+  return members.toSorted(
+    (left, right) =>
+      right.weekApproved - left.weekApproved ||
+      right.totalApproved - left.totalApproved ||
+      left.displayName.localeCompare(right.displayName, "ko") ||
+      left.userId.localeCompare(right.userId),
+  );
+}
+
 /** 이름 옆에 GitHub 아이디를 붙이고, 마우스를 올리면 한 줄 소개를 보여줍니다. */
 function MemberCell({ member, isMe }: { member: OverviewMember; isMe: boolean }) {
   const handle = githubHandle(member.githubLogin);
@@ -76,6 +91,8 @@ export function GroupOverview({
   const isCurrentWeek = data.weekStart === data.currentWeekStart;
   // 선택한 주를 유지한 채 풀이 기록 필터로 이동하기 위한 조각입니다.
   const weekParam = isCurrentWeek ? "" : `&week=${data.weekStart}`;
+  const members = sortedMembers(data.members);
+  const weekLabel = isCurrentWeek ? "이번 주" : "선택한 주";
   const todayParticipants = data.members.filter(
     (member) => member.todaySubmitted > 0,
   ).length;
@@ -94,9 +111,7 @@ export function GroupOverview({
     >
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-t-[11px] bg-soft px-3 py-3 sm:px-5 sm:py-4">
         <div className="flex items-center gap-2 sm:gap-3">
-          <h2 id="group-overview-title">
-            {isCurrentWeek ? "이번 주" : "선택한 주"}
-          </h2>
+          <h2 id="group-overview-title">{weekLabel}</h2>
           <span className="text-xs text-sub tabular-nums">
             {shortDate(data.weekStart)} — {shortDate(data.weekEnd)}
           </span>
@@ -142,15 +157,27 @@ export function GroupOverview({
         <div className="px-2 pt-2 sm:px-5">
           <table className="w-full table-fixed border-collapse">
             <caption className="sr-only">
-              멤버별 주간 인증 현황. 승인 열은 선택한 주의 승인 건수입니다.
+              멤버별 주간 인증 현황. 승인 열은 선택한 주의 승인 건수입니다. 멤버는
+              {weekLabel} 승인이 많은 순서로 놓고, 같으면 누적 승인이 많은 순서,
+              그다음 닉네임순입니다.
             </caption>
             <thead>
               <tr>
                 <th
                   scope="col"
-                  className="w-[36%] py-[7px] text-left text-[11px] font-medium text-sub sm:w-[34%]"
+                  className="relative w-[36%] py-[7px] text-left text-[11px] font-medium text-sub sm:w-[34%]"
                 >
-                  멤버
+                  <span className="group/sort inline-flex items-center gap-1">
+                    멤버
+                    <span className="font-normal">· {weekLabel} 승인순</span>
+                    <span
+                      role="tooltip"
+                      className="pointer-events-none absolute top-full left-0 z-20 hidden w-max max-w-[260px] rounded-lg border border-line bg-canvas px-3 py-2 text-[11px] leading-[1.6] font-normal text-sub group-hover/sort:block"
+                    >
+                      {weekLabel} 승인이 많은 순서입니다. 같으면 누적 승인이 많은
+                      순서, 그다음 닉네임순입니다.
+                    </span>
+                  </span>
                 </th>
                 {data.days.map((date, index) => {
                   const isToday = date === data.today;
@@ -177,7 +204,7 @@ export function GroupOverview({
               </tr>
             </thead>
             <tbody>
-              {data.members.map((member) => (
+              {members.map((member) => (
                 <tr key={member.userId}>
                   <MemberCell member={member} isMe={member.userId === currentUserId} />
                   {data.days.map((date) => {
