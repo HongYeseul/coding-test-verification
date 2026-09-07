@@ -12,9 +12,12 @@ import { useRouter } from "next/navigation";
 import { createPhotoProofAction } from "@/app/actions/proofs";
 import { createClient } from "@/lib/supabase/client";
 import {
+  MAX_PROBLEM_URL_LENGTH,
+  PROBLEM_URL_ERROR,
   MAX_SOURCE_PHOTO_BYTES,
   PHOTO_EXTENSIONS,
   photoError,
+  problemLink,
 } from "@/lib/proof-input";
 import { compressPhoto } from "@/lib/compress-photo";
 
@@ -102,6 +105,11 @@ export function PhotoProofForm({
       setMessage(validationError);
       return;
     }
+    const problemUrl = String(data.get("problemUrl") ?? "").trim();
+    if (problemUrl && !problemLink(problemUrl)) {
+      setMessage(PROBLEM_URL_ERROR);
+      return;
+    }
     submitting.current = true;
     setBusy(true);
     setMessage("사진을 등록하고 있습니다.");
@@ -137,6 +145,7 @@ export function PhotoProofForm({
         groupSlug,
         evidencePath: upload.current.path,
         title: String(data.get("title") ?? ""),
+        problemUrl,
       });
       if (result.error) {
         setMessage(result.error);
@@ -242,9 +251,33 @@ export function PhotoProofForm({
         placeholder="예: 프로그래머스 두 수의 합"
         className="mt-2 w-full rounded-xl border border-[var(--line-strong)] px-4 py-3"
       />
+      <label
+        htmlFor="proof-problem-url"
+        className="mt-4 block text-sm font-bold"
+      >
+        문제 링크 (선택)
+      </label>
+      <input
+        id="proof-problem-url"
+        name="problemUrl"
+        inputMode="url"
+        maxLength={MAX_PROBLEM_URL_LENGTH}
+        disabled={busy}
+        placeholder="https://school.programmers.co.kr/learn/courses/30/lessons/12345"
+        className="mt-2 w-full rounded-xl border border-[var(--line-strong)] px-4 py-3"
+        aria-describedby="problem-url-help"
+      />
+      <p
+        id="problem-url-help"
+        className="mt-2 text-xs leading-5 text-[var(--muted)]"
+      >
+        넣으면 다른 멤버가 같은 문제를 바로 풀어볼 수 있습니다. 프로그래머스,
+        백준, LeetCode, Codeforces, AtCoder, HackerRank, Codewars의 https 주소만
+        받습니다.
+      </p>
       <p className="mt-3 text-xs leading-5 text-[var(--muted)]">
         등록 시각이 기록됩니다. 사진 속 문제명·풀이 날짜는 자동으로 추출하지
-        않습니다.
+        않습니다. 문제 링크는 참고용이며 검수 대상은 사진입니다.
       </p>
       <button
         type="submit"

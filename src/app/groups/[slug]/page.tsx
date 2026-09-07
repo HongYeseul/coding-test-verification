@@ -14,7 +14,10 @@ import { StatusMessage } from "@/components/status-message";
 import { requireUser } from "@/lib/auth";
 import { firstQueryValue } from "@/lib/form";
 import { GroupOverview } from "@/components/group-overview";
+import { GroupProblems } from "@/components/group-problems";
+import { problemLink } from "@/lib/proof-input";
 import type { GroupOverviewData } from "@/lib/group-overview";
+import type { ProblemProofRow } from "@/lib/group-problems";
 import { CancelProofButton } from "@/components/cancel-proof-button";
 
 type MembershipRow = {
@@ -297,21 +300,36 @@ export default async function GroupPage({
       ),
     ),
   ];
-  const [{ data: reviewData }, { data: accountData }] = await Promise.all([
-    proofIds.length
-      ? supabase
-          .from("proof_reviews")
-          .select("proof_id, decision, note")
-          .in("proof_id", proofIds)
-      : Promise.resolve({ data: [] }),
-    accountIds.length
-      ? supabase
-          .from("platform_accounts")
-          .select("id, user_id, platform, handle, verification_status")
-          .in("id", accountIds)
-      : Promise.resolve({ data: [] }),
-  ]);
+  const [{ data: reviewData }, { data: accountData }, { data: problemData }] =
+    await Promise.all([
+      proofIds.length
+        ? supabase
+            .from("proof_reviews")
+            .select("proof_id, decision, note")
+            .in("proof_id", proofIds)
+        : Promise.resolve({ data: [] }),
+      accountIds.length
+        ? supabase
+            .from("platform_accounts")
+            .select("id, user_id, platform, handle, verification_status")
+            .in("id", accountIds)
+        : Promise.resolve({ data: [] }),
+      // 문제 목록은 기록 목록의 필터와 무관하게 그룹 전체에서 최근 링크를 모읍니다.
+      supabase
+        .from("proofs")
+        .select("problem_url, problem_title, user_id, created_at")
+        .eq("group_id", group.id)
+        .not("problem_url", "is", null)
+        .in("verification_status", [
+          "PENDING",
+          "MANUAL_REVIEWED",
+          "API_VERIFIED",
+        ])
+        .order("created_at", { ascending: false })
+        .limit(200),
+    ]);
   const accounts = (accountData ?? []) as PlatformAccountRow[];
+  const problemRows = (problemData ?? []) as ProblemProofRow[];
   const reviews = (reviewData ?? []) as ReviewRow[];
   const accountById = new Map(accounts.map((account) => [account.id, account]));
   const reviewByProofId = new Map(
@@ -434,6 +452,12 @@ export default async function GroupPage({
             인증 현황을 불러오지 못했습니다. 잠시 후 페이지를 새로고침해주세요.
           </p>
         )}
+
+        <GroupProblems
+          rows={problemRows}
+          profileById={profileById}
+          currentUserId={user.id}
+        />
 
         <section className="grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">
           <div>
@@ -558,6 +582,8 @@ export default async function GroupPage({
                     proof.platform_account_id ?? "",
                   );
                   const review = reviewByProofId.get(proof.id);
+                  const active = proof.verification_status !== "CANCELING";
+                  const link = active ? problemLink(proof.problem_url) : null;
                   const reviewable =
                     canReview &&
                     proof.user_id !== user.id &&
@@ -571,10 +597,11 @@ export default async function GroupPage({
                         <div>
                           <a
                             href={
-                              proof.verification_status === "CANCELING"
+                              !active
                                 ? undefined
-                                : (proof.problem_url ??
-                                  `/proofs/${proof.id}/evidence`)
+                                : proof.evidence_path
+                                  ? `/proofs/${proof.id}/evidence`
+                                  : link?.url
                             }
                             target="_blank"
                             rel="noreferrer"
@@ -602,27 +629,37 @@ export default async function GroupPage({
                         </span>
                       </div>
 
-                      {proof.evidence_path &&
-                        proof.verification_status !== "CANCELING" && (
-                          <a
-                            href={`/proofs/${proof.id}/evidence`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="mt-4 block"
-                          >
-                            <Image
-                              src={`/proofs/${proof.id}/evidence`}
-                              alt="풀이 인증 사진"
-                              width={720}
-                              height={480}
-                              unoptimized
-                              className="max-h-80 w-full rounded-xl bg-[var(--surface-subtle)] object-contain"
-                            />
-                            <span className="mt-1 block text-xs text-[var(--muted)]">
-                              사진 크게 보기
-                            </span>
-                          </a>
-                        )}
+                      {proof.evidence_path && active && (
+                        <a
+                          href={`/proofs/${proof.id}/evidence`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-4 block"
+                        >
+                          <Image
+                            src={`/proofs/${proof.id}/evidence`}
+                            alt="풀이 인증 사진"
+                            width={720}
+                            height={480}
+                            unoptimized
+                            className="max-h-80 w-full rounded-xl bg-[var(--surface-subtle)] object-contain"
+                          />
+                          <span className="mt-1 block text-xs text-[var(--muted)]">
+                            사진 크게 보기
+                          </span>
+                        </a>
+                      )}
+
+                      {link && (
+                        <a
+                          href={link.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-3 inline-block rounded-xl border border-[var(--line-strong)] px-4 py-2 text-sm font-bold text-[var(--muted-strong)]"
+                        >
+                          {link.platform}에서 이 문제 풀어보기 ↗
+                        </a>
+                      )}
 
                       {review && (
                         <p className="mt-3 rounded-xl bg-[var(--surface-subtle)] px-4 py-3 text-sm text-[var(--muted-strong)]">

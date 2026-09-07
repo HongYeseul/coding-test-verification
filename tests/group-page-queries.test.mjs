@@ -36,6 +36,10 @@ async function renderGroup(
           filters.push(["in", ...args]);
           return query;
         },
+        not(...args) {
+          filters.push(["not", ...args]);
+          return query;
+        },
         gt() {
           return query;
         },
@@ -103,7 +107,8 @@ async function renderGroup(
     `
     const { requireUser, redirect, notFound } = globalThis.__groupPageImports;
     const React = { createElement: (type, props, ...children) => ({ type, props, children }) };
-    const Link='a', Image='img', PhotoProofForm='form', StatusMessage='div', GroupOverview='section', CancelProofButton='button', InvitePopover='div';
+    const Link='a', Image='img', PhotoProofForm='form', StatusMessage='div', GroupOverview='section', CancelProofButton='button', InvitePopover='div', GroupProblems='section';
+    const problemLink=(value)=>value ? { url: value, platform: '플랫폼' } : null;
     const approveMembershipAction=()=>{}, rotateInviteCodeAction=()=>{}, setMemberRoleAction=()=>{}, deleteProofAction=()=>{}, reviewProofAction=()=>{};
     const firstQueryValue=(value)=>value, getSiteUrl=()=>"https://example.invalid";
     ${source}
@@ -227,15 +232,41 @@ test("이름 검색은 일치하는 활성 사용자만 조회한다", async (t)
   ]);
 });
 
-test("일치하지 않는 사용자 검색은 풀이를 조회하지 않는다", async (t) => {
+// 문제 목록은 기록 목록과 달리 필터와 무관하게 항상 조회합니다.
+function isProblemQuery(call) {
+  return (
+    call.table === "proofs" &&
+    call.filters.some(
+      ([operator, column]) => operator === "not" && column === "problem_url",
+    )
+  );
+}
+
+test("일치하지 않는 사용자 검색은 풀이 기록을 조회하지 않는다", async (t) => {
   const { calls, render } = await renderGroup(t, {
     searchParams: { proofQuery: "없는 사용자" },
   });
   await render();
   assert.equal(
-    calls.some((call) => call.table === "proofs"),
+    calls.some((call) => call.table === "proofs" && !isProblemQuery(call)),
     false,
   );
+});
+
+test("문제 목록은 기록 필터와 무관하게 그룹 전체의 링크를 조회한다", async (t) => {
+  const { calls, render } = await renderGroup(t, {
+    searchParams: { proofQuery: "없는 사용자", proofStatus: "rejected" },
+  });
+  await render();
+  assert.deepEqual(calls.find(isProblemQuery).filters, [
+    ["eq", "group_id", "group"],
+    ["not", "problem_url", "is", null],
+    [
+      "in",
+      "verification_status",
+      ["PENDING", "MANUAL_REVIEWED", "API_VERIFIED"],
+    ],
+  ]);
 });
 
 test("선택한 주를 현황판 조회 인자로 넘긴다", async (t) => {

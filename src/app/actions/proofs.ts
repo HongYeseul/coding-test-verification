@@ -5,16 +5,23 @@ import { redirect } from "next/navigation";
 
 import { requireUser } from "@/lib/auth";
 import { getRequiredText, withStatus } from "@/lib/form";
-import { isPhotoPath } from "@/lib/proof-input";
+import {
+  isPhotoPath,
+  problemLink,
+  PROBLEM_URL_ERROR,
+} from "@/lib/proof-input";
 
 export async function createPhotoProofAction(input: {
   groupId: string;
   groupSlug: string;
   evidencePath: string;
   title: string;
+  problemUrl: string;
 }): Promise<{ error?: string }> {
   const { groupId, groupSlug, evidencePath } = input;
   const title = input.title.trim();
+  const problemUrl = input.problemUrl.trim();
+  const link = problemUrl ? problemLink(problemUrl) : null;
   const { supabase, user } = await requireUser();
   if (
     !UUID_PATTERN.test(groupId) ||
@@ -24,6 +31,7 @@ export async function createPhotoProofAction(input: {
   ) {
     return { error: "사진과 제목을 확인해주세요." };
   }
+  if (problemUrl && !link) return { error: PROBLEM_URL_ERROR };
   const { data: member } = await supabase
     .from("group_members")
     .select("status")
@@ -38,6 +46,7 @@ export async function createPhotoProofAction(input: {
     evidence_path: evidencePath,
     problem_key: evidencePath.split("/")[2],
     problem_title: title || null,
+    problem_url: link?.url ?? null,
     accepted_at: new Date().toISOString(),
   });
   if (error) {
@@ -119,11 +128,9 @@ export async function createProofAction(formData: FormData) {
     ? `/groups/${groupSlug}`
     : "/dashboard";
 
-  let parsedUrl: URL;
-  try {
-    parsedUrl = new URL(problemUrl);
-  } catch {
-    redirect(withStatus(groupPath, "error", "문제 URL을 확인해주세요."));
+  const link = problemLink(problemUrl);
+  if (!link) {
+    redirect(withStatus(groupPath, "error", PROBLEM_URL_ERROR));
   }
 
   const acceptedAt = new Date(`${acceptedAtText}:00+09:00`);
@@ -133,7 +140,6 @@ export async function createProofAction(formData: FormData) {
     problemKey.length < 1 ||
     problemKey.length > 160 ||
     problemTitle.length > 160 ||
-    !["http:", "https:"].includes(parsedUrl.protocol) ||
     Number.isNaN(acceptedAt.getTime()) ||
     acceptedAt.getTime() > Date.now() + 5 * 60 * 1000
   ) {
@@ -176,7 +182,7 @@ export async function createProofAction(formData: FormData) {
     user_id: user.id,
     platform_account_id: platformAccountId,
     problem_key: problemKey,
-    problem_url: parsedUrl.toString(),
+    problem_url: link.url,
     problem_title: problemTitle || null,
     accepted_at: acceptedAt.toISOString(),
   });
