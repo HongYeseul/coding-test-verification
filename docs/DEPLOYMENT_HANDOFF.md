@@ -124,7 +124,8 @@ Node.js 24에서 `pnpm test`, `pnpm check`를 실행합니다. 로컬 `.env.loca
 - 신규 가입과 GitHub 아이디 변경은 `auth.identities`의 `on_auth_identity_github_synced` 트리거가 따라갑니다. `auth.users` 삽입 트리거가 만든 `profiles` 행이 identity보다 먼저 생기므로 UPDATE로 채웁니다.
 - RLS는 행 단위라 컬럼을 막지 못합니다. `profiles`의 UPDATE 권한을 `display_name`·`bio`로, INSERT 권한을 `id`·`display_name`·`bio`로 좁혀 브라우저가 직접 요청해도 `github_login`·`avatar_url`이 바뀌지 않게 했습니다.
 - 저장은 서버 액션 `updateProfileAction`이 처리하고, 앱에서 공백 정리와 보이지 않는 문자 제거를 합니다. 글자 순서를 뒤집어 사칭할 수 있는 양방향 제어문자는 앱에서 지우고, DB는 공백만으로 된 이름·제어문자·길이 초과를 CHECK로 막습니다.
-- GitHub 아이디는 소유자의 가입 승인·검수자 지정 화면과 풀이 상세 모달 작성자 옆에 나옵니다. 주간 현황 매트릭스는 행 높이를 유지하기 위해 이름 칸 툴팁으로만 아이디와 소개를 보여줍니다.
+- GitHub 아이디는 주간 현황 매트릭스의 멤버 이름 옆, 소유자의 가입 승인·검수자 지정 화면, 풀이 상세 모달 작성자 옆에 나옵니다. 이름 옆에 아이디가 붙으면서 멤버 열 폭을 `36%`(모바일)·`34%`(데스크톱)로 넓혔습니다.
+- 한 줄 소개는 매트릭스 행 높이를 늘리지 않도록 이름 칸에 마우스를 올렸을 때 나오는 카드로만 보여줍니다. 카드가 마지막 행에서 잘리지 않도록 `<section>`의 `overflow-hidden`을 빼고 헤더에 `rounded-t-[11px]`을 직접 줬습니다. 소개가 없는 멤버는 카드를 만들지 않으며, hover가 없는 터치 화면에서는 상세 모달과 프로필 화면에서 확인합니다.
 - `get_group_overview`는 시그니처를 바꾸지 않고 `members`에 `githubLogin`·`bio`만 더했습니다. 구버전 화면은 이 값을 읽지 않으므로 배포 전에 적용해도 문제가 없습니다.
 - 회귀 테스트: `tests/profile-input.test.mjs`의 공백·제어문자·길이·GitHub 아이디 형식, `tests/group-page-queries.test.mjs`의 프로필 조회 컬럼, `tests/group-overview-week.test.mjs`의 이름 칸 표시. DB 제약과 컬럼 권한, 아이디 동기화는 `supabase/tests/member_profiles.sql`로 검증하며 데이터는 롤백합니다.
 - 프로필 사진 업로드는 범위에 넣지 않았습니다. `avatar_url`은 가입 때 받은 GitHub 값이 그대로 남아 있고 화면에서 쓰지 않습니다.

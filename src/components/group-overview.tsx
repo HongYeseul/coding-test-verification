@@ -23,12 +23,43 @@ function initials(name: string) {
   return name.trim().slice(0, 2).toUpperCase();
 }
 
-/** 표를 늘리지 않고 이름 칸에 마우스를 올렸을 때 신원과 소개를 보여줍니다. */
-function memberSummary(member: OverviewMember) {
+/** 이름 옆에 GitHub 아이디를 붙이고, 마우스를 올리면 한 줄 소개를 보여줍니다. */
+function MemberCell({ member, isMe }: { member: OverviewMember; isMe: boolean }) {
   const handle = githubHandle(member.githubLogin);
-  return [member.displayName, handle && `@${handle}`, member.bio]
-    .filter(Boolean)
-    .join(" · ");
+  return (
+    <td className="relative h-[52px] border-t border-line text-left text-[13px]">
+      <span className="group/member flex items-center gap-1 font-medium sm:gap-[9px]">
+        <span
+          aria-hidden="true"
+          className="hidden size-7 shrink-0 place-items-center rounded-full bg-soft text-[11px] text-sub sm:grid"
+        >
+          {initials(member.displayName)}
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate text-[11px] sm:text-[13px]">
+            {member.displayName}
+            {isMe && <span className="ml-[3px] text-[10px] text-sub">나</span>}
+            {handle && (
+              <span className="ml-[5px] font-mono text-[10px] font-normal text-sub sm:text-[11px]">
+                @{handle}
+              </span>
+            )}
+          </span>
+          <span className="block text-[11px] text-sub tabular-nums">
+            누적 {member.totalApproved} · 대기 {member.pending}
+          </span>
+        </span>
+        {member.bio && (
+          <span
+            role="tooltip"
+            className="pointer-events-none absolute top-full left-2 z-20 hidden w-max max-w-[240px] rounded-lg border border-line bg-canvas px-3 py-2 text-[11px] leading-[1.6] font-normal text-sub group-hover/member:block sm:left-10"
+          >
+            {member.bio}
+          </span>
+        )}
+      </span>
+    </td>
+  );
 }
 
 export function GroupOverview({
@@ -59,9 +90,9 @@ export function GroupOverview({
   return (
     <section
       aria-labelledby="group-overview-title"
-      className="mb-7 overflow-hidden rounded-xl border border-line"
+      className="mb-7 rounded-xl border border-line"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-soft px-3 py-3 sm:px-5 sm:py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-t-[11px] bg-soft px-3 py-3 sm:px-5 sm:py-4">
         <div className="flex items-center gap-2 sm:gap-3">
           <h2 id="group-overview-title">
             {isCurrentWeek ? "이번 주" : "선택한 주"}
@@ -117,7 +148,7 @@ export function GroupOverview({
               <tr>
                 <th
                   scope="col"
-                  className="w-[28%] py-[7px] text-left text-[11px] font-medium text-sub sm:w-[24%]"
+                  className="w-[36%] py-[7px] text-left text-[11px] font-medium text-sub sm:w-[34%]"
                 >
                   멤버
                 </th>
@@ -148,32 +179,7 @@ export function GroupOverview({
             <tbody>
               {data.members.map((member) => (
                 <tr key={member.userId}>
-                  <td
-                    title={memberSummary(member)}
-                    className="h-[52px] border-t border-line text-left text-[13px]"
-                  >
-                    <span className="flex items-center gap-1 font-medium sm:gap-[9px]">
-                      <span
-                        aria-hidden="true"
-                        className="hidden size-7 shrink-0 place-items-center rounded-full bg-soft text-[11px] text-sub sm:grid"
-                      >
-                        {initials(member.displayName)}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-[11px] sm:text-[13px]">
-                          {member.displayName}
-                          {member.userId === currentUserId && (
-                            <span className="ml-[3px] text-[10px] text-sub">
-                              나
-                            </span>
-                          )}
-                        </span>
-                        <span className="block text-[11px] text-sub tabular-nums">
-                          누적 {member.totalApproved} · 대기 {member.pending}
-                        </span>
-                      </span>
-                    </span>
-                  </td>
+                  <MemberCell member={member} isMe={member.userId === currentUserId} />
                   {data.days.map((date) => {
                     const day = member.days.find((entry) => entry.date === date);
                     const approved = day?.approved ?? 0;

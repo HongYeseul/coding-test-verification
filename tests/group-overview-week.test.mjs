@@ -113,14 +113,24 @@ test("주간 이동 링크는 적용한 풀이 기록 필터를 유지한다", (
   assert.match(html, /href="\/groups\/study\?proofStatus=pending"[^>]*>이번 주로</);
 });
 
-test("멤버 이름 칸에 GitHub 아이디와 한 줄 소개를 함께 보여준다", () => {
+test("멤버 이름 옆에 GitHub 아이디를 함께 보여준다", () => {
+  const html = render();
+  assert.match(html, /class="[^"]*font-mono[^"]*">@member</);
+});
+
+test("한 줄 소개는 이름 칸에 마우스를 올렸을 때 나오는 카드로만 보여준다", () => {
   const html = render({ bio: "매일 한 문제" });
-  assert.match(html, /title="멤버 · @member · 매일 한 문제"/);
+  assert.match(html, /role="tooltip"[^>]*group-hover\/member:block[^>]*>매일 한 문제</);
+});
+
+test("한 줄 소개가 없으면 소개 카드를 만들지 않는다", () => {
+  const html = render();
+  assert.doesNotMatch(html, /role="tooltip"/);
 });
 
 test("형식이 잘못된 GitHub 아이디는 이름 칸에 넣지 않는다", () => {
-  const html = render({ githubLogin: "Bad Login", bio: null });
-  assert.match(html, /title="멤버"/);
+  const html = render({ githubLogin: "Bad Login" });
+  assert.doesNotMatch(html, /font-mono/);
 });
 
 test("날짜 셀 링크는 보고 있는 주를 유지한다", () => {
