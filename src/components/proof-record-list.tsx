@@ -10,6 +10,8 @@ export type ProofRecord = {
   id: string;
   title: string;
   memberName: string;
+  memberHandle: string | null;
+  memberBio: string | null;
   isMine: boolean;
   date: string;
   time: string;
@@ -185,7 +187,19 @@ export function ProofRecordList({
                 </div>
                 <div>
                   <p className="text-xs text-sub">작성자</p>
-                  <p>{record.memberName}</p>
+                  <p>
+                    {record.memberName}
+                    {record.memberHandle && (
+                      <span className="ml-[5px] font-mono text-xs text-sub">
+                        @{record.memberHandle}
+                      </span>
+                    )}
+                  </p>
+                  {record.memberBio && (
+                    <p className="mt-[3px] text-xs text-sub">
+                      {record.memberBio}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <p className="text-xs text-sub">등록 시각</p>

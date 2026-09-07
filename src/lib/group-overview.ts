@@ -8,6 +8,8 @@ export type OverviewDay = {
 export type OverviewMember = {
   userId: string;
   displayName: string;
+  githubLogin: string | null;
+  bio: string | null;
   role: string;
   todaySubmitted: number;
   weekApproved: number;

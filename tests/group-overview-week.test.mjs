@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import ts from "typescript";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { githubHandle } from "../src/lib/profile.ts";
 
 const source = readFileSync(
   new URL("../src/components/group-overview.tsx", import.meta.url),
@@ -11,7 +12,7 @@ const source = readFileSync(
 ).replace(/import[\s\S]*?from\s+["'][^"']+["'];/g, "");
 const compiled = ts.transpileModule(
   `
-  const { React, shiftWeek } = globalThis.__overviewImports;
+  const { React, shiftWeek, githubHandle } = globalThis.__overviewImports;
   const Link = (props) => React.createElement("a", props);
   const RefreshOverviewButton = () => null;
   ${source}
@@ -27,7 +28,7 @@ const compiled = ts.transpileModule(
 ).outputText;
 
 const { shiftWeek } = await import("../src/lib/group-overview.ts");
-globalThis.__overviewImports = { React, shiftWeek };
+globalThis.__overviewImports = { React, shiftWeek, githubHandle };
 const { GroupOverview } = await import(
   `data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`
 );
@@ -37,6 +38,8 @@ function render({
   currentWeekStart = "2026-09-07",
   firstWeekStart = "2026-08-24",
   proofFilterQuery = "",
+  githubLogin = "member",
+  bio = null,
 } = {}) {
   const days = Array.from({ length: 7 }, (_, index) => {
     const date = new Date(`${weekStart}T00:00:00Z`);
@@ -56,6 +59,8 @@ function render({
           {
             userId: "member",
             displayName: "멤버",
+            githubLogin,
+            bio,
             role: "MEMBER",
             todaySubmitted: 0,
             weekApproved: 1,
@@ -106,6 +111,16 @@ test("주간 이동 링크는 적용한 풀이 기록 필터를 유지한다", (
   const html = render({ proofFilterQuery: "proofStatus=pending" });
   assert.match(html, /href="\/groups\/study\?proofStatus=pending&amp;week=2026-08-24"/);
   assert.match(html, /href="\/groups\/study\?proofStatus=pending"[^>]*>이번 주로</);
+});
+
+test("멤버 이름 칸에 GitHub 아이디와 한 줄 소개를 함께 보여준다", () => {
+  const html = render({ bio: "매일 한 문제" });
+  assert.match(html, /title="멤버 · @member · 매일 한 문제"/);
+});
+
+test("형식이 잘못된 GitHub 아이디는 이름 칸에 넣지 않는다", () => {
+  const html = render({ githubLogin: "Bad Login", bio: null });
+  assert.match(html, /title="멤버"/);
 });
 
 test("날짜 셀 링크는 보고 있는 주를 유지한다", () => {

@@ -18,6 +18,7 @@ import { GroupProblems } from "@/components/group-problems";
 import { ProofFilterForm } from "@/components/proof-filter-form";
 import { ProofRecordList } from "@/components/proof-record-list";
 import type { ProofRecord } from "@/components/proof-record-list";
+import { githubHandle } from "@/lib/profile";
 import { problemLink } from "@/lib/proof-input";
 import type { GroupOverviewData } from "@/lib/group-overview";
 import type { ProblemProofRow } from "@/lib/group-problems";
@@ -32,6 +33,8 @@ type MembershipRow = {
 type ProfileRow = {
   id: string;
   display_name: string;
+  bio: string | null;
+  github_login: string | null;
 };
 
 type PlatformAccountRow = {
@@ -164,6 +167,27 @@ function proofDateTime(value: string) {
   };
 }
 
+/** 닉네임이 바뀌어도 누구인지 알 수 있도록 GitHub 아이디를 함께 보여줍니다. */
+function MemberLabel({
+  profile,
+  fallback,
+}: {
+  profile?: ProfileRow;
+  fallback: string;
+}) {
+  const handle = githubHandle(profile?.github_login);
+  return (
+    <span className="min-w-0 text-[13px] font-medium">
+      {profile?.display_name ?? fallback}
+      {handle && (
+        <span className="ml-[5px] font-mono text-xs font-normal text-sub">
+          @{handle}
+        </span>
+      )}
+    </span>
+  );
+}
+
 export default async function GroupPage({
   params,
   searchParams,
@@ -240,13 +264,11 @@ export default async function GroupPage({
   const { data: profileData } = memberIds.length
     ? await supabase
         .from("profiles")
-        .select("id, display_name")
+        .select("id, display_name, bio, github_login")
         .in("id", memberIds)
     : { data: [] };
   const profiles = (profileData ?? []) as ProfileRow[];
-  const profileById = new Map(
-    profiles.map((profile) => [profile.id, profile.display_name]),
-  );
+  const profileById = new Map(profiles.map((profile) => [profile.id, profile]));
   const activeMemberIds = memberships
     .filter((membership) => membership.status === "ACTIVE")
     .map((membership) => membership.user_id);
@@ -255,7 +277,7 @@ export default async function GroupPage({
     : "";
   const matchingMemberIds = proofNameQuery
     ? activeMemberIds.filter((memberId) =>
-        (profileById.get(memberId) ?? "")
+        (profileById.get(memberId)?.display_name ?? "")
           .toLocaleLowerCase("ko-KR")
           .includes(proofNameQuery.toLocaleLowerCase("ko-KR")),
       )
@@ -446,7 +468,9 @@ export default async function GroupPage({
       title:
         proof.problem_title ||
         (proof.evidence_path ? "사진 풀이 기록" : proof.problem_key),
-      memberName: profileById.get(proof.user_id) ?? "멤버",
+      memberName: profileById.get(proof.user_id)?.display_name ?? "멤버",
+      memberHandle: githubHandle(profileById.get(proof.user_id)?.github_login),
+      memberBio: profileById.get(proof.user_id)?.bio ?? null,
       isMine: proof.user_id === user.id,
       date,
       time,
@@ -482,9 +506,14 @@ export default async function GroupPage({
     <AppShell
       context={group.name}
       actions={
-        <Link href="/dashboard" className="text-xs text-sub">
-          그룹 목록
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/settings/profile" className="text-xs text-sub">
+            프로필
+          </Link>
+          <Link href="/dashboard" className="text-xs text-sub">
+            그룹 목록
+          </Link>
+        </div>
       }
     >
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -619,7 +648,8 @@ export default async function GroupPage({
               .filter((membership) => membership.status === "ACTIVE")
               .map((membership) => (
                 <option key={membership.user_id} value={membership.user_id}>
-                  {profileById.get(membership.user_id) ?? "멤버"}
+                  {profileById.get(membership.user_id)?.display_name ??
+                    "멤버"}
                 </option>
               ))}
           </select>
@@ -692,10 +722,10 @@ export default async function GroupPage({
                     key={membership.user_id}
                     className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 last:border-b-0"
                   >
-                    <span className="text-[13px] font-medium">
-                      {profileById.get(membership.user_id) ??
-                        `멤버 ${membership.user_id.slice(0, 8)}`}
-                    </span>
+                    <MemberLabel
+                      profile={profileById.get(membership.user_id)}
+                      fallback={`멤버 ${membership.user_id.slice(0, 8)}`}
+                    />
                     <form action={approveMembershipAction}>
                       <input type="hidden" name="groupId" value={group.id} />
                       <input type="hidden" name="groupSlug" value={group.slug} />
@@ -723,9 +753,10 @@ export default async function GroupPage({
                     key={membership.user_id}
                     className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 last:border-b-0"
                   >
-                    <span className="text-[13px] font-medium">
-                      {profileById.get(membership.user_id) ?? "멤버"}
-                    </span>
+                    <MemberLabel
+                      profile={profileById.get(membership.user_id)}
+                      fallback="멤버"
+                    />
                     <form
                       action={setMemberRoleAction}
                       className="flex items-center gap-2"
@@ -739,7 +770,7 @@ export default async function GroupPage({
                       />
                       <select
                         name="role"
-                        aria-label={`${profileById.get(membership.user_id) ?? "멤버"} 역할`}
+                        aria-label={`${profileById.get(membership.user_id)?.display_name ?? "멤버"} 역할`}
                         defaultValue={membership.role}
                       >
                         <option value="MEMBER">멤버</option>

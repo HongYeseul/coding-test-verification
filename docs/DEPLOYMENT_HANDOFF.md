@@ -37,6 +37,7 @@ SQL Editor 또는 Supabase MCP의 `apply_migration`으로 아래 마이그레이
 - `20260905060000_group_overview_featured_photo.sql`
 - `20260907000000_group_overview_week_range.sql`
 - `20260907010000_problem_links.sql`
+- `20260907020000_member_profiles.sql`
 
 적용 버전은 `supabase_migrations.schema_migrations`에도 등록합니다. 기존 마이그레이션을 재실행하지 않고 새 마이그레이션부터 적용합니다.
 
@@ -45,6 +46,8 @@ MCP의 `apply_migration`은 버전을 실행 시각으로 기록하므로 저장
 `20260907000000_group_overview_week_range.sql`은 `get_group_overview`에 인자를 추가하므로 기존 1인자 함수를 지우고 다시 만듭니다. 두 정의가 공존하지 않도록 한 트랜잭션으로 실행하며, 새 코드가 2인자로 호출하기 때문에 `main` 배포보다 먼저 적용해야 합니다.
 
 `20260907010000_problem_links.sql`은 컬럼을 더하지 않고 기존 `problem_url`에 CHECK 제약과 부분 인덱스만 추가합니다. 구버전 코드는 이 컬럼을 비워두므로 배포 순서와 무관하게 동작하지만, 제약이 없는 상태로 새 코드가 뜨면 검증이 앱에만 남으므로 `main` 배포보다 먼저 적용했습니다. 적용 전 `problem_url`이 `https`가 아니거나 500자를 넘는 행이 없는지 확인해야 제약 추가가 실패하지 않습니다(적용 시점 운영 데이터는 기록 5건 중 링크 0건).
+
+`20260907020000_member_profiles.sql`은 `profiles`에 `github_login`·`bio`를 더하고, 기존 `display_name` CHECK를 앞뒤 공백·제어문자까지 막도록 바꿉니다. `get_group_overview`는 시그니처를 유지한 채 `members`에 두 값을 더합니다. 새 코드가 두 컬럼을 조회하므로 `main` 배포보다 먼저 적용해야 하며, 구버전 코드는 두 컬럼을 읽지도 쓰지도 않아 적용 후에도 그대로 동작합니다. 적용 전 기존 `display_name`이 새 CHECK를 통과하는지, GitHub 아이디가 형식에 맞는지 읽기 전용으로 확인했습니다(프로필 6건 모두 통과).
 
 그룹 생성·초대 수락·가입 승인·검수자 지정 함수가 연결되어 있습니다. 그룹 데이터는 ACTIVE 멤버만 조회하며, 작성자 본인의 풀이 검수는 차단됩니다.
 
@@ -112,6 +115,19 @@ Node.js 24에서 `pnpm test`, `pnpm check`를 실행합니다. 로컬 `.env.loca
 - 데이터 조회 경로는 바꾸지 않았습니다. 쿼리 순서·조건과 `get_group_overview` 호출은 그대로이며 `tests/group-page-queries.test.mjs`가 이를 확인합니다.
 - 화면 개편 배포(2026-09-07): 커밋 `d2091ba`와 후속 수정 `ad74e54`가 Production에 배포됐고 배포 상태는 `success`입니다. `/`, `/dashboard`, `/join/<code>`가 200을 반환하고, 배포된 CSS에서 `@layer base` → `@layer utilities` 순서와 `light-dark()` 폴리필을 확인했습니다. 마이그레이션과 환경변수 변경은 없습니다.
 - 운영 브라우저에서 로그인 후 그룹 화면·상세 모달 동작은 아직 확인하지 않았습니다. 로컬에서는 매트릭스, 탭·필터, 상세 모달의 검수 화면, 등록 모달, 다크 모드, 375px 모바일 폭까지 확인했습니다.
+
+## 프로필
+
+- 상단바의 `프로필`에서 본인 닉네임(40자)과 한 줄 소개(80자)를 정합니다. 소개는 비워둘 수 있고 닉네임 중복은 허용합니다.
+- 기존 멤버 6명의 닉네임은 가입 시 받은 GitHub 아이디 그대로이며 마이그레이션이 값을 바꾸지 않습니다. 그대로 초기 닉네임이 됩니다.
+- 닉네임이 사용자 입력이 되면서 신원 확인 수단이 사라지므로 `profiles.github_login`을 더했습니다. `auth.identities`에서 소문자로 채우고 `user_metadata`는 사용하지 않습니다. 사용자가 바꿀 수 있는 값이라 초대 대상 확인에 쓰지 않는 것과 같은 이유입니다.
+- 신규 가입과 GitHub 아이디 변경은 `auth.identities`의 `on_auth_identity_github_synced` 트리거가 따라갑니다. `auth.users` 삽입 트리거가 만든 `profiles` 행이 identity보다 먼저 생기므로 UPDATE로 채웁니다.
+- RLS는 행 단위라 컬럼을 막지 못합니다. `profiles`의 UPDATE 권한을 `display_name`·`bio`로, INSERT 권한을 `id`·`display_name`·`bio`로 좁혀 브라우저가 직접 요청해도 `github_login`·`avatar_url`이 바뀌지 않게 했습니다.
+- 저장은 서버 액션 `updateProfileAction`이 처리하고, 앱에서 공백 정리와 보이지 않는 문자 제거를 합니다. 글자 순서를 뒤집어 사칭할 수 있는 양방향 제어문자는 앱에서 지우고, DB는 공백만으로 된 이름·제어문자·길이 초과를 CHECK로 막습니다.
+- GitHub 아이디는 소유자의 가입 승인·검수자 지정 화면과 풀이 상세 모달 작성자 옆에 나옵니다. 주간 현황 매트릭스는 행 높이를 유지하기 위해 이름 칸 툴팁으로만 아이디와 소개를 보여줍니다.
+- `get_group_overview`는 시그니처를 바꾸지 않고 `members`에 `githubLogin`·`bio`만 더했습니다. 구버전 화면은 이 값을 읽지 않으므로 배포 전에 적용해도 문제가 없습니다.
+- 회귀 테스트: `tests/profile-input.test.mjs`의 공백·제어문자·길이·GitHub 아이디 형식, `tests/group-page-queries.test.mjs`의 프로필 조회 컬럼, `tests/group-overview-week.test.mjs`의 이름 칸 표시. DB 제약과 컬럼 권한, 아이디 동기화는 `supabase/tests/member_profiles.sql`로 검증하며 데이터는 롤백합니다.
+- 프로필 사진 업로드는 범위에 넣지 않았습니다. `avatar_url`은 가입 때 받은 GitHub 값이 그대로 남아 있고 화면에서 쓰지 않습니다.
 
 ## 화면 전환과 무료 운영
 

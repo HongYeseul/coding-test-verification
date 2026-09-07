@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
+import { githubHandle } from "../src/lib/profile.ts";
 
 async function renderGroup(
   t,
@@ -10,7 +11,9 @@ async function renderGroup(
     role = "OWNER",
     proofs = [],
     searchParams = {},
-    profiles = [{ id: "user", display_name: "멤버" }],
+    profiles = [
+      { id: "user", display_name: "멤버", github_login: "member", bio: null },
+    ],
     overview = null,
   } = {},
 ) {
@@ -20,8 +23,10 @@ async function renderGroup(
     from(table) {
       const filters = [];
       let single = false;
+      let columns = "";
       const query = {
-        select() {
+        select(selected) {
+          columns = selected ?? "";
           return query;
         },
         eq(...args) {
@@ -62,7 +67,7 @@ async function renderGroup(
           return query;
         },
         then(resolve, reject) {
-          calls.push({ table, filters, single });
+          calls.push({ table, filters, single, columns });
           const rows = {
             groups: { id: "group", slug: "study", name: "스터디" },
             group_members: single
@@ -88,6 +93,7 @@ async function renderGroup(
     },
   };
   globalThis.__groupPageImports = {
+    githubHandle,
     requireUser: async () => ({ supabase, user: { id: "user" } }),
     redirect(path) {
       throw Error(`redirect:${path}`);
@@ -105,7 +111,7 @@ async function renderGroup(
   ).replace(/import[\s\S]*?from\s+["'][^"']+["'];/g, "");
   const compiled = ts.transpileModule(
     `
-    const { requireUser, redirect, notFound } = globalThis.__groupPageImports;
+    const { requireUser, redirect, notFound, githubHandle } = globalThis.__groupPageImports;
     const React = { createElement: (type, props, ...children) => ({ type, props, children }) };
     const Link='a', PhotoProofForm='form', StatusMessage='div', GroupOverview='section', InvitePopover='div', GroupProblems='section', AppShell='main', ProofRecordList='div', ProofFilterForm='form';
     const problemLink=(value)=>value ? { url: value, platform: '플랫폼' } : null;
@@ -154,6 +160,13 @@ test("초대코드 조회는 프로필 조회가 끝날 때까지 기다리지 �
     calls.findIndex((c) => c.table === "group_invite_codes") <
       calls.findIndex((c) => c.table === "profiles"),
   );
+});
+
+test("프로필 조회에 닉네임과 GitHub 아이디, 한 줄 소개를 함께 가져온다", async (t) => {
+  const { calls, render } = await renderGroup(t);
+  await render();
+  const profileCall = calls.find((c) => c.table === "profiles");
+  assert.equal(profileCall.columns, "id, display_name, bio, github_login");
 });
 
 test("플랫폼 기록이 없으면 플랫폼 계정 조회를 생략한다", async (t) => {

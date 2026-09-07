@@ -1,6 +1,11 @@
 import Link from "next/link";
 
-import { shiftWeek, type GroupOverviewData } from "@/lib/group-overview";
+import {
+  shiftWeek,
+  type GroupOverviewData,
+  type OverviewMember,
+} from "@/lib/group-overview";
+import { githubHandle } from "@/lib/profile";
 import { RefreshOverviewButton } from "@/components/refresh-overview-button";
 
 const weekdays = ["월", "화", "수", "목", "금", "토", "일"];
@@ -16,6 +21,14 @@ function dayOfMonth(value: string) {
 
 function initials(name: string) {
   return name.trim().slice(0, 2).toUpperCase();
+}
+
+/** 표를 늘리지 않고 이름 칸에 마우스를 올렸을 때 신원과 소개를 보여줍니다. */
+function memberSummary(member: OverviewMember) {
+  const handle = githubHandle(member.githubLogin);
+  return [member.displayName, handle && `@${handle}`, member.bio]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 export function GroupOverview({
@@ -135,7 +148,10 @@ export function GroupOverview({
             <tbody>
               {data.members.map((member) => (
                 <tr key={member.userId}>
-                  <td className="h-[52px] border-t border-line text-left text-[13px]">
+                  <td
+                    title={memberSummary(member)}
+                    className="h-[52px] border-t border-line text-left text-[13px]"
+                  >
                     <span className="flex items-center gap-1 font-medium sm:gap-[9px]">
                       <span
                         aria-hidden="true"

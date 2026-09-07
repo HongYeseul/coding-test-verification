@@ -1,8 +1,11 @@
 import { groupSolvedProblems, type ProblemProofRow } from "@/lib/group-problems";
 
 /** 이름을 세 명까지 보여주고 나머지는 인원수로 줄입니다. */
-function solverNames(ids: string[], profileById: Map<string, string>) {
-  const names = ids.map((id) => profileById.get(id) ?? "멤버");
+function solverNames(
+  ids: string[],
+  profileById: Map<string, { display_name: string }>,
+) {
+  const names = ids.map((id) => profileById.get(id)?.display_name ?? "멤버");
   return names.length > 3
     ? `${names.slice(0, 3).join(", ")} 외 ${names.length - 3}명`
     : names.join(", ");
@@ -14,7 +17,7 @@ export function GroupProblems({
   currentUserId,
 }: {
   rows: ProblemProofRow[];
-  profileById: Map<string, string>;
+  profileById: Map<string, { display_name: string }>;
   currentUserId: string;
 }) {
   const problems = groupSolvedProblems(rows);

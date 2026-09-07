@@ -67,11 +67,16 @@ export default async function DashboardPage({
   return (
     <AppShell
       actions={
-        <form action={signOutAction}>
-          <button type="submit" className="text-xs text-sub">
-            로그아웃
-          </button>
-        </form>
+        <div className="flex items-center gap-3">
+          <Link href="/settings/profile" className="text-xs text-sub">
+            프로필
+          </Link>
+          <form action={signOutAction}>
+            <button type="submit" className="text-xs text-sub">
+              로그아웃
+            </button>
+          </form>
+        </div>
       }
     >
       <header className="mb-6">
