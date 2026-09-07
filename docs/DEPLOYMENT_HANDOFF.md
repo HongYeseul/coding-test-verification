@@ -38,6 +38,7 @@ SQL Editor 또는 Supabase MCP의 `apply_migration`으로 아래 마이그레이
 - `20260907000000_group_overview_week_range.sql`
 - `20260907010000_problem_links.sql`
 - `20260907020000_member_profiles.sql`
+- `20260907030000_group_overview_activity_order.sql`
 
 적용 버전은 `supabase_migrations.schema_migrations`에도 등록합니다. 기존 마이그레이션을 재실행하지 않고 새 마이그레이션부터 적용합니다.
 
@@ -46,6 +47,8 @@ MCP의 `apply_migration`은 버전을 실행 시각으로 기록하므로 저장
 `20260907000000_group_overview_week_range.sql`은 `get_group_overview`에 인자를 추가하므로 기존 1인자 함수를 지우고 다시 만듭니다. 두 정의가 공존하지 않도록 한 트랜잭션으로 실행하며, 새 코드가 2인자로 호출하기 때문에 `main` 배포보다 먼저 적용해야 합니다.
 
 `20260907010000_problem_links.sql`은 컬럼을 더하지 않고 기존 `problem_url`에 CHECK 제약과 부분 인덱스만 추가합니다. 구버전 코드는 이 컬럼을 비워두므로 배포 순서와 무관하게 동작하지만, 제약이 없는 상태로 새 코드가 뜨면 검증이 앱에만 남으므로 `main` 배포보다 먼저 적용했습니다. 적용 전 `problem_url`이 `https`가 아니거나 500자를 넘는 행이 없는지 확인해야 제약 추가가 실패하지 않습니다(적용 시점 운영 데이터는 기록 5건 중 링크 0건).
+
+`20260907030000_group_overview_activity_order.sql`은 `get_group_overview`의 `jsonb_agg` 정렬 절 한 줄만 바꿉니다. 시그니처와 응답 구조가 그대로라 화면 코드 변경이 없고, 적용하는 순간 배포와 무관하게 순서가 바뀝니다.
 
 `20260907020000_member_profiles.sql`은 `profiles`에 `github_login`·`bio`를 더하고, 기존 `display_name` CHECK를 앞뒤 공백·제어문자까지 막도록 바꿉니다. `get_group_overview`는 시그니처를 유지한 채 `members`에 두 값을 더합니다. 새 코드가 두 컬럼을 조회하므로 `main` 배포보다 먼저 적용해야 하며, 구버전 코드는 두 컬럼을 읽지도 쓰지도 않아 적용 후에도 그대로 동작합니다. 적용 전 기존 `display_name`이 새 CHECK를 통과하는지, GitHub 아이디가 형식에 맞는지 읽기 전용으로 확인했습니다(프로필 6건 모두 통과).
 
@@ -101,9 +104,11 @@ Node.js 24에서 `pnpm test`, `pnpm check`를 실행합니다. 로컬 `.env.loca
 - 상단 화살표로 다른 주를 봅니다. 선택한 주는 주소의 `week` 값으로 유지하며 `get_group_overview(target_group_id, target_week_start)`가 그 주 월요일로 맞추고 그룹 생성 주와 이번 주 사이로 제한합니다. 응답의 `weekEnd`·`currentWeekStart`·`firstWeekStart`로 화살표 활성 여부를 정합니다.
 - 주간 승인과 인증 매트릭스는 선택한 주를 따르고, 오늘 참여·누적 승인·검수 대기는 시점과 무관한 현재 값입니다. 취소 처리 중(CANCELING) 기록은 오늘 참여에서 제외합니다.
 - 현재 ACTIVE 멤버만 집계하고 인증이 없는 멤버도 0건으로 표시합니다. 새로고침 버튼으로 다른 멤버의 변경을 갱신합니다.
+- 멤버 행은 선택한 주의 승인 건수 내림차순, 같으면 닉네임, 그다음 `user_id` 순입니다. 오른쪽 끝 `승인` 열이 곧 정렬 기준이라 화면만 보고 순서를 확인할 수 있습니다. 기록이 없는 멤버는 `totals`가 없어 `coalesce(totals.week_approved, 0)`으로 0을 채웁니다. 빼먹으면 `desc` 정렬에서 NULL이 맨 앞으로 올라와 활동 없는 멤버가 1등이 됩니다.
+- 정렬은 DB에서만 하고 화면은 받은 배열을 그대로 그립니다. 주를 옮기면 그 주 기준으로 순서가 다시 계산되고, 닉네임을 바꾸면 동점 구간에서 자리가 바뀝니다.
 - 기록이 있는 칸은 검수 대기 `◷`, 승인 `✓`, 반려 `×` 중 하나와 두 건 이상일 때의 건수를 보여주고, 누르면 그 멤버와 날짜로 좁힌 풀이 기록으로 이동합니다. 사진은 매트릭스가 아니라 기록 목록의 썸네일과 상세 모달에서 지연 로딩하며, 열 때 그룹 권한을 다시 확인합니다. `get_group_overview`가 돌려주는 `featuredProofId`·`featuredDate`는 화면에서 더 쓰지 않지만 함수는 그대로 둡니다.
 - 최근 50개 풀이 기록은 현재 그룹 전체 작성자의 기록이며, 현황판 집계에는 이 개수 제한을 적용하지 않습니다.
-- 회귀 테스트: `supabase/tests/group_overview.sql`의 1,000건 초과 집계, 주간 경계, 지난 주 집계와 월요일 정규화, 미래 주·생성 이전 주 제한, 상태 구분, 비로그인·가입 대기·탈퇴·타 그룹 접근 차단. 화면의 주간 이동 링크는 `tests/group-overview-week.test.mjs`로 확인합니다.
+- 회귀 테스트: `supabase/tests/group_overview_order.sql`의 승인 건수 내림차순·닉네임 tiebreak·기록 없는 멤버 위치. `supabase/tests/group_overview.sql`의 1,000건 초과 집계, 주간 경계, 지난 주 집계와 월요일 정규화, 미래 주·생성 이전 주 제한, 상태 구분, 비로그인·가입 대기·탈퇴·타 그룹 접근 차단. 화면의 주간 이동 링크는 `tests/group-overview-week.test.mjs`로 확인합니다.
 - 스터디 소통 채널은 카카오톡입니다. 카카오톡 알림, 공동 목표, 응원 반응, 연속 참여 집계는 아직 구현하지 않았습니다.
 
 ## 화면 개편
