@@ -255,14 +255,10 @@ export function PhotoProofForm({
                 ref={photoInput}
                 onChange={(event) => prepare(event.target.files?.[0])}
                 className="text-[13px]"
-                aria-describedby="photo-help photo-limits"
+                aria-describedby="photo-help"
               />
               <p id="photo-help" className="text-[13px]">
-                캡처를 복사했다면 이 창에 그대로 붙여넣어도 됩니다.
-              </p>
-              <p id="photo-limits" className="text-[12px]">
-                JPG, PNG, WebP · 최대 20MB · 긴 변 1,440px · 120KB 목표 · 저장
-                최대 300KB. 글자가 흐리면 필요한 부분만 잘라 다시 선택해주세요.
+                복사한 캡처를 붙여넣어도 됩니다 · 20MB까지
               </p>
             </div>
 
