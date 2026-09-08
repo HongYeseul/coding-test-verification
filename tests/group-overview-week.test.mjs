@@ -140,7 +140,7 @@ test("형식이 잘못된 GitHub 아이디는 이름 칸에 넣지 않는다", (
 /** 이름 칸에 그려진 닉네임을 화면에 나온 순서대로 모읍니다. */
 function memberOrder(html) {
   return [
-    ...html.matchAll(/class="block truncate text-\[11px\] sm:text-\[13px\]">([^<]*)</g),
+    ...html.matchAll(/class="block truncate text-\[12px\] sm:text-\[15px\]">([^<]*)</g),
   ].map((match) => match[1]);
 }
 

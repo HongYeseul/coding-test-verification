@@ -37,11 +37,11 @@ function Stat({
   return (
     <span className="grid min-w-max gap-0.5">
       <strong
-        className={`text-[28px] leading-[1.1] font-bold tracking-[-1px] tabular-nums ${tone ?? ""}`}
+        className={`text-[32px] leading-[1.1] font-bold tracking-[-1px] tabular-nums ${tone ?? ""}`}
       >
         {children}
       </strong>
-      <span className="text-[11px] text-sub">{label}</span>
+      <span className="text-[12px] text-sub">{label}</span>
     </span>
   );
 }
@@ -65,32 +65,32 @@ function sortedMembers(members: OverviewMember[]) {
 function MemberCell({ member, isMe }: { member: OverviewMember; isMe: boolean }) {
   const handle = githubHandle(member.githubLogin);
   return (
-    <td className="relative h-[52px] border-t border-line text-left text-[13px]">
+    <td className="relative h-[58px] border-t border-line text-left text-[15px]">
       <span className="group/member flex items-center gap-1 font-medium sm:gap-[9px]">
         <span
           aria-hidden="true"
-          className="hidden size-7 shrink-0 place-items-center rounded-full bg-soft text-[11px] text-sub sm:grid"
+          className="hidden size-8 shrink-0 place-items-center rounded-full bg-soft text-[12px] text-sub sm:grid"
         >
           {initials(member.displayName)}
         </span>
         <span className="min-w-0">
-          <span className="block truncate text-[11px] sm:text-[13px]">
+          <span className="block truncate text-[12px] sm:text-[15px]">
             {member.displayName}
-            {isMe && <span className="ml-[3px] text-[10px] text-sub">나</span>}
+            {isMe && <span className="ml-[3px] text-[11px] text-sub">나</span>}
             {handle && (
-              <span className="ml-[5px] font-mono text-[10px] font-normal text-sub sm:text-[11px]">
+              <span className="ml-[5px] font-mono text-[11px] font-normal text-sub sm:text-[12px]">
                 @{handle}
               </span>
             )}
           </span>
-          <span className="block text-[11px] text-sub tabular-nums">
+          <span className="block text-[12px] text-sub tabular-nums">
             누적 {member.totalApproved} · 대기 {member.pending}
           </span>
         </span>
         {member.bio && (
           <span
             role="tooltip"
-            className="pointer-events-none absolute top-full left-2 z-20 hidden w-max max-w-[240px] rounded-lg border border-line bg-canvas px-3 py-2 text-[11px] leading-[1.6] font-normal text-sub group-hover/member:block sm:left-10"
+            className="pointer-events-none absolute top-full left-2 z-20 hidden w-max max-w-[240px] rounded-lg border border-line bg-canvas px-3 py-2 text-[12px] leading-[1.6] font-normal text-sub group-hover/member:block sm:left-10"
           >
             {member.bio}
           </span>
@@ -147,7 +147,7 @@ export function GroupOverview({
         <div className="flex items-center gap-6 sm:gap-8">
           <Stat label="오늘 인증" tone="text-brand">
             {todayParticipants}
-            <span className="text-[15px] font-[550]">/{data.members.length}</span>
+            <span className="text-[17px] font-[550]">/{data.members.length}</span>
           </Stat>
           <Stat label={`${weekLabel} 승인`}>{weekApproved}</Stat>
           <Stat label="검수 대기" tone={groupPending ? "text-warn" : undefined}>
@@ -155,8 +155,8 @@ export function GroupOverview({
           </Stat>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[13px] font-[650]">{weekLabel}</span>
-          <span className="text-xs text-sub tabular-nums">
+          <span className="text-[15px] font-[650]">{weekLabel}</span>
+          <span className="text-[13px] text-sub tabular-nums">
             {shortDate(data.weekStart)} — {shortDate(data.weekEnd)}
           </span>
           <WeekArrow
@@ -176,7 +176,7 @@ export function GroupOverview({
           {!isCurrentWeek && (
             <Link
               href={weekHref(data.currentWeekStart)}
-              className="text-xs text-sub underline"
+              className="text-[13px] text-sub underline"
             >
               이번 주로
             </Link>
@@ -186,7 +186,7 @@ export function GroupOverview({
       </div>
 
       {data.members.length === 0 ? (
-        <p className="px-5 py-10 text-center text-xs text-sub">
+        <p className="px-5 py-10 text-center text-[13px] text-sub">
           아직 활동 중인 멤버가 없습니다.
         </p>
       ) : (
@@ -201,14 +201,14 @@ export function GroupOverview({
               <tr>
                 <th
                   scope="col"
-                  className="relative w-[36%] py-[7px] text-left text-[11px] font-medium text-sub sm:w-[34%]"
+                  className="relative w-[36%] py-[7px] text-left text-[12px] font-medium text-sub sm:w-[38%]"
                 >
                   <span className="group/sort inline-flex items-center gap-1">
                     멤버
                     <span className="font-normal">· {weekLabel} 승인순</span>
                     <span
                       role="tooltip"
-                      className="pointer-events-none absolute top-full left-0 z-20 hidden w-max max-w-[260px] rounded-lg border border-line bg-canvas px-3 py-2 text-[11px] leading-[1.6] font-normal text-sub group-hover/sort:block"
+                      className="pointer-events-none absolute top-full left-0 z-20 hidden w-max max-w-[260px] rounded-lg border border-line bg-canvas px-3 py-2 text-[12px] leading-[1.6] font-normal text-sub group-hover/sort:block"
                     >
                       {weekLabel} 승인이 많은 순서입니다. 같으면 누적 승인이 많은
                       순서, 그다음 닉네임순입니다.
@@ -221,7 +221,7 @@ export function GroupOverview({
                     <th
                       scope="col"
                       key={date}
-                      className={`py-[7px] text-center text-[11px] font-medium text-sub ${
+                      className={`py-[7px] text-center text-[12px] font-medium text-sub ${
                         isToday ? "rounded-t-lg bg-brand-soft/50" : ""
                       }`}
                     >
@@ -235,7 +235,7 @@ export function GroupOverview({
                 })}
                 <th
                   scope="col"
-                  className="w-[9%] py-[7px] text-center text-[11px] font-medium text-sub sm:w-[10%]"
+                  className="w-[9%] py-[7px] text-center text-[12px] font-medium text-sub sm:w-[10%]"
                 >
                   승인
                 </th>
@@ -267,7 +267,7 @@ export function GroupOverview({
                     return (
                       <td
                         key={date}
-                        className={`h-[52px] border-t border-line text-center text-[13px] ${
+                        className={`h-[58px] border-t border-line text-center text-[15px] ${
                           isToday ? "bg-brand-soft/50" : ""
                         }`}
                       >
@@ -276,7 +276,7 @@ export function GroupOverview({
                             href={`/groups/${groupSlug}?proofMember=${member.userId}&proofDate=${date}${weekParam}#proof-records`}
                             title={description}
                             aria-label={`${description}. 풀이 기록 보기`}
-                            className={`inline-grid h-[29px] w-6 place-items-center rounded-lg font-[650] sm:size-[30px] ${cellTone}`}
+                            className={`inline-grid h-[32px] w-6 place-items-center rounded-lg font-[650] sm:size-[34px] ${cellTone}`}
                           >
                             <span aria-hidden="true">
                               {marker}
@@ -286,7 +286,7 @@ export function GroupOverview({
                         ) : (
                           <span
                             title={isFuture ? "예정" : "미등록"}
-                            className={`inline-grid h-[29px] w-6 place-items-center text-sub sm:size-[30px] ${
+                            className={`inline-grid h-[32px] w-6 place-items-center text-sub sm:size-[34px] ${
                               isFuture ? "opacity-25" : "opacity-45"
                             }`}
                           >
@@ -297,7 +297,7 @@ export function GroupOverview({
                     );
                   })}
                   <td
-                    className={`h-[52px] border-t border-line text-center text-[13px] tabular-nums ${
+                    className={`h-[58px] border-t border-line text-center text-[15px] tabular-nums ${
                       member.weekApproved ? "font-[650]" : "text-sub opacity-60"
                     }`}
                   >
@@ -310,7 +310,7 @@ export function GroupOverview({
         </div>
       )}
 
-      <div className="flex flex-wrap justify-between gap-4 px-3 pt-[10px] pb-[13px] text-[11px] text-sub sm:px-5">
+      <div className="flex flex-wrap justify-between gap-4 px-3 pt-[10px] pb-[13px] text-[12px] text-sub sm:px-5">
         <span className="flex flex-wrap gap-3">
           <span>✓ 승인</span>
           <span>◷ 검수 대기</span>

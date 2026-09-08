@@ -89,13 +89,13 @@ export function InvitePopover({
         className="absolute top-full right-0 z-20 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-line bg-canvas p-5 shadow-[0_4px_20px_rgba(0,0,0,0.12)]"
       >
         <h3>멤버 초대</h3>
-        <p className="mt-1 text-xs text-sub">
+        <p className="mt-1 text-[13px] text-sub">
           링크나 코드를 공유하세요. 가입 신청 후 승인이 필요합니다.
         </p>
         {inviteUrl && (
           <div className="mt-4">
             <label
-              className="text-xs text-sub"
+              className="text-[13px] text-sub"
               htmlFor={`${panelId}-url`}
             >
               초대 링크
@@ -114,7 +114,7 @@ export function InvitePopover({
             >
               링크 복사
             </button>
-            <p role="status" className="mt-2 text-xs text-sub">
+            <p role="status" className="mt-2 text-[13px] text-sub">
               {copyMessage}
             </p>
           </div>

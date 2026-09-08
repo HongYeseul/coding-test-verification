@@ -13,7 +13,7 @@ export function RefreshOverviewButton() {
       disabled={isPending}
       aria-busy={isPending}
       onClick={() => startTransition(() => router.refresh())}
-      className="text-xs text-sub underline disabled:cursor-wait"
+      className="text-[13px] text-sub underline disabled:cursor-wait"
     >
       {isPending ? "불러오는 중…" : "새로고침"}
     </button>

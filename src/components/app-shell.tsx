@@ -25,7 +25,7 @@ export function AppShell({
             <span className="font-[650] tracking-[-0.4px]">Coding Proof</span>
           </Link>
           {context && (
-            <span className="truncate text-xs text-sub">/ {context}</span>
+            <span className="truncate text-[13px] text-sub">/ {context}</span>
           )}
         </div>
         {actions}

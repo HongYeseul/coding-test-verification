@@ -74,8 +74,8 @@ export function ProofRecordList({
 
   if (records.length === 0) {
     return (
-      <div className="flex min-h-[360px] flex-col justify-center px-4 py-8 text-center text-sub">
-        <strong className="mb-[5px] block text-[15px] font-semibold text-ink">
+      <div className="flex flex-col justify-center px-4 py-14 text-center text-sub">
+        <strong className="mb-[5px] block text-[17px] font-semibold text-ink">
           {emptyTitle}
         </strong>
         {emptyDescription}
@@ -84,7 +84,7 @@ export function ProofRecordList({
   }
 
   return (
-    <div className="min-h-[360px]">
+    <div>
       {records.map((item) => (
         <button
           key={item.id}
@@ -105,27 +105,29 @@ export function ProofRecordList({
                 className="object-cover"
               />
             ) : (
-              <span aria-hidden="true" className="text-[15px] opacity-60">
+              <span aria-hidden="true" className="text-[17px] opacity-60">
                 ▤
               </span>
             )}
           </span>
           <span className="min-w-0">
-            <span className="block truncate font-semibold">{item.title}</span>
-            <span className="mt-[3px] block truncate text-xs text-sub">
+            <span className="block truncate text-[17px] font-semibold">
+              {item.title}
+            </span>
+            <span className="mt-[3px] block truncate text-[13px] text-sub">
               {item.memberName}
               {item.isMine ? " · 나" : ""}
             </span>
           </span>
-          <span className="hidden text-xs text-sub tabular-nums sm:block">
+          <span className="hidden text-[13px] text-sub tabular-nums sm:block">
             {item.date} · {item.time}
           </span>
           <span
-            className={`text-xs whitespace-nowrap ${toneClass[item.statusTone]}`}
+            className={`text-[13px] whitespace-nowrap ${toneClass[item.statusTone]}`}
           >
             {item.statusLabel}
           </span>
-          <span aria-hidden="true" className="text-xs text-sub">
+          <span aria-hidden="true" className="text-[13px] text-sub">
             ›
           </span>
         </button>
@@ -145,7 +147,7 @@ export function ProofRecordList({
             <header className="flex min-w-0 items-center justify-between gap-4 border-b border-line px-4 py-3 sm:px-6 sm:py-4">
               <div className="min-w-0">
                 <h3 className="truncate">{record.title}</h3>
-                <p className="text-xs text-sub">
+                <p className="text-[13px] text-sub">
                   {record.memberName} · {record.date} {record.time}
                 </p>
               </div>
@@ -177,7 +179,7 @@ export function ProofRecordList({
                     />
                   </a>
                 ) : (
-                  <p className="text-xs text-sub">
+                  <p className="text-[13px] text-sub">
                     사진 없이 등록된 기록입니다.
                   </p>
                 )}
@@ -187,34 +189,34 @@ export function ProofRecordList({
                 <div className="flex items-center justify-between gap-2">
                   <h2>인증 정보</h2>
                   <span
-                    className={`text-xs whitespace-nowrap ${toneClass[record.statusTone]}`}
+                    className={`text-[13px] whitespace-nowrap ${toneClass[record.statusTone]}`}
                   >
                     {record.statusLabel}
                   </span>
                 </div>
                 <div>
-                  <p className="text-xs text-sub">작성자</p>
+                  <p className="text-[13px] text-sub">작성자</p>
                   <p>
                     {record.memberName}
                     {record.memberHandle && (
-                      <span className="ml-[5px] font-mono text-xs text-sub">
+                      <span className="ml-[5px] font-mono text-[13px] text-sub">
                         @{record.memberHandle}
                       </span>
                     )}
                   </p>
                   {record.memberBio && (
-                    <p className="mt-[3px] text-xs text-sub">
+                    <p className="mt-[3px] text-[13px] text-sub">
                       {record.memberBio}
                     </p>
                   )}
                 </div>
                 <div>
-                  <p className="text-xs text-sub">등록 시각</p>
-                  <p className="text-[13px]">{record.registeredAt}</p>
+                  <p className="text-[13px] text-sub">등록 시각</p>
+                  <p className="text-[15px]">{record.registeredAt}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-sub">출처</p>
-                  <p className="text-[13px]">{record.source}</p>
+                  <p className="text-[13px] text-sub">출처</p>
+                  <p className="text-[15px]">{record.source}</p>
                 </div>
                 {record.problemUrl && (
                   <a
@@ -238,7 +240,7 @@ export function ProofRecordList({
                     <input type="hidden" name="groupSlug" value={groupSlug} />
                     <label
                       htmlFor="review-note"
-                      className="text-xs text-sub"
+                      className="text-[13px] text-sub"
                     >
                       피드백
                     </label>
@@ -251,7 +253,7 @@ export function ProofRecordList({
                       placeholder="반려할 때는 이유를 남겨주세요."
                     />
                     {noteError && (
-                      <p role="alert" className="text-xs text-danger">
+                      <p role="alert" className="text-[13px] text-danger">
                         {noteError}
                       </p>
                     )}
@@ -282,14 +284,14 @@ export function ProofRecordList({
                   </form>
                 ) : record.reviewLabel ? (
                   <div>
-                    <p className="text-xs text-sub">검수 피드백</p>
-                    <p className="text-[13px]">
+                    <p className="text-[13px] text-sub">검수 피드백</p>
+                    <p className="text-[15px]">
                       {record.reviewLabel}
                       {record.reviewNote ? ` · ${record.reviewNote}` : ""}
                     </p>
                   </div>
                 ) : record.statusTone === "pending" ? (
-                  <p className="text-xs text-sub">
+                  <p className="text-[13px] text-sub">
                     다른 검수자의 확인을 기다리고 있어요.
                   </p>
                 ) : null}
@@ -314,7 +316,7 @@ export function ProofRecordList({
                 >
                   이전
                 </button>
-                <span className="min-w-10 text-center text-xs text-sub tabular-nums">
+                <span className="min-w-10 text-center text-[13px] text-sub tabular-nums">
                   {index + 1} / {records.length}
                 </span>
                 <button

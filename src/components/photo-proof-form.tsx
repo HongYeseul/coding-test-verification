@@ -198,7 +198,7 @@ export function PhotoProofForm({
         <p
           role="status"
           aria-live="polite"
-          className="fixed bottom-5 left-1/2 z-10 w-max max-w-[calc(100%-32px)] -translate-x-1/2 rounded-[10px] border border-line bg-canvas px-[18px] py-3 text-[13px] shadow-[0_4px_20px_rgba(0,0,0,0.13)]"
+          className="fixed bottom-5 left-1/2 z-10 w-max max-w-[calc(100%-32px)] -translate-x-1/2 rounded-[10px] border border-line bg-canvas px-[18px] py-3 text-[15px] shadow-[0_4px_20px_rgba(0,0,0,0.13)]"
         >
           {message}
         </p>
@@ -228,7 +228,7 @@ export function PhotoProofForm({
 
           <div className="my-[18px] grid gap-5">
             <div className="grid justify-items-center gap-2 rounded-lg border border-dashed border-line px-4 py-6 text-center text-sub">
-              <label htmlFor="proof-photo" className="text-[13px]">
+              <label htmlFor="proof-photo" className="text-[15px]">
                 풀이 결과가 보이는 사진 한 장
               </label>
               <input
@@ -239,27 +239,27 @@ export function PhotoProofForm({
                 required
                 disabled={busy}
                 onChange={prepare}
-                className="text-xs"
+                className="text-[13px]"
                 aria-describedby="photo-help"
               />
-              <p id="photo-help" className="text-xs">
+              <p id="photo-help" className="text-[13px]">
                 JPG, PNG, WebP · 최대 20MB · 업로드 전 자동 압축
               </p>
-              <p className="text-[11px]">
+              <p className="text-[12px]">
                 긴 변 1,920px · 150KB 목표 · 저장 최대 300KB. 글자가 흐리면
                 필요한 부분만 잘라 다시 선택해주세요.
               </p>
             </div>
 
             {preparing && (
-              <p role="status" className="text-[13px]">
+              <p role="status" className="text-[15px]">
                 사진 용량을 줄이고 있습니다…
               </p>
             )}
 
             {prepared && (
               <div className="grid gap-2">
-                <p className="text-[13px] font-medium">
+                <p className="text-[15px] font-medium">
                   저장될 사진: {displaySize(prepared.file.size)} →{" "}
                   {displaySize(prepared.blob.size)}
                 </p>
@@ -272,11 +272,11 @@ export function PhotoProofForm({
                     unoptimized
                     className="max-h-72 w-full rounded-lg bg-soft object-contain"
                   />
-                  <span className="mt-1 block text-xs text-sub underline">
+                  <span className="mt-1 block text-[13px] text-sub underline">
                     크게 열어 글자 확인
                   </span>
                 </a>
-                <label className="flex items-start gap-2 text-[13px]">
+                <label className="flex items-start gap-2 text-[15px]">
                   <input
                     type="checkbox"
                     checked={confirmed}
@@ -290,8 +290,8 @@ export function PhotoProofForm({
             )}
 
             <div className="grid gap-[7px]">
-              <label htmlFor="proof-title" className="text-[13px]">
-                문제 이름 <span className="text-xs text-sub">선택 사항</span>
+              <label htmlFor="proof-title" className="text-[15px]">
+                문제 이름 <span className="text-[13px] text-sub">선택 사항</span>
               </label>
               <input
                 id="proof-title"
@@ -303,8 +303,8 @@ export function PhotoProofForm({
             </div>
 
             <div className="grid gap-[7px]">
-              <label htmlFor="proof-problem-url" className="text-[13px]">
-                문제 링크 <span className="text-xs text-sub">선택 사항</span>
+              <label htmlFor="proof-problem-url" className="text-[15px]">
+                문제 링크 <span className="text-[13px] text-sub">선택 사항</span>
               </label>
               <input
                 id="proof-problem-url"
@@ -315,7 +315,7 @@ export function PhotoProofForm({
                 placeholder="https://school.programmers.co.kr/learn/courses/30/lessons/12345"
                 aria-describedby="problem-url-help"
               />
-              <p id="problem-url-help" className="text-xs text-sub">
+              <p id="problem-url-help" className="text-[13px] text-sub">
                 프로그래머스, 백준, LeetCode, Codeforces, AtCoder, HackerRank,
                 Codewars의 https 주소만 받습니다. 넣으면 다른 멤버가 같은 문제를
                 바로 풀어볼 수 있어요.
@@ -324,7 +324,7 @@ export function PhotoProofForm({
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="text-xs text-sub">
+            <span className="text-[13px] text-sub">
               등록 시각이 기록되고 검수 대기 상태가 됩니다.
             </span>
             <button
@@ -335,7 +335,7 @@ export function PhotoProofForm({
               {busy ? "등록 중…" : "검수 요청하기"}
             </button>
           </div>
-          <p role="status" aria-live="polite" className="mt-3 text-[13px]">
+          <p role="status" aria-live="polite" className="mt-3 text-[15px]">
             {message}
           </p>
         </form>

@@ -68,11 +68,11 @@ export default async function DashboardPage({
     <AppShell
       actions={
         <div className="flex items-center gap-3">
-          <Link href="/settings/profile" className="text-xs text-sub">
+          <Link href="/settings/profile" className="text-[13px] text-sub">
             프로필
           </Link>
           <form action={signOutAction}>
-            <button type="submit" className="text-xs text-sub">
+            <button type="submit" className="text-[13px] text-sub">
               로그아웃
             </button>
           </form>
@@ -81,7 +81,7 @@ export default async function DashboardPage({
     >
       <header className="mb-6">
         <h1>{profile?.display_name ?? "멤버"}님의 그룹</h1>
-        <p className="mt-[5px] text-[13px] text-sub">
+        <p className="mt-[5px] text-[15px] text-sub">
           활성 그룹 {groups.length}개
           {pendingCount > 0 ? ` · 가입 승인 대기 ${pendingCount}개` : ""}
         </p>
@@ -109,12 +109,12 @@ export default async function DashboardPage({
                       <span className="block truncate font-semibold">
                         {group.name}
                       </span>
-                      <span className="mt-[3px] block truncate text-xs text-sub">
+                      <span className="mt-[3px] block truncate text-[13px] text-sub">
                         /{group.slug} ·{" "}
                         {roleLabels[membership?.role ?? "MEMBER"] ?? "멤버"}
                       </span>
                     </span>
-                    <span aria-hidden="true" className="text-xs text-sub">
+                    <span aria-hidden="true" className="text-[13px] text-sub">
                       ›
                     </span>
                   </Link>
@@ -124,10 +124,10 @@ export default async function DashboardPage({
           </ul>
         ) : (
           <div className="flex min-h-[180px] flex-col justify-center rounded-xl border border-line px-4 py-8 text-center text-sub">
-            <strong className="mb-[5px] block text-[15px] font-semibold text-ink">
+            <strong className="mb-[5px] block text-[17px] font-semibold text-ink">
               아직 참여 중인 그룹이 없어요
             </strong>
-            <span className="text-xs">
+            <span className="text-[13px]">
               초대코드로 가입하거나 새 그룹을 만들어보세요.
             </span>
           </div>
@@ -140,11 +140,11 @@ export default async function DashboardPage({
           className="grid gap-[7px] rounded-xl border border-line bg-soft p-5"
         >
           <h2>초대코드로 가입</h2>
-          <p className="text-xs text-sub">
+          <p className="text-[13px] text-sub">
             받은 5자리 코드를 넣으면 가입을 신청합니다. 소유자가 승인해야 기록을
             볼 수 있어요.
           </p>
-          <label htmlFor="invite-code" className="mt-2 text-[13px]">
+          <label htmlFor="invite-code" className="mt-2 text-[15px]">
             초대코드
           </label>
           <input
@@ -168,10 +168,10 @@ export default async function DashboardPage({
           className="grid gap-[7px] rounded-xl border border-line bg-soft p-5"
         >
           <h2>스터디 그룹 만들기</h2>
-          <p className="text-xs text-sub">
+          <p className="text-[13px] text-sub">
             그룹을 만들면 소유자가 되어 초대코드를 발급하고 인증을 검수합니다.
           </p>
-          <label htmlFor="name" className="mt-2 text-[13px]">
+          <label htmlFor="name" className="mt-2 text-[15px]">
             그룹 이름
           </label>
           <input
@@ -181,7 +181,7 @@ export default async function DashboardPage({
             maxLength={60}
             placeholder="알고리즘 스터디"
           />
-          <label htmlFor="slug" className="mt-1 text-[13px]">
+          <label htmlFor="slug" className="mt-1 text-[15px]">
             그룹 주소
           </label>
           <input

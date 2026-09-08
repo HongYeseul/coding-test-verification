@@ -43,7 +43,7 @@
     margin: 0;
     background: var(--canvas);
     color: var(--ink);
-    font: 14px/1.5 var(--font-app-sans);
+    font: 15px/1.6 var(--font-app-sans);
   }
 
   h1,
@@ -54,18 +54,18 @@
   }
 
   h1 {
-    font-size: 26px;
+    font-size: 30px;
     font-weight: 700;
     letter-spacing: -1px;
   }
 
   h2 {
-    font-size: 16px;
+    font-size: 19px;
     font-weight: 650;
   }
 
   h3 {
-    font-size: 18px;
+    font-size: 21px;
     font-weight: 650;
   }
 
@@ -110,13 +110,13 @@
   }
 
   select {
-    min-height: 34px;
-    padding: 6px 10px;
+    min-height: 38px;
+    padding: 8px 11px;
     border: 1px solid var(--line);
     border-radius: 6px;
     background: var(--canvas);
     color: var(--ink);
-    font-size: 12px;
+    font-size: 13px;
   }
 
   @media (pointer: coarse) {
@@ -139,8 +139,8 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    min-height: 36px;
-    padding: 8px 12px;
+    min-height: 40px;
+    padding: 9px 14px;
     border: 1px solid var(--line);
     border-radius: 8px;
     background: var(--canvas);

@@ -177,10 +177,10 @@ function MemberLabel({
 }) {
   const handle = githubHandle(profile?.github_login);
   return (
-    <span className="min-w-0 text-[13px] font-medium">
+    <span className="min-w-0 text-[15px] font-medium">
       {profile?.display_name ?? fallback}
       {handle && (
-        <span className="ml-[5px] font-mono text-xs font-normal text-sub">
+        <span className="ml-[5px] font-mono text-[13px] font-normal text-sub">
           @{handle}
         </span>
       )}
@@ -504,10 +504,10 @@ export default async function GroupPage({
       context={group.name}
       actions={
         <div className="flex items-center gap-3">
-          <Link href="/settings/profile" className="text-xs text-sub">
+          <Link href="/settings/profile" className="text-[13px] text-sub">
             프로필
           </Link>
-          <Link href="/dashboard" className="text-xs text-sub">
+          <Link href="/dashboard" className="text-[13px] text-sub">
             그룹 목록
           </Link>
         </div>
@@ -516,7 +516,7 @@ export default async function GroupPage({
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1>{group.name}</h1>
-          <p className="mt-[5px] text-[13px] text-sub">
+          <p className="mt-[5px] text-[15px] text-sub">
             멤버 {activeMemberIds.length}명 · 내 역할:{" "}
             {roleLabels[currentMembership.role] ?? "멤버"}
           </p>
@@ -539,19 +539,19 @@ export default async function GroupPage({
                     <p className="font-mono text-2xl font-bold tracking-widest select-all">
                       {invitation.code}
                     </p>
-                    <p className="mt-2 text-xs text-sub">
+                    <p className="mt-2 text-[13px] text-sub">
                       {displayDate(invitation.expires_at)}까지 사용 가능
                     </p>
                   </div>
                 ) : (
-                  <p className="rounded-lg bg-soft p-4 text-xs text-sub">
+                  <p className="rounded-lg bg-soft p-4 text-[13px] text-sub">
                     사용 가능한 초대코드가 없습니다.
                   </p>
                 )}
                 <button type="submit" className="btn mt-3 w-full">
                   {invitation ? "새 초대코드 만들기" : "5자리 초대코드 만들기"}
                 </button>
-                <p className="mt-2 text-xs text-sub">
+                <p className="mt-2 text-[13px] text-sub">
                   여러 사람이 7일 동안 사용할 수 있습니다. 새로 만들면 이전
                   코드는 만료됩니다.
                 </p>
@@ -585,7 +585,7 @@ export default async function GroupPage({
       ) : (
         <p
           role="alert"
-          className="mb-7 rounded-xl border border-line bg-soft p-5 text-[13px] text-warn"
+          className="mb-7 rounded-xl border border-line bg-soft p-5 text-[15px] text-warn"
         >
           인증 현황을 불러오지 못했습니다. 잠시 후 페이지를 새로고침해주세요.
         </p>
@@ -602,7 +602,7 @@ export default async function GroupPage({
               key={tab.label}
               href={tab.href}
               aria-current={tab.active ? "page" : undefined}
-              className={`border-b-2 pt-[10px] pb-3 text-[13px] ${
+              className={`border-b-2 pt-[10px] pb-3 text-[15px] ${
                 tab.active
                   ? "border-ink font-[650] text-ink"
                   : "border-transparent text-sub"
@@ -610,7 +610,7 @@ export default async function GroupPage({
             >
               {tab.label}
               {tab.count !== null && (
-                <span className="ml-[5px] text-[11px] text-sub tabular-nums">
+                <span className="ml-[5px] text-[12px] text-sub tabular-nums">
                   {tab.count}
                 </span>
               )}
@@ -667,12 +667,12 @@ export default async function GroupPage({
           {hasProofFilters && (
             <Link
               href={`/groups/${group.slug}${weekQuery ? `?${weekQuery}` : ""}#proof-records`}
-              className="text-xs text-sub underline"
+              className="text-[13px] text-sub underline"
             >
               초기화
             </Link>
           )}
-          <span className="ml-auto text-xs text-sub tabular-nums">
+          <span className="ml-auto text-[13px] text-sub tabular-nums">
             {proofDate ? `${proofDate} · ` : "최신순 · "}
             {records.length}건
           </span>
@@ -690,7 +690,7 @@ export default async function GroupPage({
               : "풀이 인증하기로 첫 기록을 남겨보세요."
           }
         />
-        <p className="mt-[17px] text-[11px] text-sub">
+        <p className="mt-[17px] text-[12px] text-sub">
           최근 등록순으로 최대 50개까지 보여줍니다. 기록을 누르면 사진과 검수
           내용을 확인할 수 있어요.
         </p>
@@ -712,7 +712,7 @@ export default async function GroupPage({
           <h2>멤버 관리</h2>
           {pendingMemberships.length > 0 && (
             <>
-              <p className="mt-3 text-xs text-sub">
+              <p className="mt-3 text-[13px] text-sub">
                 가입 승인 대기 {pendingMemberships.length}명
               </p>
               <ul className="mt-2 rounded-xl border border-line">
@@ -745,7 +745,7 @@ export default async function GroupPage({
 
           {manageableMembers.length > 0 && (
             <>
-              <p className="mt-4 text-xs text-sub">검수자 지정</p>
+              <p className="mt-4 text-[13px] text-sub">검수자 지정</p>
               <ul className="mt-2 rounded-xl border border-line">
                 {manageableMembers.map((membership) => (
                   <li

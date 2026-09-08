@@ -26,7 +26,7 @@ export function GroupProblems({
     <section aria-labelledby="group-problems-title">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h2 id="group-problems-title">우리 그룹이 푼 문제</h2>
-        <span className="text-xs text-sub tabular-nums">
+        <span className="text-[13px] text-sub tabular-nums">
           링크를 남긴 {problems.length}문제
         </span>
       </div>
@@ -47,17 +47,17 @@ export function GroupProblems({
                   className="group/problem block px-4 py-3 hover:bg-soft"
                 >
                   <span className="mb-1 block">
-                    <span className="rounded-full bg-soft px-2 py-0.5 text-[11px] text-sub">
+                    <span className="rounded-full bg-soft px-2 py-0.5 text-[12px] text-sub">
                       {problem.platform}
                     </span>
                   </span>
-                  <span className="block text-[13px] font-semibold group-hover/problem:underline">
+                  <span className="block text-[16px] font-semibold group-hover/problem:underline">
                     {problem.title || problem.url.replace("https://", "")}
-                    <span aria-hidden="true" className="ml-1 text-xs text-sub">
+                    <span aria-hidden="true" className="ml-1 text-[13px] text-sub">
                       ↗
                     </span>
                   </span>
-                  <span className="mt-[3px] block text-xs text-sub">
+                  <span className="mt-[3px] block text-[13px] text-sub">
                     {solverNames(problem.solverIds, profileById)} 등록
                     {solvedByMe ? " · 나도 등록함" : ""}
                   </span>
@@ -67,7 +67,7 @@ export function GroupProblems({
           })}
         </ul>
       ) : (
-        <p className="rounded-xl border border-line px-5 py-10 text-center text-xs text-sub">
+        <p className="rounded-xl border border-line px-5 py-10 text-center text-[13px] text-sub">
           아직 문제 링크가 없습니다. 풀이를 등록할 때 문제 링크를 넣으면 여기에
           모입니다.
         </p>

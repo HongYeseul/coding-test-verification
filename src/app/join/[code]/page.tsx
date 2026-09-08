@@ -21,7 +21,7 @@ export default async function JoinPage({
     <AppShell context="초대코드 가입">
       <header className="mb-6">
         <h1>초대코드로 가입하기</h1>
-        <p className="mt-[5px] text-[13px] text-sub">
+        <p className="mt-[5px] text-[15px] text-sub">
           로그인 후 가입을 신청해주세요. 그룹 소유자가 승인하면 풀이 기록을
           공유할 수 있습니다.
         </p>
@@ -29,7 +29,7 @@ export default async function JoinPage({
 
       <section className="grid max-w-lg gap-4 rounded-xl border border-line bg-soft p-5">
         <div>
-          <p className="text-xs text-sub">초대코드</p>
+          <p className="text-[13px] text-sub">초대코드</p>
           <p className="mt-1 font-mono text-3xl font-bold tracking-widest">
             {code}
           </p>

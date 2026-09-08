@@ -38,11 +38,11 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
   return (
     <AppShell
-      actions={<span className="text-xs text-sub">초대 전용</span>}
+      actions={<span className="text-[13px] text-sub">초대 전용</span>}
     >
       <header className="mb-6">
         <h1>오늘 푼 문제를 함께 확인합니다.</h1>
-        <p className="mt-[5px] max-w-xl text-[13px] text-sub">
+        <p className="mt-[5px] max-w-xl text-[15px] text-sub">
           허가된 멤버만 그룹과 인증 기록을 볼 수 있습니다. GitHub 계정으로
           로그인한 뒤 초대 승인을 받아주세요.
         </p>
@@ -51,7 +51,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       <section className="grid gap-5 sm:grid-cols-2">
         <div className="grid content-start gap-3 rounded-xl border border-line bg-soft p-5">
           <h2>GitHub로 로그인</h2>
-          <p className="text-xs text-sub">
+          <p className="text-[13px] text-sub">
             초대 대상 확인에는 GitHub 계정을 사용합니다.
           </p>
           <div className="mt-2">
@@ -63,7 +63,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             />
           )}
           {!configured && (
-            <p className="text-xs text-sub">
+            <p className="text-[13px] text-sub">
               현재는 프로젝트 설정 단계입니다. Supabase 연결 후 로그인이
               활성화됩니다.
             </p>
@@ -78,19 +78,19 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                 key={step.number}
                 className="grid grid-cols-[2rem_1fr] gap-3 border-b border-line px-4 py-[14px] last:border-b-0"
               >
-                <span className="font-mono text-xs text-brand">
+                <span className="font-mono text-[13px] text-brand">
                   {step.number}
                 </span>
                 <div>
-                  <p className="text-[13px] font-semibold">{step.title}</p>
-                  <p className="mt-[3px] text-xs text-sub">
+                  <p className="text-[15px] font-semibold">{step.title}</p>
+                  <p className="mt-[3px] text-[13px] text-sub">
                     {step.description}
                   </p>
                 </div>
               </li>
             ))}
           </ol>
-          <p className="mt-3 text-[11px] text-sub">
+          <p className="mt-3 text-[12px] text-sub">
             모든 풀이 인증은 그룹 소유자나 검수자가 사진으로 확인합니다.
           </p>
         </div>

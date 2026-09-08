@@ -59,7 +59,7 @@ export function GithubSignInButton({
         {loading ? "GitHub로 이동 중..." : "GitHub로 계속하기"}
       </button>
       {error && (
-        <p role="alert" className="mt-3 text-[13px] text-danger">
+        <p role="alert" className="mt-3 text-[15px] text-danger">
           {error}
         </p>
       )}

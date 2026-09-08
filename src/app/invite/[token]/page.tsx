@@ -24,7 +24,7 @@ export default async function InvitationPage({
     <AppShell context="그룹 초대">
       <header className="mb-6">
         <h1>스터디 초대가 도착했습니다.</h1>
-        <p className="mt-[5px] max-w-xl text-[13px] text-sub">
+        <p className="mt-[5px] max-w-xl text-[15px] text-sub">
           초대 대상 GitHub 계정으로 로그인하고 초대를 수락해주세요. 수락 후 그룹
           소유자가 가입을 승인하면 기록을 볼 수 있습니다.
         </p>
@@ -34,7 +34,7 @@ export default async function InvitationPage({
         <StatusMessage error={firstQueryValue(query.error)} />
 
         {!configured && (
-          <p className="text-[13px] text-warn">
+          <p className="text-[15px] text-warn">
             Supabase 연결 후 초대를 수락할 수 있습니다.
           </p>
         )}
@@ -47,7 +47,7 @@ export default async function InvitationPage({
           <>
             <form action={acceptInvitationAction}>
               <input type="hidden" name="token" value={token} />
-              <p className="mb-3 text-xs text-sub">
+              <p className="mb-3 text-[13px] text-sub">
                 <strong className="font-semibold text-ink">
                   {user.user_metadata.user_name ?? user.email ?? "현재 계정"}
                 </strong>
@@ -59,7 +59,7 @@ export default async function InvitationPage({
             </form>
             <form action={signOutAction}>
               <input type="hidden" name="next" value={invitationPath} />
-              <button type="submit" className="text-xs text-sub underline">
+              <button type="submit" className="text-[13px] text-sub underline">
                 로그아웃하고 다른 GitHub 계정으로 계속하기
               </button>
             </form>
