@@ -1,6 +1,6 @@
 # 배포 인수인계
 
-마지막 확인: 2026-09-07
+마지막 확인: 2026-09-08
 
 ## 운영 연결
 
@@ -8,9 +8,10 @@
 - Vercel: `hongyeseuls-projects/coding-test-verification`
 - Vercel 프로젝트 ID: `prj_F67rErRW8oBwkLTComzHn4g23qzi`
 - 운영 URL: https://coding-test-verification.vercel.app
-- Supabase 프로젝트: `lfukmjprduxmesciplrx` (`coding-test-verification`, Free)
-- Supabase 리전: Sydney (`ap-southeast-2`)
-- Vercel 함수 리전: `vercel.json`의 Sydney (`syd1`) 한 곳. Hobby 무료 플랜을 유지합니다.
+- Supabase 프로젝트: `dzibporiiexvsndungkx` (`coding-test-verification-seoul`, Free)
+- Supabase 리전: Seoul (`ap-northeast-2`)
+- Vercel 함수 리전: `vercel.json`의 Seoul (`icn1`) 한 곳. Hobby 무료 플랜을 유지합니다.
+- 이전 Supabase 프로젝트: `lfukmjprduxmesciplrx` (Sydney). 검증이 끝날 때까지 지우지 않습니다. 절차와 되돌리기는 `docs/REGION_MIGRATION.md`를 봅니다.
 - GitHub OAuth 앱: https://github.com/settings/applications/3837795
 
 `main` push 시 Vercel Production에 자동 배포됩니다. GitHub OAuth 제공자는 활성화되어 있으며 Client Secret은 Supabase에만 저장했습니다. Vercel Production에 프로젝트 URL, Publishable Key, 사이트 URL을 등록했습니다. Preview에는 운영 DB 환경변수를 등록하지 않았습니다.
@@ -18,7 +19,7 @@
 ## 인증 주소
 
 - Supabase Site URL: `https://coding-test-verification.vercel.app`
-- GitHub OAuth callback: `https://lfukmjprduxmesciplrx.supabase.co/auth/v1/callback`
+- GitHub OAuth callback: `https://dzibporiiexvsndungkx.supabase.co/auth/v1/callback`. 이전 프로젝트 콜백도 지우지 않고 남겨뒀습니다. OAuth App은 콜백을 10개까지 등록할 수 있어 롤백해도 GitHub 설정을 되돌릴 필요가 없습니다.
 - 허용된 앱 callback: `https://coding-test-verification.vercel.app/auth/callback**`, `http://localhost:3000/auth/callback**`
 
 초대 링크에서 로그인하거나 로그인이 만료되면 원래 경로로 복귀합니다. 초대 대상 확인에는 `auth.identities`의 GitHub 계정과 확인된 이메일을 사용합니다.
@@ -155,8 +156,11 @@ Node.js 24에서 `pnpm test`, `pnpm check`를 실행합니다. 로컬 `.env.loca
   - 이 파일을 지워 폴백을 없앴습니다. 폴백이 없으면 새 페이지가 준비될 때까지 현재 화면이 유지되어 깜빡임이 사라집니다. 대신 Next 문서가 이 상황에 권장하는 `useLinkStatus`로 주 이동 화살표에만 진행 표시를 답니다(`LinkPendingDot`). 트레이드오프로 그룹 화면 첫 진입에도 스켈레톤이 뜨지 않고 이전 화면이 유지됩니다. 첫 진입 로딩 표시가 필요하면 `loading.tsx`를 되살리되 깜빡임이 함께 돌아옵니다.
 ## 성능
 
-- 측정(2026-09-08, 한국에서): 같은 도메인의 정적 CSS는 서울 엣지(`x-vercel-id`의 `icn1`)에서 16ms에 오는데, HTML은 273ms입니다. HTML의 `x-vercel-id`는 `icn1::syd1`이라 요청이 서울 엣지에 닿은 뒤 시드니 함수로 넘어갑니다. 차이 약 257ms가 서울↔시드니 왕복입니다. 병목은 코드가 아니라 함수 리전입니다.
-- `vercel.json`의 `syd1`은 Supabase가 시드니라서 고른 값입니다. 함수만 서울로 옮기면 그룹 화면의 순차 DB 대기 8단계가 전부 국제 왕복이 되어 훨씬 느려집니다. 리전을 옮기려면 DB와 함수를 함께 옮겨야 합니다.
+- 이동 전 측정(2026-09-08, 한국에서): 같은 도메인의 정적 CSS는 서울 엣지(`x-vercel-id`의 `icn1`)에서 16ms에 오는데, HTML은 273ms입니다. HTML의 `x-vercel-id`는 `icn1::syd1`이라 요청이 서울 엣지에 닿은 뒤 시드니 함수로 넘어갑니다. 차이 약 257ms가 서울↔시드니 왕복입니다. 병목은 코드가 아니라 함수 리전입니다.
+- `vercel.json`의 `syd1`은 Supabase가 시드니라서 고른 값이었습니다. 함수만 서울로 옮기면 그룹 화면의 순차 DB 대기 8단계가 전부 국제 왕복이 되어 훨씬 느려집니다. 그래서 DB와 함수를 함께 옮겼습니다.
+- 이동 후 측정(2026-09-08): `x-vercel-id`가 `icn1::syd1` → `icn1::icn1`로 바뀌었고 정적 자산 62ms, HTML `/` 179ms(중앙값, n=20)입니다. 측정 시점 네트워크가 이전보다 느려 절대값끼리는 비교할 수 없으므로 **함수가 더하는 시간**으로 봅니다. 약 257ms → 약 117ms입니다. 정적으로 프리렌더되는 `/dashboard`가 207ms로 `/`와 사실상 같다는 점이 방증입니다.
+- 남은 117ms는 국제 왕복이 아니라 함수 자체의 렌더 시간과 서울 안에서의 DB 왕복입니다. 더 줄이려면 그룹 화면의 순차 DB 대기를 손봐야 합니다.
+- 전환 검증(2026-09-08): 운영에서 GitHub 로그인 → 대시보드 → 그룹 화면까지 통과했고 멤버 6명·기록 6건·문제 링크 1건이 이전과 같이 보입니다. 증빙 사진은 새 프로젝트가 발급한 서명 URL로 열립니다. 프로필 저장도 동작합니다. 세션은 이관하지 않아 전환 시점에 전원 로그아웃됐습니다.
 - `requireUser`와 `getOptionalUser`가 쓰던 `getUser()`를 `getClaims()`로 바꿨습니다. `getUser()`는 호출마다 Auth 서버에 왕복하지만, 이 프로젝트는 JWKS에 ES256 키가 있는 비대칭 서명이라 `getClaims()`는 로컬 검증만 합니다. 대칭 키로 바뀌면 `getClaims()`도 서버에 물어보므로 어느 쪽이든 느려지지 않습니다. 프록시는 이전부터 `getClaims()`를 쓰고 있었습니다.
 - 화면에 넘기는 사용자 값은 `SessionUser`(`id`·`email`·`githubUserName`)로 좁혔습니다. 초대 화면이 쓰던 `user_metadata.user_name`은 표시 전용이며 권한 판단에는 쓰지 않습니다.
 - `@vercel/speed-insights`를 넣어 실제 방문자의 TTFB·LCP를 봅니다. 리전을 옮길지 판단할 근거가 필요해서 추가했습니다. 방문자 수 집계(`@vercel/analytics`)는 6명 그룹에서 얻을 정보가 적어 넣지 않았습니다.
@@ -172,7 +176,7 @@ Node.js 24에서 `pnpm test`, `pnpm check`를 실행합니다. 로컬 `.env.loca
 - 기록 한 줄을 누르면 네이티브 `<dialog>` 상세 모달이 열립니다. 검수·취소는 기존 서버 액션(`reviewProofAction`, `deleteProofAction`)을 그대로 호출하므로 권한 판단은 서버와 RLS에 남습니다. 반려는 앱에서 이유 입력을 요구하고, 서버는 기존대로 500자 상한만 봅니다. 풀이 등록도 헤더 버튼으로 여는 모달이며 등록을 마치면 아래쪽 알림으로 결과를 알립니다.
 - 데이터 조회 경로는 바꾸지 않았습니다. 쿼리 순서·조건과 `get_group_overview` 호출은 그대로이며 `tests/group-page-queries.test.mjs`가 이를 확인합니다.
 - 화면 개편 배포(2026-09-07): 커밋 `d2091ba`와 후속 수정 `ad74e54`가 Production에 배포됐고 배포 상태는 `success`입니다. `/`, `/dashboard`, `/join/<code>`가 200을 반환하고, 배포된 CSS에서 `@layer base` → `@layer utilities` 순서와 `light-dark()` 폴리필을 확인했습니다. 마이그레이션과 환경변수 변경은 없습니다.
-- 운영 브라우저에서 로그인 후 그룹 화면·상세 모달 동작은 아직 확인하지 않았습니다. 로컬에서는 매트릭스, 탭·필터, 상세 모달의 검수 화면, 등록 모달, 다크 모드, 375px 모바일 폭까지 확인했습니다.
+- 운영 브라우저에서 로그인과 그룹 화면 렌더는 확인했습니다(2026-09-08, 리전 이전 검증). 상세 모달 동작은 아직 확인하지 않았습니다. 로컬에서는 매트릭스, 탭·필터, 상세 모달의 검수 화면, 등록 모달, 다크 모드, 375px 모바일 폭까지 확인했습니다.
 
 ## 프로필
 
@@ -189,11 +193,11 @@ Node.js 24에서 `pnpm test`, `pnpm check`를 실행합니다. 로컬 `.env.loca
 - 프로필 사진 업로드는 범위에 넣지 않았습니다. `avatar_url`은 가입 때 받은 GitHub 값이 그대로 남아 있고 화면에서 쓰지 않습니다.
 - 프로필 배포(2026-09-07): 마이그레이션을 `main` 배포보다 먼저 적용하고 `schema_migrations` 버전을 `20260907020000`으로 맞췄습니다. 적용 후 프로필 6건 모두 `github_login`이 GitHub 아이디 소문자로 채워졌고 `display_name`·`bio`는 그대로입니다. `information_schema.column_privileges`에서 `authenticated`의 UPDATE 권한이 `display_name`·`bio` 두 컬럼뿐인 것과 `on_auth_identity_github_synced` 트리거를 확인했으며, 새 CHECK를 읽기 전용으로 평가해 공백만인 이름·앞뒤 공백·제어문자·길이 초과·형식이 틀린 GitHub 아이디가 걸러지는 것을 확인했습니다. 적용 후 새로 생긴 보안 권고는 없습니다. 커밋 `85b0769`가 Production에 배포됐고(배포 `6310323371`, 상태 `success`) `/`, `/dashboard`, `/settings/profile`이 200을 반환합니다. 로그아웃 상태에서 `/settings/profile`은 프로필 내용을 내려주지 않고 `next=%2Fsettings%2Fprofile`로 로그인에 복귀합니다.
 - 이름 옆 아이디·소개 카드 배포(2026-09-07): 커밋 `039ee01`이 Production에 배포됐고(배포 `6310640761`, 상태 `success`) `/`, `/dashboard`, `/settings/profile`이 200을 반환합니다. 배포된 CSS에서 `group-hover/member:block`과 헤더의 `rounded-t-[11px]`을 확인했습니다. 빌드 CSS로 만든 정적 미리보기에서 1100px·800px·375px 폭의 이름·아이디 표시와 소개 카드, 마지막 행 카드가 잘리지 않는 것까지 확인했습니다. 마이그레이션과 환경변수 변경은 없습니다.
-- 운영 브라우저에서 로그인 후 닉네임·소개 저장과 다른 멤버 화면 반영은 아직 확인하지 않았습니다. `supabase/tests/member_profiles.sql`은 `auth.users`에 데이터를 넣으므로 MCP가 아니라 SQL Editor에서 실행합니다.
+- 운영 브라우저에서 닉네임 저장을 확인했습니다(2026-09-08). 값을 바꾸지 않고 같은 값으로 저장해 쓰기 경로만 확인했고 `profiles.updated_at`이 갱신됐습니다. 다른 멤버 화면 반영은 아직 확인하지 않았습니다. `supabase/tests/member_profiles.sql`은 `auth.users`에 데이터를 넣으므로 MCP가 아니라 SQL Editor에서 실행합니다.
 
 ## 화면 전환과 무료 운영
 
-- DB 프로젝트·리전·인증·사진은 이전하지 않습니다. Vercel 함수만 기존 DB와 가까운 `syd1`에 배포합니다.
+- DB와 Vercel 함수를 모두 서울로 옮겼습니다(2026-09-08). 둘을 떨어뜨려 두면 그룹 화면의 순차 DB 대기가 전부 국제 왕복이 됩니다.
 - 대시보드에는 `loading.tsx`가 있어 데이터 조회 중 로딩 화면을 표시합니다. 그룹 화면은 주 이동 깜빡임 때문에 제거했습니다.
 - 초대코드는 본문과 병렬 조회하고 플랫폼 계정은 표시할 풀이에서 참조한 계정만 조회합니다. ACTIVE 멤버십 검사와 RLS는 유지합니다.
 - 유료 이미지 변환·관측 도구·추가 DB를 사용하지 않습니다. Vercel Hobby는 비상업적 개인 용도이며 무료 사용량 초과 시 제한될 수 있습니다.

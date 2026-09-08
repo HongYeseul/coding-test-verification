@@ -133,6 +133,8 @@ npx supabase start
 4. 첫 배포 후 생성된 Production URL을 Supabase Site URL과 Redirect URLs에 반영합니다.
 5. 환경변수나 OAuth URL을 바꿨다면 새로 배포합니다.
 
+`vercel.json`의 `regions`는 서버 함수가 실행될 리전을 고정합니다. **Supabase 프로젝트와 같은 지역으로 맞춥니다.** 화면마다 DB를 여러 번 순차로 기다리기 때문에, 둘이 떨어져 있으면 그 대기가 전부 국제 왕복이 됩니다. 현재 값은 서울(`icn1`)이고 Supabase도 서울(`ap-northeast-2`)입니다.
+
 초기 기능은 사용자의 요청으로 동작하므로 Cron은 필요하지 않습니다. Codeforces 정기 동기화가 필요해질 때 별도로 추가합니다.
 
 ## 증빙 파일 경로
