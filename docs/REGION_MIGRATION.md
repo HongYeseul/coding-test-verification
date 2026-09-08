@@ -36,33 +36,41 @@
 - 데이터 이관: `auth.users` 6, `auth.identities` 6, `profiles` 6, `groups` 1, `group_members` 6, `group_invite_codes` 1, `proofs` 6, `proof_reviews` 6. 값 단위 지문이 양쪽 모두 `6d7ef706…`로 **일치**합니다.
 - 트리거가 이관을 깨뜨리지 않도록 `session_replication_role = replica`로 넣고 끝나면 `origin`으로 되돌렸습니다.
 - `proof-evidence` 버킷이 비공개, 300KB 상한, JPEG·PNG·WebP 설정으로 만들어졌습니다.
+- 사진 6개(합계 290,723바이트)를 옮겼습니다. 두 프로젝트에 임시 Edge Function을 올려 각자의 서비스 키로 내려받고 올리는 방식이라 버킷을 공개로 바꾸거나 키를 밖으로 꺼내지 않았습니다. 6개 모두 `proofs.evidence_path`와 연결됩니다.
+- 보안 권고가 기존 프로젝트와 동일합니다. 새로 생긴 항목이 없습니다.
 - 새 프로젝트도 JWT 서명이 ES256(비대칭)이라 `getClaims()`의 로컬 검증 최적화가 그대로 동작합니다.
 
 기존 프로젝트는 **그대로 살아 있고 운영도 아직 기존 프로젝트를 봅니다.**
 
 ### 남은 것
 
-아래는 자격증명이나 파일 업로드가 필요해 직접 하셔야 합니다. **순서대로** 진행합니다.
+두 가지만 남았고 **둘 다 제가 할 수 없습니다.**
 
-**1. 사진 6개 옮기기**
-
-기존 프로젝트 Storage > `proof-evidence`에서 폴더째 내려받아 새 프로젝트의 같은 버킷에 **같은 경로 그대로** 올립니다. 경로가 `proofs.evidence_path`와 정확히 같아야 화면에 뜹니다. 합계 290,723바이트입니다.
-
-메타데이터 행은 일부러 넣지 않았습니다. 파일을 올리면 Supabase가 알아서 만들며, 미리 넣으면 업로드가 충돌합니다.
-
-**2. GitHub 로그인 연결**
+**1. GitHub 로그인 연결** — Client Secret은 자격증명이라 다루지 않습니다.
 
 - 새 프로젝트 Authentication > Providers > GitHub 활성화, 기존과 같은 Client ID·Secret 입력
 - GitHub OAuth App의 callback URL을 `https://dzibporiiexvsndungkx.supabase.co/auth/v1/callback`로 변경
 - Authentication > URL Configuration에 Site URL `https://coding-test-verification.vercel.app`, Redirect URLs `https://coding-test-verification.vercel.app/auth/callback**`와 `http://localhost:3000/auth/callback**` 등록
 
-**3. Vercel 환경변수 교체**
+**2. Vercel 환경변수 교체** — Vercel MCP 두 개 모두 `hongyeseuls-projects` 스코프에 403이고, 애초에 환경변수를 다루는 도구가 없습니다.
 
-Production의 `NEXT_PUBLIC_SUPABASE_URL`을 `https://dzibporiiexvsndungkx.supabase.co`로, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`를 새 프로젝트의 publishable key로 바꿉니다.
+Production의 값을 새 프로젝트 것으로 바꿉니다.
 
-**4. 리전 전환 배포**
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://dzibporiiexvsndungkx.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<새 프로젝트 Connect 화면의 publishable key>
+```
 
-3번까지 끝난 뒤에 `vercel.json`을 `{ "regions": ["icn1"] }`로 바꿔 배포합니다. **순서를 바꾸면 서울 함수가 시드니 DB를 보게 되어 지금보다 느려집니다.**
+**3. 리전 전환** — 위 둘이 끝나면 `vercel.json`을 `{ "regions": ["icn1"] }`로 바꿔 배포합니다. 이건 저장소 파일이라 제가 처리할 수 있습니다.
+
+순서를 지켜야 합니다. 2번보다 3번을 먼저 하면 서울 함수가 시드니 DB를 보게 되어 지금보다 느려집니다.
+
+### 정리할 것
+
+사진을 옮기려고 임시 Edge Function을 배포했다가 내용을 비우고 `verify_jwt`를 켜 401을 반환하게 해뒀습니다. 동작하지 않지만 대시보드에서 지워두면 깔끔합니다.
+
+- 기존 프로젝트: `migrate-export`
+- 새 프로젝트: `migrate-import`
 
 ## 되돌리기
 
