@@ -56,9 +56,9 @@ MCP의 `apply_migration`은 버전을 실행 시각으로 기록하므로 저장
 
 `20260907020000_member_profiles.sql`은 `profiles`에 `github_login`·`bio`를 더하고, 기존 `display_name` CHECK를 앞뒤 공백·제어문자까지 막도록 바꿉니다. `get_group_overview`는 시그니처를 유지한 채 `members`에 두 값을 더합니다. 새 코드가 두 컬럼을 조회하므로 `main` 배포보다 먼저 적용해야 하며, 구버전 코드는 두 컬럼을 읽지도 쓰지도 않아 적용 후에도 그대로 동작합니다. 적용 전 기존 `display_name`이 새 CHECK를 통과하는지, GitHub 아이디가 형식에 맞는지 읽기 전용으로 확인했습니다(프로필 6건 모두 통과).
 
-`20260908000000_group_problem_titles.sql`은 `group_problem_titles` 테이블과 RLS 정책 네 개를 만듭니다. 기존 테이블과 권한은 건드리지 않아 구버전 코드에 영향이 없고, 새 코드가 이 테이블을 읽고 쓰므로 `main` 배포보다 먼저 적용해야 합니다. 적용 전에는 문제 목록의 ‘제목 넣기’가 오류 안내로 끝납니다.
+`20260908000000_group_problem_titles.sql`은 `group_problem_titles` 테이블과 RLS 정책 네 개를 만듭니다. 기존 테이블과 권한은 건드리지 않아 구버전 코드에 영향이 없습니다. 이번에는 코드가 먼저 배포돼 적용 전까지 문제 목록의 ‘제목 넣기’ 저장이 오류 안내로 끝났습니다. 목록 조회는 실패해도 빈 결과로 떨어지므로 화면 자체는 정상이었습니다. MCP `apply_migration`으로 적용한 뒤 `schema_migrations`의 버전을 실행 시각에서 `20260908000000`으로 고쳤습니다. 적용 후 정책 4개·RLS 활성·`authenticated` 권한과 `anon` 권한 없음을 확인했고, `proofs`의 `authenticated` 권한이 여전히 SELECT·INSERT뿐인 것도 함께 확인했습니다.
 
-커밋 `ae1b6ab`에 잠깐 들어갔던 `20260908000000_problem_title_by_reviewer.sql`은 `proofs`에 `problem_title` UPDATE 권한을 여는 방식이었고, 적용하지 않은 채 위 설계로 바꿨습니다. 저장소에서 지웠으니 이력에서 발견하더라도 적용하지 않습니다.
+커밋 `ae1b6ab`에 다른 세션의 작업과 섞여 들어갔던 `20260908000000_problem_title_by_reviewer.sql`은 `proofs`에 `problem_title` UPDATE 권한을 여는 방식이었고, 적용하지 않은 채 위 설계로 바꿨습니다. 저장소에서 지웠으니 이력에서 발견하더라도 적용하지 않습니다.
 
 그룹 생성·초대 수락·가입 승인·검수자 지정 함수가 연결되어 있습니다. 그룹 데이터는 ACTIVE 멤버만 조회하며, 작성자 본인의 풀이 검수는 차단됩니다.
 
