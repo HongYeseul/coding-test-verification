@@ -42,6 +42,7 @@ SQL Editor 또는 Supabase MCP의 `apply_migration`으로 아래 마이그레이
 - `20260907040000_group_overview_stable_order.sql`
 - `20260908000000_group_problem_titles.sql`
 - `20260909000000_auto_approve_proofs.sql`
+- `20260909010000_public_group_board.sql`
 
 적용 버전은 `supabase_migrations.schema_migrations`에도 등록합니다. 기존 마이그레이션을 재실행하지 않고 새 마이그레이션부터 적용합니다.
 
@@ -62,6 +63,8 @@ MCP의 `apply_migration`은 버전을 실행 시각으로 기록하므로 저장
 커밋 `ae1b6ab`에 다른 세션의 작업과 섞여 들어갔던 `20260908000000_problem_title_by_reviewer.sql`은 `proofs`에 `problem_title` UPDATE 권한을 여는 방식이었고, 적용하지 않은 채 위 설계로 바꿨습니다. 저장소에서 지웠으니 이력에서 발견하더라도 적용하지 않습니다.
 
 `20260909000000_auto_approve_proofs.sql`은 `groups.auto_approve` 컬럼과 `proofs`의 `AUTO_APPROVED` 상태를 더하고, 등록·검수·취소 정책과 현황판 집계를 그 상태까지 다루도록 넓힙니다. 기본값이 꺼짐이고 정책은 넓히기만 하므로 구버전 코드와 그대로 호환됩니다. 다만 새 코드가 `groups.auto_approve`를 조회하므로 적용 전에 배포하면 그룹 페이지가 404가 됩니다. 그래서 이번에는 배포보다 먼저 적용했고, 적용 직후 자동 인정을 켠 그룹은 0개라 기존 동작이 바뀌지 않았습니다. `schema_migrations`의 버전은 `20260909000000`으로 고쳤습니다.
+
+`20260909010000_public_group_board.sql`은 `groups.is_public` 컬럼과 `list_group_directory()`·`get_public_group_board()` 두 함수를 더하고 이 함수에만 `anon` 실행 권한을 줍니다. 표 권한은 그대로 두어 `anon`은 여전히 `groups`·`profiles`·`proofs`를 직접 조회할 수 없습니다. 적용 후 `anon` 역할로 두 함수와 표 접근을 확인했고, 공개로 켠 그룹은 0개라 실제로 공개된 데이터는 없습니다.
 
 그룹 생성·초대 수락·가입 승인·검수자 지정 함수가 연결되어 있습니다. 그룹 데이터는 ACTIVE 멤버만 조회하며, 작성자 본인의 풀이 검수는 차단됩니다.
 

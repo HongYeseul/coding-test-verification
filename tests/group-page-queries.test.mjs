@@ -113,9 +113,9 @@ async function renderGroup(
     `
     const { requireUser, redirect, notFound, githubHandle } = globalThis.__groupPageImports;
     const React = { createElement: (type, props, ...children) => ({ type, props, children }) };
-    const Link='a', PhotoProofForm='form', StatusMessage='div', GroupOverview='section', InvitePopover='div', GroupProblems='section', AppShell='main', ProofRecordList='div', ProofFilterForm='form';
+    const Link='a', PhotoProofForm='form', StatusMessage='div', GroupOverview='section', InvitePopover='div', GroupProblems='section', GroupSettingsDialog='div', AppShell='main', ProofRecordList='div', ProofFilterForm='form';
     const problemLink=(value)=>value ? { url: value, platform: '플랫폼' } : null;
-    const approveMembershipAction=()=>{}, rotateInviteCodeAction=()=>{}, setMemberRoleAction=()=>{}, updateGroupSettingsAction=()=>{}, deleteProofAction=()=>{}, reviewProofAction=()=>{};
+    const approveMembershipAction=()=>{}, rotateInviteCodeAction=()=>{}, setMemberRoleAction=()=>{}, deleteProofAction=()=>{}, reviewProofAction=()=>{};
     const firstQueryValue=(value)=>value, getSiteUrl=()=>"https://example.invalid";
     ${source}
   `,

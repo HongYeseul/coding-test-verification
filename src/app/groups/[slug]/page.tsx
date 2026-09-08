@@ -8,7 +8,6 @@ import {
   approveMembershipAction,
   rotateInviteCodeAction,
   setMemberRoleAction,
-  updateGroupSettingsAction,
 } from "@/app/actions/groups";
 import { AppShell } from "@/components/app-shell";
 import { StatusMessage } from "@/components/status-message";
@@ -16,6 +15,7 @@ import { requireUser } from "@/lib/auth";
 import { firstQueryValue } from "@/lib/form";
 import { GroupOverview } from "@/components/group-overview";
 import { GroupProblems } from "@/components/group-problems";
+import { GroupSettingsDialog } from "@/components/group-settings-dialog";
 import { ProofFilterForm } from "@/components/proof-filter-form";
 import { ProofRecordList } from "@/components/proof-record-list";
 import type { ProofRecord } from "@/components/proof-record-list";
@@ -219,7 +219,7 @@ export default async function GroupPage({
   const { supabase, user } = await requireUser(`/groups/${slug}`);
   const { data: group } = await supabase
     .from("groups")
-    .select("id, name, slug, owner_id, auto_approve")
+    .select("id, name, slug, owner_id, auto_approve, is_public")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -580,6 +580,14 @@ export default async function GroupPage({
               </form>
             </InvitePopover>
           )}
+          {isOwner && (
+            <GroupSettingsDialog
+              groupId={group.id}
+              groupSlug={group.slug}
+              autoApprove={group.auto_approve}
+              isPublic={group.is_public}
+            />
+          )}
           <PhotoProofForm
             groupId={group.id}
             groupSlug={group.slug}
@@ -731,38 +739,6 @@ export default async function GroupPage({
           />
         </aside>
       </div>
-
-      {isOwner && (
-        <section aria-label="그룹 설정" className="mt-7">
-          <h2>그룹 설정</h2>
-          <form
-            action={updateGroupSettingsAction}
-            className="mt-3 flex flex-wrap items-start justify-between gap-3 rounded-xl border border-line px-4 py-4"
-          >
-            <input type="hidden" name="groupId" value={group.id} />
-            <input type="hidden" name="groupSlug" value={group.slug} />
-            <label className="flex max-w-xl items-start gap-2 text-[15px]">
-              <input
-                type="checkbox"
-                name="autoApprove"
-                defaultChecked={group.auto_approve}
-                className="mt-1"
-              />
-              <span>
-                자동 인정
-                <span className="mt-1 block text-[13px] text-sub">
-                  켜면 새 기록이 등록하는 순간 인정됩니다. 소유자와 검수자가
-                  반려하면 미인정으로 내려갑니다. 이미 등록된 기록은 그대로
-                  둡니다.
-                </span>
-              </span>
-            </label>
-            <button type="submit" className="btn">
-              저장
-            </button>
-          </form>
-        </section>
-      )}
 
       {isOwner && (pendingMemberships.length > 0 || manageableMembers.length > 0) && (
         <section aria-label="멤버 관리" className="mt-7">

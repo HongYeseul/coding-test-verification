@@ -271,6 +271,7 @@ export async function updateGroupSettingsAction(formData: FormData) {
   const groupSlug = getRequiredText(formData, "groupSlug");
   // 체크하지 않은 상자는 아무 값도 보내지 않으므로 빈 문자열이 곧 꺼짐입니다.
   const autoApprove = getRequiredText(formData, "autoApprove") === "on";
+  const isPublic = getRequiredText(formData, "isPublic") === "on";
   if (!UUID_PATTERN.test(groupId) || !SLUG_PATTERN.test(groupSlug)) {
     redirect(withStatus("/dashboard", "error", "그룹을 확인해주세요."));
   }
@@ -289,19 +290,20 @@ export async function updateGroupSettingsAction(formData: FormData) {
   }
   const { error } = await supabase
     .from("groups")
-    .update({ auto_approve: autoApprove })
+    .update({ auto_approve: autoApprove, is_public: isPublic })
     .eq("id", groupId);
   if (error) {
     redirect(withStatus(groupPath, "error", "설정을 저장하지 못했습니다."));
   }
   revalidatePath(groupPath);
+  revalidatePath("/");
   redirect(
     withStatus(
       groupPath,
       "message",
-      autoApprove
-        ? "자동 인정을 켰습니다. 새 기록은 등록하는 순간 인정됩니다."
-        : "자동 인정을 껐습니다. 새 기록은 검수 대기로 들어갑니다.",
+      `자동 인정 ${autoApprove ? "켬" : "끔"} · 공개 리더보드 ${
+        isPublic ? "켬" : "끔"
+      }으로 저장했습니다.`,
     ),
   );
 }

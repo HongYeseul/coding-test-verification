@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
@@ -7,6 +8,8 @@ import { getOptionalUser } from "@/lib/auth";
 import { authErrorMessage, safeNextPath } from "@/lib/auth-navigation";
 import { firstQueryValue } from "@/lib/form";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { createClient } from "@/lib/supabase/server";
+import type { GroupDirectoryEntry } from "@/lib/public-groups";
 
 const steps = [
   {
@@ -35,6 +38,12 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   if (user) {
     redirect(next === "/" ? "/dashboard" : next);
   }
+
+  // 로그인 없이도 어떤 스터디가 굴러가는지 보이도록 목록만 먼저 내려줍니다.
+  const { data: directoryData } = configured
+    ? await (await createClient()).rpc("list_group_directory")
+    : { data: null };
+  const directory = (directoryData ?? []) as GroupDirectoryEntry[];
 
   return (
     <AppShell
@@ -94,6 +103,49 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             모든 풀이 인증은 그룹 소유자나 검수자가 사진으로 확인합니다.
           </p>
         </div>
+      </section>
+
+      <section aria-labelledby="group-directory-title" className="mt-7">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h2 id="group-directory-title">지금 활동 중인 스터디</h2>
+          <span className="text-[13px] text-sub tabular-nums">
+            {directory.length}개
+          </span>
+        </div>
+        {directory.length ? (
+          <ul className="rounded-xl border border-line">
+            {directory.map((group) => (
+              <li
+                key={group.slug}
+                className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 last:border-b-0"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-[15px] font-medium">
+                    {group.name}
+                  </span>
+                  <span className="text-[13px] text-sub tabular-nums">
+                    멤버 {group.memberCount}명
+                  </span>
+                </span>
+                {group.isPublic ? (
+                  <Link href={`/open/${group.slug}`} className="btn">
+                    리더보드 보기
+                  </Link>
+                ) : (
+                  <span className="text-[13px] text-sub">비공개 스터디</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="rounded-xl border border-line px-5 py-10 text-center text-[13px] text-sub">
+            아직 만들어진 스터디가 없습니다.
+          </p>
+        )}
+        <p className="mt-3 text-[12px] text-sub">
+          공개로 연 스터디는 닉네임과 인정된 풀이 건수까지 볼 수 있습니다. 기록과
+          사진은 멤버만 볼 수 있습니다.
+        </p>
       </section>
     </AppShell>
   );
