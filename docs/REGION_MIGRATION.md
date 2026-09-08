@@ -25,106 +25,44 @@
 - Vercel 프로젝트 환경변수 수정 권한
 - Supabase CLI (`brew install supabase/tap/supabase`)
 
-## 옮기는 순서
+## 진행 상황
 
-작업 중에는 로그인과 풀이 등록을 멈춥니다. 데이터가 작아 30분 안에 끝납니다.
+### 끝난 것
 
-### 1. 현재 데이터 백업
+새 프로젝트 `coding-test-verification-seoul` (`dzibporiiexvsndungkx`, `ap-northeast-2`)을 만들고 스키마와 데이터를 모두 옮겼습니다.
 
-```bash
-supabase db dump --db-url "<기존 프로젝트 연결 문자열>" --data-only -f backup-data.sql
-supabase db dump --db-url "<기존 프로젝트 연결 문자열>" -f backup-schema.sql
-```
+- 마이그레이션 13개 적용. `supabase_migrations.schema_migrations` 버전을 저장소 파일명과 일치시켰습니다.
+- 스키마 대조: 컬럼 67, 제약 53, 정책 25, 인덱스 24, 컬럼 권한 128이 기존과 **완전히 동일**합니다. 함수 25개는 주석과 공백을 제외한 로직 지문이 양쪽 모두 `c928e854…`로 같습니다. 기존 프로젝트에는 저장소 파일보다 압축된 형식으로 적용된 함수가 있어 원문 자체는 다르지만 동작은 같습니다.
+- 데이터 이관: `auth.users` 6, `auth.identities` 6, `profiles` 6, `groups` 1, `group_members` 6, `group_invite_codes` 1, `proofs` 6, `proof_reviews` 6. 값 단위 지문이 양쪽 모두 `6d7ef706…`로 **일치**합니다.
+- 트리거가 이관을 깨뜨리지 않도록 `session_replication_role = replica`로 넣고 끝나면 `origin`으로 되돌렸습니다.
+- `proof-evidence` 버킷이 비공개, 300KB 상한, JPEG·PNG·WebP 설정으로 만들어졌습니다.
+- 새 프로젝트도 JWT 서명이 ES256(비대칭)이라 `getClaims()`의 로컬 검증 최적화가 그대로 동작합니다.
 
-사진 6개도 내려받습니다. Storage > `proof-evidence`에서 폴더째 다운로드합니다.
+기존 프로젝트는 **그대로 살아 있고 운영도 아직 기존 프로젝트를 봅니다.**
 
-### 2. 새 프로젝트에 스키마 적용
+### 남은 것
 
-저장소의 마이그레이션을 순서대로 올립니다.
+아래는 자격증명이나 파일 업로드가 필요해 직접 하셔야 합니다. **순서대로** 진행합니다.
 
-```bash
-supabase link --project-ref <새 프로젝트 ref>
-supabase db push
-```
+**1. 사진 6개 옮기기**
 
-`supabase_migrations.schema_migrations`에 13개 버전이 모두 들어갔는지 확인합니다.
+기존 프로젝트 Storage > `proof-evidence`에서 폴더째 내려받아 새 프로젝트의 같은 버킷에 **같은 경로 그대로** 올립니다. 경로가 `proofs.evidence_path`와 정확히 같아야 화면에 뜹니다. 합계 290,723바이트입니다.
 
-### 3. 데이터 넣기
+메타데이터 행은 일부러 넣지 않았습니다. 파일을 올리면 Supabase가 알아서 만들며, 미리 넣으면 업로드가 충돌합니다.
 
-트리거가 그대로면 이관이 깨집니다.
+**2. GitHub 로그인 연결**
 
-- `handle_new_user`: `auth.users`를 넣으면 `profiles`가 자동 생성돼 중복 충돌
-- `create_owner_membership`: `groups`를 넣으면 `OWNER` 멤버가 자동 생성돼 중복 충돌
-- `apply_proof_review`: `proof_reviews`를 넣으면 `PENDING`이 아니라며 예외
+- 새 프로젝트 Authentication > Providers > GitHub 활성화, 기존과 같은 Client ID·Secret 입력
+- GitHub OAuth App의 callback URL을 `https://dzibporiiexvsndungkx.supabase.co/auth/v1/callback`로 변경
+- Authentication > URL Configuration에 Site URL `https://coding-test-verification.vercel.app`, Redirect URLs `https://coding-test-verification.vercel.app/auth/callback**`와 `http://localhost:3000/auth/callback**` 등록
 
-그래서 복제 모드로 트리거를 끄고 넣습니다.
+**3. Vercel 환경변수 교체**
 
-```sql
-begin;
-set session_replication_role = replica;
--- 여기서 backup-data.sql의 INSERT를 실행합니다.
-set session_replication_role = origin;
-commit;
-```
+Production의 `NEXT_PUBLIC_SUPABASE_URL`을 `https://dzibporiiexvsndungkx.supabase.co`로, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`를 새 프로젝트의 publishable key로 바꿉니다.
 
-넣는 순서는 `auth.users` → `auth.identities` → `profiles` → `groups` → `group_members` → `group_invite_codes` → `proofs` → `proof_reviews` → `storage.objects`입니다.
+**4. 리전 전환 배포**
 
-### 4. 사진 올리기
-
-`proof-evidence` 버킷에 1단계에서 내려받은 파일을 **같은 경로 그대로** 올립니다. 경로는 `<group_id>/<user_id>/<파일명>` 형식이며 `proofs.evidence_path`와 정확히 일치해야 화면에 뜹니다.
-
-### 5. GitHub 로그인 연결
-
-- 새 프로젝트에서 Authentication > Providers > GitHub 활성화, Client ID와 Secret 입력
-- GitHub OAuth App의 Authorization callback URL을 새 주소로 바꿉니다: `https://<새 ref>.supabase.co/auth/v1/callback`
-- Authentication > URL Configuration에 Site URL(운영 주소)과 Redirect URLs(`https://coding-test-verification.vercel.app/auth/callback**`, `http://localhost:3000/auth/callback**`)를 등록합니다
-
-### 6. Vercel 환경변수와 리전
-
-Production 환경변수를 새 프로젝트 값으로 바꿉니다.
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://<새 ref>.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<새 publishable key>
-```
-
-`vercel.json`의 리전을 서울로 바꾸고 배포합니다.
-
-```json
-{ "regions": ["icn1"] }
-```
-
-**환경변수를 먼저 바꾸고 배포해야 합니다.** 순서가 바뀌면 서울 함수가 시드니 DB를 보게 되어 아주 느려집니다.
-
-## 검증
-
-이관 직후 아래 건수가 이전과 같아야 합니다(2026-09-08 기준).
-
-| 대상 | 건수 |
-|---|---|
-| `auth.users` | 6 |
-| `auth.identities` | 6 |
-| `public.profiles` | 6 |
-| `public.groups` | 1 |
-| `public.group_members` | 6 |
-| `public.proofs` | 6 |
-| `public.proof_reviews` | 6 |
-| `public.group_invite_codes` | 1 |
-| `storage.objects` (`proof-evidence`) | 6 (합계 290,723 bytes) |
-
-값도 함께 봅니다.
-
-- 닉네임 6개: `홍예슬`, `예비백수`, `김준석`, `angyeongjin`, `Apeirogon99`, `swprk`
-- `profiles.github_login`이 모두 채워져 있고 소문자인지
-- 그룹 `coding-study`의 `OWNER`가 `홍예슬`이고 나머지 5명이 `REVIEWER`·`ACTIVE`인지
-- 승인 5건, 반려 1건인지
-- 브라우저에서 GitHub 로그인 → 그룹 화면 → 사진이 보이는지
-
-TTFB도 다시 잽니다. `x-vercel-id`가 `icn1::icn1`로 바뀌어야 합니다.
-
-```bash
-curl -s -o /dev/null -w "%{time_starttransfer}\n" https://coding-test-verification.vercel.app/
-```
+3번까지 끝난 뒤에 `vercel.json`을 `{ "regions": ["icn1"] }`로 바꿔 배포합니다. **순서를 바꾸면 서울 함수가 시드니 DB를 보게 되어 지금보다 느려집니다.**
 
 ## 되돌리기
 
@@ -134,7 +72,7 @@ curl -s -o /dev/null -w "%{time_starttransfer}\n" https://coding-test-verificati
 
 ## 자동화하지 못한 이유
 
-- Supabase 커넥터가 이 프로젝트 하나에만 묶여 있습니다. `create_project`·`list_projects`가 없고 모든 도구에 프로젝트 지정 인자가 없어, 새 프로젝트를 만들거나 거기에 SQL을 실행할 수 없습니다.
+- Supabase 커넥터가 두 개 붙어 있습니다. 하나는 기존 프로젝트에 고정돼 있고, 다른 하나는 `create_project`와 프로젝트 지정 `execute_sql`을 제공합니다. 프로젝트 생성·스키마 적용·데이터 이관은 후자로 처리했습니다.
 - GitHub OAuth Client Secret과 DB 비밀번호는 자격증명이라 대신 입력하지 않습니다.
 - Storage 파일 내려받기와 올리기에는 관리자 키가 필요합니다.
 - Vercel MCP는 `hongyeseuls-projects` 스코프 권한이 없어(`list_teams` 빈 배열, `get_project` 403) 환경변수와 리전을 대신 바꿀 수 없습니다.
