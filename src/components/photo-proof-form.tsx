@@ -4,7 +4,7 @@ import {
   useEffect,
   useRef,
   useState,
-  type ChangeEvent,
+  type ClipboardEvent,
   type FormEvent,
 } from "react";
 import Image from "next/image";
@@ -46,8 +46,8 @@ export function PhotoProofForm({
     blob: Blob;
     url: string;
   } | null>(null);
-  const [confirmed, setConfirmed] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const photoInput = useRef<HTMLInputElement>(null);
   const selection = useRef(0);
   useEffect(
     () => () => {
@@ -78,11 +78,9 @@ export function PhotoProofForm({
   );
   const submitting = useRef(false);
 
-  async function prepare(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+  async function prepare(file: File | undefined) {
     const current = ++selection.current;
     setPrepared(null);
-    setConfirmed(false);
     setMessage("");
     setPreparing(Boolean(file));
     if (!file) return;
@@ -102,6 +100,23 @@ export function PhotoProofForm({
     }
   }
 
+  /** 캡처를 복사해 붙여넣으면 파일을 고른 것과 같게 처리합니다. */
+  function pastePhoto(event: ClipboardEvent<HTMLFormElement>) {
+    const input = photoInput.current;
+    if (busy || !input) return;
+    const file = [...(event.clipboardData?.files ?? [])].find((item) =>
+      item.type.startsWith("image/"),
+    );
+    // 이미지가 없으면 글자 붙여넣기를 막지 않습니다.
+    if (!file) return;
+    event.preventDefault();
+    const transfer = new DataTransfer();
+    transfer.items.add(file);
+    // 제출과 필수 입력 확인이 모두 이 입력을 보므로 값까지 채웁니다.
+    input.files = transfer.files;
+    void prepare(file);
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submitting.current) return;
@@ -110,8 +125,8 @@ export function PhotoProofForm({
     const fileInput = form.elements.namedItem("photo") as HTMLInputElement;
     const file = fileInput.files?.[0];
     if (!(file instanceof File)) return;
-    if (preparing || !prepared || prepared.file !== file || !confirmed) {
-      setMessage("압축된 사진의 글자를 확인한 후 체크해주세요.");
+    if (preparing || !prepared || prepared.file !== file) {
+      setMessage("사진 압축이 끝나면 등록할 수 있습니다.");
       return;
     }
     const validationError = photoError(file, MAX_SOURCE_PHOTO_BYTES);
@@ -169,7 +184,6 @@ export function PhotoProofForm({
       upload.current = null;
       form.reset();
       setPrepared(null);
-      setConfirmed(false);
       setOpen(false);
       setMessage(
         `사진을 풀이 기록으로 등록했습니다 (${displaySize(file.size)} → ${displaySize(storedSize)}). 검수 승인을 기다려주세요.`,
@@ -213,7 +227,7 @@ export function PhotoProofForm({
         }}
         className="m-auto max-h-[calc(100dvh-40px)] w-[min(620px,calc(100%-32px))] overflow-y-auto rounded-[14px] border border-line bg-canvas p-6 text-ink backdrop:bg-black/40"
       >
-        <form onSubmit={submit}>
+        <form onSubmit={submit} onPaste={pastePhoto}>
           <div className="flex items-center justify-between gap-3">
             <h3>오늘 푼 문제를 공유해요</h3>
             <button
@@ -238,16 +252,17 @@ export function PhotoProofForm({
                 accept="image/jpeg,image/png,image/webp"
                 required
                 disabled={busy}
-                onChange={prepare}
+                ref={photoInput}
+                onChange={(event) => prepare(event.target.files?.[0])}
                 className="text-[13px]"
-                aria-describedby="photo-help"
+                aria-describedby="photo-help photo-limits"
               />
               <p id="photo-help" className="text-[13px]">
-                JPG, PNG, WebP · 최대 20MB · 업로드 전 자동 압축
+                캡처를 복사했다면 이 창에 그대로 붙여넣어도 됩니다.
               </p>
-              <p className="text-[12px]">
-                긴 변 1,920px · 150KB 목표 · 저장 최대 300KB. 글자가 흐리면
-                필요한 부분만 잘라 다시 선택해주세요.
+              <p id="photo-limits" className="text-[12px]">
+                JPG, PNG, WebP · 최대 20MB · 긴 변 1,440px · 120KB 목표 · 저장
+                최대 300KB. 글자가 흐리면 필요한 부분만 잘라 다시 선택해주세요.
               </p>
             </div>
 
@@ -276,16 +291,6 @@ export function PhotoProofForm({
                     크게 열어 글자 확인
                   </span>
                 </a>
-                <label className="flex items-start gap-2 text-[15px]">
-                  <input
-                    type="checkbox"
-                    checked={confirmed}
-                    onChange={(event) => setConfirmed(event.target.checked)}
-                    disabled={busy}
-                    className="mt-1"
-                  />
-                  문제명·아이디·통과 결과 등 검수에 필요한 글자가 읽힙니다.
-                </label>
               </div>
             )}
 
@@ -329,7 +334,7 @@ export function PhotoProofForm({
             </span>
             <button
               type="submit"
-              disabled={busy || preparing || !prepared || !confirmed}
+              disabled={busy || preparing || !prepared}
               className="btn btn-primary"
             >
               {busy ? "등록 중…" : "검수 요청하기"}

@@ -85,7 +85,7 @@
           img.src = url;
           await img.decode();
           if (
-            Math.max(img.naturalWidth, img.naturalHeight) > 1920 ||
+            Math.max(img.naturalWidth, img.naturalHeight) > 1440 ||
             compressed.size > 300 * 1024
           )
             throw Error("해상도 또는 용량 검증 실패");

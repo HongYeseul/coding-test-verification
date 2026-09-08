@@ -4,8 +4,11 @@ import {
   photoError,
 } from "./proof-input.ts";
 
-export const MAX_PHOTO_EDGE = 1920;
-export const TARGET_PHOTO_BYTES = 150 * 1024;
+// 화면 캡처가 대부분이라 글자가 읽히는 선에서 긴 변을 더 줄입니다.
+// 목표 용량에 닿을 때까지 앞에서부터 차례로 시도합니다.
+export const PHOTO_EDGE_STEPS = [1440, 1200, 1024];
+export const MAX_PHOTO_EDGE = PHOTO_EDGE_STEPS[0];
+export const TARGET_PHOTO_BYTES = 120 * 1024;
 
 export function photoDimensions(width: number, height: number) {
   if (
@@ -72,7 +75,7 @@ export async function compressPhoto(file: File): Promise<Blob> {
     let compressed: Blob | undefined;
     let type = "image/webp";
     let previousEdge = 0;
-    outer: for (const maxEdge of [1920, 1600, 1280]) {
+    outer: for (const maxEdge of PHOTO_EDGE_STEPS) {
       const edge = Math.min(maxEdge, Math.max(size.width, size.height));
       if (edge === previousEdge) continue;
       previousEdge = edge;
