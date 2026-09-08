@@ -7,6 +7,12 @@ export type ProblemProofRow = {
   created_at: string;
 };
 
+/** 그룹이 정한 제목입니다. 링크가 문제의 식별자이고 제목만 바뀝니다. */
+export type GroupProblemTitleRow = {
+  url: string;
+  title: string;
+};
+
 export type SolvedProblem = {
   url: string;
   platform: string;
@@ -16,7 +22,10 @@ export type SolvedProblem = {
 };
 
 /** 같은 문제 링크를 하나로 묶고 최근에 등록된 문제부터 보여줍니다. */
-export function groupSolvedProblems(rows: ProblemProofRow[]): SolvedProblem[] {
+export function groupSolvedProblems(
+  rows: ProblemProofRow[],
+  groupTitles: GroupProblemTitleRow[] = [],
+): SolvedProblem[] {
   const problems = new Map<string, SolvedProblem>();
   for (const row of rows) {
     const link = problemLink(row.problem_url);
@@ -38,6 +47,13 @@ export function groupSolvedProblems(rows: ProblemProofRow[]): SolvedProblem[] {
     if (!found.solverIds.includes(row.user_id))
       found.solverIds.push(row.user_id);
     if (row.created_at > found.latestAt) found.latestAt = row.created_at;
+  }
+  // 소유자와 검수자가 정한 제목은 기록에 적힌 제목보다 앞섭니다.
+  for (const row of groupTitles) {
+    const link = problemLink(row.url);
+    const title = row.title?.trim() ?? "";
+    const found = link ? problems.get(link.url) : null;
+    if (found && title) found.title = title;
   }
   return [...problems.values()].sort((left, right) =>
     right.latestAt.localeCompare(left.latestAt),

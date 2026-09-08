@@ -21,7 +21,10 @@ import type { ProofRecord } from "@/components/proof-record-list";
 import { githubHandle } from "@/lib/profile";
 import { problemLink } from "@/lib/proof-input";
 import type { GroupOverviewData } from "@/lib/group-overview";
-import type { ProblemProofRow } from "@/lib/group-problems";
+import type {
+  GroupProblemTitleRow,
+  ProblemProofRow,
+} from "@/lib/group-problems";
 
 type MembershipRow = {
   user_id: string;
@@ -356,8 +359,12 @@ export default async function GroupPage({
       ),
     ),
   ];
-  const [{ data: reviewData }, { data: accountData }, { data: problemData }] =
-    await Promise.all([
+  const [
+    { data: reviewData },
+    { data: accountData },
+    { data: problemData },
+    { data: groupTitleData },
+  ] = await Promise.all([
       proofIds.length
         ? supabase
             .from("proof_reviews")
@@ -383,9 +390,15 @@ export default async function GroupPage({
         ])
         .order("created_at", { ascending: false })
         .limit(200),
+      // 소유자·검수자가 정한 제목입니다. 기록에 적힌 제목보다 앞섭니다.
+      supabase
+        .from("group_problem_titles")
+        .select("url, title")
+        .eq("group_id", group.id),
     ]);
   const accounts = (accountData ?? []) as PlatformAccountRow[];
   const problemRows = (problemData ?? []) as ProblemProofRow[];
+  const groupTitles = (groupTitleData ?? []) as GroupProblemTitleRow[];
   const reviews = (reviewData ?? []) as ReviewRow[];
   const accountById = new Map(accounts.map((account) => [account.id, account]));
   const reviewByProofId = new Map(
@@ -701,6 +714,7 @@ export default async function GroupPage({
         <aside className="mt-7 lg:sticky lg:top-6 lg:mt-0 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto">
           <GroupProblems
             rows={problemRows}
+            groupTitles={groupTitles}
             profileById={profileById}
             currentUserId={user.id}
             groupSlug={group.slug}

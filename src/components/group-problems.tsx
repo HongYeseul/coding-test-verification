@@ -1,5 +1,9 @@
-import { updateProblemTitleAction } from "@/app/actions/proofs";
-import { groupSolvedProblems, type ProblemProofRow } from "@/lib/group-problems";
+import { updateProblemTitleAction } from "@/app/actions/problems";
+import {
+  groupSolvedProblems,
+  type GroupProblemTitleRow,
+  type ProblemProofRow,
+} from "@/lib/group-problems";
 
 /** 이름을 세 명까지 보여주고 나머지는 인원수로 줄입니다. */
 function solverNames(
@@ -14,18 +18,20 @@ function solverNames(
 
 export function GroupProblems({
   rows,
+  groupTitles,
   profileById,
   currentUserId,
   groupSlug,
   canEditTitle,
 }: {
   rows: ProblemProofRow[];
+  groupTitles: GroupProblemTitleRow[];
   profileById: Map<string, { display_name: string }>;
   currentUserId: string;
   groupSlug: string;
   canEditTitle: boolean;
 }) {
-  const problems = groupSolvedProblems(rows);
+  const problems = groupSolvedProblems(rows, groupTitles);
 
   return (
     <section aria-labelledby="group-problems-title">
@@ -110,7 +116,7 @@ export function GroupProblems({
       )}
       {canEditTitle && problems.length > 0 && (
         <p className="mt-2 text-[13px] text-sub">
-          제목은 같은 링크를 남긴 그룹의 모든 기록에 함께 적용됩니다.
+          제목은 그룹 목록에만 적용되고 각 멤버의 기록은 그대로 둡니다.
         </p>
       )}
     </section>
