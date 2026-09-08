@@ -153,6 +153,15 @@ Node.js 24에서 `pnpm test`, `pnpm check`를 실행합니다. 로컬 `.env.loca
   - 배포: 커밋 `0438024`가 Production에 배포됐고(배포 `6318341475`, 상태 `success`) `/`, `/dashboard`, `/settings/profile`이 200을 반환합니다. 배포된 CSS에서 `:root[data-theme=light|dark]`의 `color-scheme`과 Lightning CSS가 붙인 `light-dark()` 폴리필 변수, 말풍선의 `left-full`을 확인했고 첫 화면 HTML에 테마 부트스트랩 스크립트가 들어 있습니다. 마이그레이션과 환경변수 변경은 없습니다.
   - 배포 CSS에 `mt-[5px]`·`pb-[17px]` 규칙이 남아 있지만 소스에는 없습니다. 이 문서가 두 클래스를 예시로 적고 있어 Tailwind가 Markdown에서 주워 생성한 것입니다(위 Markdown 스캔 항목과 같은 원인).
   - 이 파일을 지워 폴백을 없앴습니다. 폴백이 없으면 새 페이지가 준비될 때까지 현재 화면이 유지되어 깜빡임이 사라집니다. 대신 Next 문서가 이 상황에 권장하는 `useLinkStatus`로 주 이동 화살표에만 진행 표시를 답니다(`LinkPendingDot`). 트레이드오프로 그룹 화면 첫 진입에도 스켈레톤이 뜨지 않고 이전 화면이 유지됩니다. 첫 진입 로딩 표시가 필요하면 `loading.tsx`를 되살리되 깜빡임이 함께 돌아옵니다.
+## 성능
+
+- 측정(2026-09-08, 한국에서): 같은 도메인의 정적 CSS는 서울 엣지(`x-vercel-id`의 `icn1`)에서 16ms에 오는데, HTML은 273ms입니다. HTML의 `x-vercel-id`는 `icn1::syd1`이라 요청이 서울 엣지에 닿은 뒤 시드니 함수로 넘어갑니다. 차이 약 257ms가 서울↔시드니 왕복입니다. 병목은 코드가 아니라 함수 리전입니다.
+- `vercel.json`의 `syd1`은 Supabase가 시드니라서 고른 값입니다. 함수만 서울로 옮기면 그룹 화면의 순차 DB 대기 8단계가 전부 국제 왕복이 되어 훨씬 느려집니다. 리전을 옮기려면 DB와 함수를 함께 옮겨야 합니다.
+- `requireUser`와 `getOptionalUser`가 쓰던 `getUser()`를 `getClaims()`로 바꿨습니다. `getUser()`는 호출마다 Auth 서버에 왕복하지만, 이 프로젝트는 JWKS에 ES256 키가 있는 비대칭 서명이라 `getClaims()`는 로컬 검증만 합니다. 대칭 키로 바뀌면 `getClaims()`도 서버에 물어보므로 어느 쪽이든 느려지지 않습니다. 프록시는 이전부터 `getClaims()`를 쓰고 있었습니다.
+- 화면에 넘기는 사용자 값은 `SessionUser`(`id`·`email`·`githubUserName`)로 좁혔습니다. 초대 화면이 쓰던 `user_metadata.user_name`은 표시 전용이며 권한 판단에는 쓰지 않습니다.
+- `@vercel/speed-insights`를 넣어 실제 방문자의 TTFB·LCP를 봅니다. 리전을 옮길지 판단할 근거가 필요해서 추가했습니다. 방문자 수 집계(`@vercel/analytics`)는 6명 그룹에서 얻을 정보가 적어 넣지 않았습니다.
+- Vercel MCP는 여전히 `hongyeseuls-projects` 스코프 권한이 없습니다. `list_teams`는 빈 배열, `get_runtime_logs`는 403이라 함수 실행 시간을 직접 볼 수 없어 위 수치는 모두 외부에서 잰 값입니다.
+
 - 스터디 소통 채널은 카카오톡입니다. 카카오톡 알림, 공동 목표, 응원 반응, 연속 참여 집계는 아직 구현하지 않았습니다.
 
 ## 화면 개편

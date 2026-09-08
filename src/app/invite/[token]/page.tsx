@@ -49,7 +49,7 @@ export default async function InvitationPage({
               <input type="hidden" name="token" value={token} />
               <p className="mb-3 text-[13px] text-sub">
                 <strong className="font-semibold text-ink">
-                  {user.user_metadata.user_name ?? user.email ?? "현재 계정"}
+                  {user.githubUserName ?? user.email ?? "현재 계정"}
                 </strong>
                 으로 로그인했습니다.
               </p>

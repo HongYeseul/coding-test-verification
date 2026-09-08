@@ -1,3 +1,4 @@
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -15,7 +16,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* 저장한 테마를 첫 페인트 전에 적용해 화면 번쩍임을 막습니다. */}
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
       </head>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        {children}
+        {/* 실제 방문자 브라우저에서 잰 TTFB·LCP를 Vercel로 보냅니다. */}
+        <SpeedInsights />
+      </body>
     </html>
   );
 }
