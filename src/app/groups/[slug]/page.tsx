@@ -8,6 +8,7 @@ import {
   approveMembershipAction,
   rotateInviteCodeAction,
   setMemberRoleAction,
+  updateGroupSettingsAction,
 } from "@/app/actions/groups";
 import { AppShell } from "@/components/app-shell";
 import { StatusMessage } from "@/components/status-message";
@@ -83,6 +84,7 @@ const roleLabels: Record<string, string> = {
 
 const proofStatusLabels: Record<string, string> = {
   PENDING: "◷ 검수 대기",
+  AUTO_APPROVED: "✓ 자동 인정",
   MANUAL_REVIEWED: "✓ 승인",
   API_VERIFIED: "✓ 자동 확인",
   REJECTED: "× 반려",
@@ -91,6 +93,7 @@ const proofStatusLabels: Record<string, string> = {
 
 const proofStatusTones: Record<string, ProofRecord["statusTone"]> = {
   PENDING: "pending",
+  AUTO_APPROVED: "approved",
   MANUAL_REVIEWED: "approved",
   API_VERIFIED: "approved",
   REJECTED: "rejected",
@@ -216,7 +219,7 @@ export default async function GroupPage({
   const { supabase, user } = await requireUser(`/groups/${slug}`);
   const { data: group } = await supabase
     .from("groups")
-    .select("id, name, slug, owner_id")
+    .select("id, name, slug, owner_id, auto_approve")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -308,6 +311,7 @@ export default async function GroupPage({
     if (proofStatus === "participating")
       proofRequest = proofRequest.in("verification_status", [
         "PENDING",
+        "AUTO_APPROVED",
         "MANUAL_REVIEWED",
         "API_VERIFIED",
       ]);
@@ -315,6 +319,7 @@ export default async function GroupPage({
       proofRequest = proofRequest.eq("verification_status", "PENDING");
     else if (proofStatus === "approved")
       proofRequest = proofRequest.in("verification_status", [
+        "AUTO_APPROVED",
         "MANUAL_REVIEWED",
         "API_VERIFIED",
       ]);
@@ -385,6 +390,7 @@ export default async function GroupPage({
         .not("problem_url", "is", null)
         .in("verification_status", [
           "PENDING",
+          "AUTO_APPROVED",
           "MANUAL_REVIEWED",
           "API_VERIFIED",
         ])
@@ -501,13 +507,16 @@ export default async function GroupPage({
           : "반려"
         : null,
       reviewNote: review?.note ?? null,
+      // 자동 인정된 기록도 검수자가 반려할 수 있습니다.
       reviewable:
         canReview &&
         proof.user_id !== user.id &&
-        proof.verification_status === "PENDING",
+        ["PENDING", "AUTO_APPROVED"].includes(proof.verification_status),
       cancelable:
         proof.user_id === user.id &&
-        ["PENDING", "CANCELING"].includes(proof.verification_status),
+        ["PENDING", "AUTO_APPROVED", "CANCELING"].includes(
+          proof.verification_status,
+        ),
       cancelRetry: proof.verification_status === "CANCELING",
     };
   });
@@ -722,6 +731,38 @@ export default async function GroupPage({
           />
         </aside>
       </div>
+
+      {isOwner && (
+        <section aria-label="그룹 설정" className="mt-7">
+          <h2>그룹 설정</h2>
+          <form
+            action={updateGroupSettingsAction}
+            className="mt-3 flex flex-wrap items-start justify-between gap-3 rounded-xl border border-line px-4 py-4"
+          >
+            <input type="hidden" name="groupId" value={group.id} />
+            <input type="hidden" name="groupSlug" value={group.slug} />
+            <label className="flex max-w-xl items-start gap-2 text-[15px]">
+              <input
+                type="checkbox"
+                name="autoApprove"
+                defaultChecked={group.auto_approve}
+                className="mt-1"
+              />
+              <span>
+                자동 인정
+                <span className="mt-1 block text-[13px] text-sub">
+                  켜면 새 기록이 등록하는 순간 인정됩니다. 소유자와 검수자가
+                  반려하면 미인정으로 내려갑니다. 이미 등록된 기록은 그대로
+                  둡니다.
+                </span>
+              </span>
+            </label>
+            <button type="submit" className="btn">
+              저장
+            </button>
+          </form>
+        </section>
+      )}
 
       {isOwner && (pendingMemberships.length > 0 || manageableMembers.length > 0) && (
         <section aria-label="멤버 관리" className="mt-7">

@@ -186,7 +186,11 @@ export function PhotoProofForm({
       setPrepared(null);
       setOpen(false);
       setMessage(
-        `사진을 풀이 기록으로 등록했습니다 (${displaySize(file.size)} → ${displaySize(storedSize)}). 검수 승인을 기다려주세요.`,
+        `사진을 풀이 기록으로 등록했습니다 (${displaySize(file.size)} → ${displaySize(storedSize)}). ${
+          result.autoApproved
+            ? "바로 인정됐습니다."
+            : "검수 승인을 기다려주세요."
+        }`,
       );
       router.refresh();
     } catch {

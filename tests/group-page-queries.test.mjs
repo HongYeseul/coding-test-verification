@@ -115,7 +115,7 @@ async function renderGroup(
     const React = { createElement: (type, props, ...children) => ({ type, props, children }) };
     const Link='a', PhotoProofForm='form', StatusMessage='div', GroupOverview='section', InvitePopover='div', GroupProblems='section', AppShell='main', ProofRecordList='div', ProofFilterForm='form';
     const problemLink=(value)=>value ? { url: value, platform: '플랫폼' } : null;
-    const approveMembershipAction=()=>{}, rotateInviteCodeAction=()=>{}, setMemberRoleAction=()=>{}, deleteProofAction=()=>{}, reviewProofAction=()=>{};
+    const approveMembershipAction=()=>{}, rotateInviteCodeAction=()=>{}, setMemberRoleAction=()=>{}, updateGroupSettingsAction=()=>{}, deleteProofAction=()=>{}, reviewProofAction=()=>{};
     const firstQueryValue=(value)=>value, getSiteUrl=()=>"https://example.invalid";
     ${source}
   `,
@@ -277,7 +277,7 @@ test("문제 목록은 기록 필터와 무관하게 그룹 전체의 링크를 
     [
       "in",
       "verification_status",
-      ["PENDING", "MANUAL_REVIEWED", "API_VERIFIED"],
+      ["PENDING", "AUTO_APPROVED", "MANUAL_REVIEWED", "API_VERIFIED"],
     ],
   ]);
 });

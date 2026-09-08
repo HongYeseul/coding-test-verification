@@ -17,7 +17,7 @@ export async function createPhotoProofAction(input: {
   evidencePath: string;
   title: string;
   problemUrl: string;
-}): Promise<{ error?: string }> {
+}): Promise<{ error?: string; autoApproved?: boolean }> {
   const { groupId, groupSlug, evidencePath } = input;
   const title = input.title.trim();
   const problemUrl = input.problemUrl.trim();
@@ -32,14 +32,23 @@ export async function createPhotoProofAction(input: {
     return { error: "사진과 제목을 확인해주세요." };
   }
   if (problemUrl && !link) return { error: PROBLEM_URL_ERROR };
-  const { data: member } = await supabase
-    .from("group_members")
-    .select("status")
-    .eq("group_id", groupId)
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const [{ data: member }, { data: group }] = await Promise.all([
+    supabase
+      .from("group_members")
+      .select("status")
+      .eq("group_id", groupId)
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("groups")
+      .select("auto_approve")
+      .eq("id", groupId)
+      .maybeSingle(),
+  ]);
   if (member?.status !== "ACTIVE")
     return { error: "활성 멤버만 풀이를 등록할 수 있습니다." };
+  // 자동 인정 그룹은 등록하는 순간 인정으로 시작하고 검수자가 반려할 때만 내려갑니다.
+  const autoApproved = Boolean(group?.auto_approve);
   const { error } = await supabase.from("proofs").insert({
     group_id: groupId,
     user_id: user.id,
@@ -47,6 +56,7 @@ export async function createPhotoProofAction(input: {
     problem_key: evidencePath.split("/")[2],
     problem_title: title || null,
     problem_url: link?.url ?? null,
+    verification_status: autoApproved ? "AUTO_APPROVED" : "PENDING",
     accepted_at: new Date().toISOString(),
   });
   if (error) {
@@ -66,7 +76,7 @@ export async function createPhotoProofAction(input: {
       return { error: "사진 기록을 저장하지 못했습니다. 다시 시도해주세요." };
   }
   revalidatePath(`/groups/${groupSlug}`);
-  return {};
+  return { autoApproved };
 }
 
 const UUID_PATTERN =
@@ -296,7 +306,7 @@ export async function deleteProofAction(formData: FormData) {
       withStatus(
         groupPath,
         "error",
-        "검수 대기 중인 본인 기록만 취소할 수 있습니다.",
+        "검수 대기이거나 자동 인정된 본인 기록만 취소할 수 있습니다.",
       ),
     );
   if (cancellation) {

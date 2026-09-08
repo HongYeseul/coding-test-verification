@@ -265,3 +265,43 @@ export async function setMemberRoleAction(formData: FormData) {
   revalidatePath(groupPath);
   redirect(withStatus(groupPath, "message", "멤버 역할을 변경했습니다."));
 }
+
+export async function updateGroupSettingsAction(formData: FormData) {
+  const groupId = getRequiredText(formData, "groupId");
+  const groupSlug = getRequiredText(formData, "groupSlug");
+  // 체크하지 않은 상자는 아무 값도 보내지 않으므로 빈 문자열이 곧 꺼짐입니다.
+  const autoApprove = getRequiredText(formData, "autoApprove") === "on";
+  if (!UUID_PATTERN.test(groupId) || !SLUG_PATTERN.test(groupSlug)) {
+    redirect(withStatus("/dashboard", "error", "그룹을 확인해주세요."));
+  }
+  const groupPath = `/groups/${groupSlug}`;
+  const { supabase, user } = await requireUser(groupPath);
+  const { data: membership } = await supabase
+    .from("group_members")
+    .select("role, status")
+    .eq("group_id", groupId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (membership?.status !== "ACTIVE" || membership.role !== "OWNER") {
+    redirect(
+      withStatus(groupPath, "error", "그룹 소유자만 설정을 바꿀 수 있습니다."),
+    );
+  }
+  const { error } = await supabase
+    .from("groups")
+    .update({ auto_approve: autoApprove })
+    .eq("id", groupId);
+  if (error) {
+    redirect(withStatus(groupPath, "error", "설정을 저장하지 못했습니다."));
+  }
+  revalidatePath(groupPath);
+  redirect(
+    withStatus(
+      groupPath,
+      "message",
+      autoApprove
+        ? "자동 인정을 켰습니다. 새 기록은 등록하는 순간 인정됩니다."
+        : "자동 인정을 껐습니다. 새 기록은 검수 대기로 들어갑니다.",
+    ),
+  );
+}
