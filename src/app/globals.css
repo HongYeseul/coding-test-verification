@@ -18,6 +18,16 @@
     "Noto Sans KR", sans-serif;
 }
 
+/* 사용자가 직접 고른 테마입니다. light-dark()가 color-scheme을 따르므로
+   토큰을 다시 정의할 필요 없이 이 두 줄로 전체 색이 바뀝니다. */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
 @theme inline {
   --color-canvas: var(--canvas);
   --color-ink: var(--ink);

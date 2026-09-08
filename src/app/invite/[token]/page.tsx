@@ -24,7 +24,7 @@ export default async function InvitationPage({
     <AppShell context="그룹 초대">
       <header className="mb-6">
         <h1>스터디 초대가 도착했습니다.</h1>
-        <p className="mt-[5px] max-w-xl text-[15px] text-sub">
+        <p className="mt-1 max-w-xl text-[15px] text-sub">
           초대 대상 GitHub 계정으로 로그인하고 초대를 수락해주세요. 수락 후 그룹
           소유자가 가입을 승인하면 기록을 볼 수 있습니다.
         </p>

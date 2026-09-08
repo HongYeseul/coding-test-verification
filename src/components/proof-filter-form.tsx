@@ -21,7 +21,7 @@ export function ProofFilterForm({
         if (event.target instanceof HTMLSelectElement)
           formRef.current?.requestSubmit();
       }}
-      className="flex flex-wrap items-center gap-2 py-[14px]"
+      className="flex flex-wrap items-center gap-2 py-4"
     >
       {children}
     </form>

@@ -75,7 +75,7 @@ export function ProofRecordList({
   if (records.length === 0) {
     return (
       <div className="flex flex-col justify-center px-4 py-14 text-center text-sub">
-        <strong className="mb-[5px] block text-[17px] font-semibold text-ink">
+        <strong className="mb-1 block text-[17px] font-semibold text-ink">
           {emptyTitle}
         </strong>
         {emptyDescription}
@@ -91,7 +91,7 @@ export function ProofRecordList({
           type="button"
           onClick={() => open(item.id)}
           aria-label={`${item.title} ${item.memberName} ${item.statusLabel} 상세 보기`}
-          className={`grid w-full grid-cols-[44px_minmax(0,1fr)_60px_12px] items-center gap-3 border-b border-l-[3px] border-line py-[10px] pr-0.5 pl-2 text-left hover:bg-soft sm:grid-cols-[52px_minmax(0,1fr)_100px_74px_18px] sm:gap-[14px] sm:pl-3 ${toneBar[item.statusTone]}`}
+          className={`grid w-full grid-cols-[44px_minmax(0,1fr)_60px_12px] items-center gap-3 border-b border-l-[3px] border-line py-3 pr-0.5 pl-2 text-left hover:bg-soft sm:grid-cols-[52px_minmax(0,1fr)_100px_74px_18px] sm:gap-4 sm:pl-3 ${toneBar[item.statusTone]}`}
         >
           <span className="relative grid size-[44px] place-items-center overflow-hidden rounded-[9px] bg-soft text-sub sm:size-[52px]">
             {item.hasPhoto ? (
@@ -114,7 +114,7 @@ export function ProofRecordList({
             <span className="block truncate text-[17px] font-semibold">
               {item.title}
             </span>
-            <span className="mt-[3px] block truncate text-[13px] text-sub">
+            <span className="mt-1 block truncate text-[13px] text-sub">
               {item.memberName}
               {item.isMine ? " · 나" : ""}
             </span>
@@ -199,13 +199,13 @@ export function ProofRecordList({
                   <p>
                     {record.memberName}
                     {record.memberHandle && (
-                      <span className="ml-[5px] font-mono text-[13px] text-sub">
+                      <span className="ml-1 font-mono text-[13px] text-sub">
                         @{record.memberHandle}
                       </span>
                     )}
                   </p>
                   {record.memberBio && (
-                    <p className="mt-[3px] text-[13px] text-sub">
+                    <p className="mt-1 text-[13px] text-sub">
                       {record.memberBio}
                     </p>
                   )}

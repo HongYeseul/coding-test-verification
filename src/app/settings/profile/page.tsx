@@ -41,7 +41,7 @@ export default async function ProfileSettingsPage({
     >
       <header className="mb-6">
         <h1>프로필</h1>
-        <p className="mt-[5px] text-[15px] text-sub">
+        <p className="mt-1 text-[15px] text-sub">
           여기서 정한 닉네임과 소개가 함께 있는 그룹의 멤버에게 보입니다.
         </p>
       </header>
@@ -55,7 +55,7 @@ export default async function ProfileSettingsPage({
 
       <form
         action={updateProfileAction}
-        className="grid gap-[7px] rounded-xl border border-line p-5 sm:max-w-[520px]"
+        className="grid gap-2 rounded-xl border border-line p-5 sm:max-w-[520px]"
       >
         <label htmlFor="displayName" className="text-[15px]">
           닉네임

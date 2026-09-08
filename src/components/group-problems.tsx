@@ -57,7 +57,7 @@ export function GroupProblems({
                       ↗
                     </span>
                   </span>
-                  <span className="mt-[3px] block text-[13px] text-sub">
+                  <span className="mt-1 block text-[13px] text-sub">
                     {solverNames(problem.solverIds, profileById)} 등록
                     {solvedByMe ? " · 나도 등록함" : ""}
                   </span>

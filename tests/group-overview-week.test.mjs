@@ -13,6 +13,7 @@ const source = readFileSync(
 const compiled = ts.transpileModule(
   `
   const { React, shiftWeek, githubHandle } = globalThis.__overviewImports;
+  const LinkPendingDot = () => null;
   const Link = (props) => React.createElement("a", props);
   const RefreshOverviewButton = () => null;
   ${source}
@@ -123,7 +124,9 @@ test("멤버 이름 옆에 GitHub 아이디를 함께 보여준다", () => {
 
 test("한 줄 소개는 이름 칸에 마우스를 올렸을 때 나오는 카드로만 보여준다", () => {
   const html = render({ bio: "매일 한 문제" });
-  assert.match(html, /role="tooltip"[^>]*group-hover\/member:block[^>]*>매일 한 문제</);
+  // 이름 오른쪽(날짜 칸 방향)에 꼬리 달린 말풍선으로 띄웁니다.
+  assert.match(html, /role="tooltip"[^>]*left-full[^>]*group-hover\/member:block/);
+  assert.match(html, /rotate-45[^>]*><\/span>매일 한 문제</);
 });
 
 test("한 줄 소개가 없으면 소개 카드를 만들지 않는다", () => {

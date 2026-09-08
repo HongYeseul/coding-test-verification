@@ -6,6 +6,7 @@ import {
   type GroupOverviewData,
   type OverviewMember,
 } from "@/lib/group-overview";
+import { LinkPendingDot } from "@/components/link-pending-dot";
 import { githubHandle } from "@/lib/profile";
 import { RefreshOverviewButton } from "@/components/refresh-overview-button";
 
@@ -66,7 +67,7 @@ function MemberCell({ member, isMe }: { member: OverviewMember; isMe: boolean })
   const handle = githubHandle(member.githubLogin);
   return (
     <td className="relative h-[58px] border-t border-line text-left text-[15px]">
-      <span className="group/member flex items-center gap-1 font-medium sm:gap-[9px]">
+      <span className="group/member flex items-center gap-1 font-medium sm:gap-2">
         <span
           aria-hidden="true"
           className="hidden size-8 shrink-0 place-items-center rounded-full bg-soft text-[12px] text-sub sm:grid"
@@ -76,9 +77,9 @@ function MemberCell({ member, isMe }: { member: OverviewMember; isMe: boolean })
         <span className="min-w-0">
           <span className="block truncate text-[12px] sm:text-[15px]">
             {member.displayName}
-            {isMe && <span className="ml-[3px] text-[11px] text-sub">나</span>}
+            {isMe && <span className="ml-1 text-[11px] text-sub">나</span>}
             {handle && (
-              <span className="ml-[5px] font-mono text-[11px] font-normal text-sub sm:text-[12px]">
+              <span className="ml-1 font-mono text-[11px] font-normal text-sub sm:text-[12px]">
                 @{handle}
               </span>
             )}
@@ -90,8 +91,13 @@ function MemberCell({ member, isMe }: { member: OverviewMember; isMe: boolean })
         {member.bio && (
           <span
             role="tooltip"
-            className="pointer-events-none absolute top-full left-2 z-20 hidden w-max max-w-[240px] rounded-lg border border-line bg-canvas px-3 py-2 text-[12px] leading-[1.6] font-normal text-sub group-hover/member:block sm:left-10"
+            className="pointer-events-none absolute top-1/2 left-full z-30 hidden w-max max-w-[240px] -translate-y-1/2 rounded-xl border border-line bg-canvas px-3 py-2 text-[12px] leading-[1.6] font-normal text-sub group-hover/member:block"
           >
+            {/* 말풍선 꼬리. 테두리 두 변만 남겨 카드에서 이어진 것처럼 보이게 합니다. */}
+            <span
+              aria-hidden="true"
+              className="absolute top-1/2 -left-[5px] size-2 -translate-y-1/2 rotate-45 border-b border-l border-line bg-canvas"
+            />
             {member.bio}
           </span>
         )}
@@ -201,7 +207,7 @@ export function GroupOverview({
               <tr>
                 <th
                   scope="col"
-                  className="relative w-[36%] py-[7px] text-left text-[12px] font-medium text-sub sm:w-[38%]"
+                  className="relative w-[36%] py-2 text-left text-[12px] font-medium text-sub sm:w-[38%]"
                 >
                   <span className="group/sort inline-flex items-center gap-1">
                     멤버
@@ -221,7 +227,7 @@ export function GroupOverview({
                     <th
                       scope="col"
                       key={date}
-                      className={`py-[7px] text-center text-[12px] font-medium text-sub ${
+                      className={`py-2 text-center text-[12px] font-medium text-sub ${
                         isToday ? "rounded-t-lg bg-brand-soft/50" : ""
                       }`}
                     >
@@ -235,7 +241,7 @@ export function GroupOverview({
                 })}
                 <th
                   scope="col"
-                  className="w-[9%] py-[7px] text-center text-[12px] font-medium text-sub sm:w-[10%]"
+                  className="w-[9%] py-2 text-center text-[12px] font-medium text-sub sm:w-[10%]"
                 >
                   승인
                 </th>
@@ -310,7 +316,7 @@ export function GroupOverview({
         </div>
       )}
 
-      <div className="flex flex-wrap justify-between gap-4 px-3 pt-[10px] pb-[13px] text-[12px] text-sub sm:px-5">
+      <div className="flex flex-wrap justify-between gap-4 px-3 pt-3 pb-3 text-[12px] text-sub sm:px-5">
         <span className="flex flex-wrap gap-3">
           <span>✓ 승인</span>
           <span>◷ 검수 대기</span>
@@ -346,8 +352,13 @@ function WeekArrow({
   }
 
   return (
-    <Link href={href} aria-label={label} className="p-1.5 text-sub">
+    <Link
+      href={href}
+      aria-label={label}
+      className="relative p-1.5 text-sub"
+    >
       {symbol}
+      <LinkPendingDot />
     </Link>
   );
 }

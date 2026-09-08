@@ -180,7 +180,7 @@ function MemberLabel({
     <span className="min-w-0 text-[15px] font-medium">
       {profile?.display_name ?? fallback}
       {handle && (
-        <span className="ml-[5px] font-mono text-[13px] font-normal text-sub">
+        <span className="ml-1 font-mono text-[13px] font-normal text-sub">
           @{handle}
         </span>
       )}
@@ -516,7 +516,7 @@ export default async function GroupPage({
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1>{group.name}</h1>
-          <p className="mt-[5px] text-[15px] text-sub">
+          <p className="mt-1 text-[15px] text-sub">
             멤버 {activeMemberIds.length}명 · 내 역할:{" "}
             {roleLabels[currentMembership.role] ?? "멤버"}
           </p>
@@ -596,13 +596,13 @@ export default async function GroupPage({
           <h2>풀이 기록</h2>
         </div>
 
-        <nav aria-label="기록 분류" className="flex gap-[22px] border-b border-line">
+        <nav aria-label="기록 분류" className="flex gap-6 border-b border-line">
           {tabs.map((tab) => (
             <Link
               key={tab.label}
               href={tab.href}
               aria-current={tab.active ? "page" : undefined}
-              className={`border-b-2 pt-[10px] pb-3 text-[15px] ${
+              className={`border-b-2 pt-3 pb-3 text-[15px] ${
                 tab.active
                   ? "border-ink font-[650] text-ink"
                   : "border-transparent text-sub"
@@ -610,7 +610,7 @@ export default async function GroupPage({
             >
               {tab.label}
               {tab.count !== null && (
-                <span className="ml-[5px] text-[12px] text-sub tabular-nums">
+                <span className="ml-1 text-[12px] text-sub tabular-nums">
                   {tab.count}
                 </span>
               )}
@@ -690,7 +690,7 @@ export default async function GroupPage({
               : "풀이 인증하기로 첫 기록을 남겨보세요."
           }
         />
-        <p className="mt-[17px] text-[12px] text-sub">
+        <p className="mt-4 text-[12px] text-sub">
           최근 등록순으로 최대 50개까지 보여줍니다. 기록을 누르면 사진과 검수
           내용을 확인할 수 있어요.
         </p>

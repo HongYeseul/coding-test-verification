@@ -42,7 +42,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     >
       <header className="mb-6">
         <h1>오늘 푼 문제를 함께 확인합니다.</h1>
-        <p className="mt-[5px] max-w-xl text-[15px] text-sub">
+        <p className="mt-1 max-w-xl text-[15px] text-sub">
           허가된 멤버만 그룹과 인증 기록을 볼 수 있습니다. GitHub 계정으로
           로그인한 뒤 초대 승인을 받아주세요.
         </p>
@@ -76,14 +76,14 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             {steps.map((step) => (
               <li
                 key={step.number}
-                className="grid grid-cols-[2rem_1fr] gap-3 border-b border-line px-4 py-[14px] last:border-b-0"
+                className="grid grid-cols-[2rem_1fr] gap-3 border-b border-line px-4 py-4 last:border-b-0"
               >
                 <span className="font-mono text-[13px] text-brand">
                   {step.number}
                 </span>
                 <div>
                   <p className="text-[15px] font-semibold">{step.title}</p>
-                  <p className="mt-[3px] text-[13px] text-sub">
+                  <p className="mt-1 text-[13px] text-sub">
                     {step.description}
                   </p>
                 </div>

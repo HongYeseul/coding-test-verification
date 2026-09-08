@@ -81,7 +81,7 @@ export default async function DashboardPage({
     >
       <header className="mb-6">
         <h1>{profile?.display_name ?? "멤버"}님의 그룹</h1>
-        <p className="mt-[5px] text-[15px] text-sub">
+        <p className="mt-1 text-[15px] text-sub">
           활성 그룹 {groups.length}개
           {pendingCount > 0 ? ` · 가입 승인 대기 ${pendingCount}개` : ""}
         </p>
@@ -103,13 +103,13 @@ export default async function DashboardPage({
                 <li key={group.id} className="border-b border-line last:border-b-0">
                   <Link
                     href={`/groups/${group.slug}`}
-                    className="flex items-center justify-between gap-3 px-4 py-[14px] hover:bg-soft"
+                    className="flex items-center justify-between gap-3 px-4 py-4 hover:bg-soft"
                   >
                     <span className="min-w-0">
                       <span className="block truncate font-semibold">
                         {group.name}
                       </span>
-                      <span className="mt-[3px] block truncate text-[13px] text-sub">
+                      <span className="mt-1 block truncate text-[13px] text-sub">
                         /{group.slug} ·{" "}
                         {roleLabels[membership?.role ?? "MEMBER"] ?? "멤버"}
                       </span>
@@ -124,7 +124,7 @@ export default async function DashboardPage({
           </ul>
         ) : (
           <div className="flex min-h-[180px] flex-col justify-center rounded-xl border border-line px-4 py-8 text-center text-sub">
-            <strong className="mb-[5px] block text-[17px] font-semibold text-ink">
+            <strong className="mb-1 block text-[17px] font-semibold text-ink">
               아직 참여 중인 그룹이 없어요
             </strong>
             <span className="text-[13px]">
@@ -137,7 +137,7 @@ export default async function DashboardPage({
       <section className="grid gap-5 sm:grid-cols-2">
         <form
           action={joinByCodeAction}
-          className="grid gap-[7px] rounded-xl border border-line bg-soft p-5"
+          className="grid gap-2 rounded-xl border border-line bg-soft p-5"
         >
           <h2>초대코드로 가입</h2>
           <p className="text-[13px] text-sub">
@@ -165,7 +165,7 @@ export default async function DashboardPage({
 
         <form
           action={createGroupAction}
-          className="grid gap-[7px] rounded-xl border border-line bg-soft p-5"
+          className="grid gap-2 rounded-xl border border-line bg-soft p-5"
         >
           <h2>스터디 그룹 만들기</h2>
           <p className="text-[13px] text-sub">

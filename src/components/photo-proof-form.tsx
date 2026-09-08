@@ -198,7 +198,7 @@ export function PhotoProofForm({
         <p
           role="status"
           aria-live="polite"
-          className="fixed bottom-5 left-1/2 z-10 w-max max-w-[calc(100%-32px)] -translate-x-1/2 rounded-[10px] border border-line bg-canvas px-[18px] py-3 text-[15px] shadow-[0_4px_20px_rgba(0,0,0,0.13)]"
+          className="fixed bottom-5 left-1/2 z-10 w-max max-w-[calc(100%-32px)] -translate-x-1/2 rounded-[10px] border border-line bg-canvas px-4 py-3 text-[15px] shadow-[0_4px_20px_rgba(0,0,0,0.13)]"
         >
           {message}
         </p>
@@ -226,7 +226,7 @@ export function PhotoProofForm({
             </button>
           </div>
 
-          <div className="my-[18px] grid gap-5">
+          <div className="my-4 grid gap-5">
             <div className="grid justify-items-center gap-2 rounded-lg border border-dashed border-line px-4 py-6 text-center text-sub">
               <label htmlFor="proof-photo" className="text-[15px]">
                 풀이 결과가 보이는 사진 한 장
@@ -289,7 +289,7 @@ export function PhotoProofForm({
               </div>
             )}
 
-            <div className="grid gap-[7px]">
+            <div className="grid gap-2">
               <label htmlFor="proof-title" className="text-[15px]">
                 문제 이름 <span className="text-[13px] text-sub">선택 사항</span>
               </label>
@@ -302,7 +302,7 @@ export function PhotoProofForm({
               />
             </div>
 
-            <div className="grid gap-[7px]">
+            <div className="grid gap-2">
               <label htmlFor="proof-problem-url" className="text-[15px]">
                 문제 링크 <span className="text-[13px] text-sub">선택 사항</span>
               </label>
