@@ -164,6 +164,7 @@ Node.js 24에서 `pnpm test`, `pnpm check`를 실행합니다. 로컬 `.env.loca
 - `requireUser`와 `getOptionalUser`가 쓰던 `getUser()`를 `getClaims()`로 바꿨습니다. `getUser()`는 호출마다 Auth 서버에 왕복하지만, 이 프로젝트는 JWKS에 ES256 키가 있는 비대칭 서명이라 `getClaims()`는 로컬 검증만 합니다. 대칭 키로 바뀌면 `getClaims()`도 서버에 물어보므로 어느 쪽이든 느려지지 않습니다. 프록시는 이전부터 `getClaims()`를 쓰고 있었습니다.
 - 화면에 넘기는 사용자 값은 `SessionUser`(`id`·`email`·`githubUserName`)로 좁혔습니다. 초대 화면이 쓰던 `user_metadata.user_name`은 표시 전용이며 권한 판단에는 쓰지 않습니다.
 - `@vercel/speed-insights`를 넣어 실제 방문자의 TTFB·LCP를 봅니다. 리전을 옮길지 판단할 근거가 필요해서 추가했습니다. 방문자 수 집계(`@vercel/analytics`)는 6명 그룹에서 얻을 정보가 적어 넣지 않았습니다.
+- 수집은 이미 되고 있습니다. 리전 이전 직후 기준값은 Real Experience Score 62, `/groups/[slug]` 58, `/` 100(이벤트 14개)이며 대부분 이전 전에 쌓인 값입니다. 이전 효과는 하루쯤 뒤에 다시 봅니다. 국가별·저조 경로 상세는 유료 플랜(Plus)에서만 보입니다.
 - Vercel MCP는 여전히 `hongyeseuls-projects` 스코프 권한이 없습니다. `list_teams`는 빈 배열, `get_runtime_logs`는 403이라 함수 실행 시간을 직접 볼 수 없어 위 수치는 모두 외부에서 잰 값입니다.
 
 - 스터디 소통 채널은 카카오톡입니다. 카카오톡 알림, 공동 목표, 응원 반응, 연속 참여 집계는 아직 구현하지 않았습니다.

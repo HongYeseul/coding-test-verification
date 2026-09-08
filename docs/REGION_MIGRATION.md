@@ -83,7 +83,7 @@
 - 기존 프로젝트: `migrate-export`
 - 새 프로젝트: `migrate-import`
 
-Vercel 대시보드에서 Speed Insights를 켜야 합니다. `@vercel/speed-insights` 패키지만으로는 수집이 시작되지 않습니다.
+Speed Insights는 이미 수집 중입니다(2026-09-08 기준 이벤트 14개). 따로 켤 필요가 없었습니다. 다만 이 수치는 대부분 리전 이전 전에 쌓인 것이라, 이전 효과는 하루쯤 지나서 봐야 합니다. 이전 전 기준값은 Real Experience Score 62, `/groups/[slug]` 58, `/` 100입니다.
 
 ## 되돌리기
 
