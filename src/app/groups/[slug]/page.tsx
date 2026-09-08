@@ -703,6 +703,8 @@ export default async function GroupPage({
             rows={problemRows}
             profileById={profileById}
             currentUserId={user.id}
+            groupSlug={group.slug}
+            canEditTitle={canReview}
           />
         </aside>
       </div>

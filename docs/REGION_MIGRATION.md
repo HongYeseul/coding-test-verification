@@ -46,7 +46,7 @@
 
 - **Supabase Authentication > Providers > GitHub**: 활성화하고 기존 Client ID `Ov23liIwWdivH1MGoMkG`를 넣었습니다. Client Secret은 소유자가 직접 입력했습니다.
 - **Supabase Authentication > URL Configuration**: Site URL `https://coding-test-verification.vercel.app`, Redirect URLs `https://coding-test-verification.vercel.app/auth/callback**`와 `http://localhost:3000/auth/callback**`.
-- **GitHub OAuth App**: 기존 콜백을 지우지 않고 `https://dzibporiiexvsndungkx.supabase.co/auth/v1/callback`을 **추가**했습니다. OAuth App은 콜백을 10개까지 등록할 수 있어서, 구·신 프로젝트가 동시에 로그인 가능한 상태가 유지되고 롤백 시 GitHub 설정을 되돌릴 필요가 없습니다. 와일드카드 매칭은 켜지 않았습니다.
+- **GitHub OAuth App**: 기존 콜백을 지우지 않고 `https://dzibporiiexvsndungkx.supabase.co/auth/v1/callback`을 **추가**했습니다. OAuth App은 콜백을 10개까지 등록할 수 있어서 전환 중에도 로그인이 끊기지 않았습니다. 와일드카드 매칭은 켜지 않았습니다.
 - **Vercel 환경변수(Production)**: `NEXT_PUBLIC_SUPABASE_URL`과 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`를 새 프로젝트 값으로 교체했습니다. `NEXT_PUBLIC_SITE_URL`은 그대로입니다.
 - **`vercel.json`**: `syd1` → `icn1`. 환경변수는 다음 배포부터 적용되므로 이 커밋 하나로 DB 전환과 리전 전환이 같은 배포에 함께 실렸습니다.
 
@@ -85,17 +85,15 @@
 
 Speed Insights는 이미 수집 중입니다(2026-09-08 기준 이벤트 14개). 따로 켤 필요가 없었습니다. 다만 이 수치는 대부분 리전 이전 전에 쌓인 것이라, 이전 효과는 하루쯤 지나서 봐야 합니다. 이전 전 기준값은 Real Experience Score 62, `/groups/[slug]` 58, `/` 100입니다.
 
-## 되돌리기
+## 되돌리기 (더 이상 불가)
 
-새 프로젝트에 문제가 생기면 Vercel 환경변수를 기존 값으로 되돌리고 `vercel.json`을 `syd1`로 바꿔 배포하면 복구됩니다. GitHub OAuth App은 기존 콜백을 남겨뒀으므로 손댈 필요가 없습니다. **기존 프로젝트는 검증이 끝날 때까지 지우지 않습니다.** 일시정지(Pause)도 하지 않습니다.
+기존 프로젝트 `lfukmjprduxmesciplrx`는 2026-09-08에 삭제했습니다. 도메인이 410을 반환하고 조직에는 서울 프로젝트만 남아 있습니다. **되돌릴 경로는 없습니다.**
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://lfukmjprduxmesciplrx.supabase.co
-```
+삭제 전에 두 프로젝트를 대조했습니다. `auth.users`·`auth.identities`·`profiles`·`groups`·`group_members`·`group_invite_codes`는 값 지문까지 완전히 같았고, `proofs`·`proof_reviews`·`storage.objects`는 새 프로젝트가 1건 많았습니다. 전환 이후 실사용자가 올린 기록이라 오히려 기존 프로젝트가 오래된 사본이 된 상태였습니다.
 
-전환 이후 새로 올라온 기록은 되돌릴 때 유실됩니다. 되돌릴 일이 생기면 새 프로젝트에서 그 기간의 행을 먼저 확인합니다.
+GitHub OAuth App에는 죽은 콜백 `https://lfukmjprduxmesciplrx.supabase.co/auth/v1/callback`이 아직 남아 있습니다. 가리키는 프로젝트가 사라졌으니 동작하지 않고, 정리 목적으로만 지우면 됩니다. Supabase 프로젝트 ref는 재사용되지 않아 남겨둬도 위험은 없습니다.
 
-세션은 이관하지 않았습니다. 프로젝트마다 JWT 서명 키가 달라서 전환 시점에 전원 로그아웃되고 다시 로그인해야 합니다.
+세션은 이관하지 않았습니다. 프로젝트마다 JWT 서명 키가 달라서 전환 시점에 전원 로그아웃됐고 각자 다시 로그인했습니다.
 
 ## 자동화하지 못한 이유
 

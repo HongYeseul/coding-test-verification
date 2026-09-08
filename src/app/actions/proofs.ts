@@ -262,6 +262,70 @@ export async function reviewProofAction(formData: FormData) {
   redirect(withStatus(groupPath, "message", "검수 결과를 반영했습니다."));
 }
 
+export async function updateProblemTitleAction(formData: FormData) {
+  const groupSlug = getRequiredText(formData, "groupSlug");
+  const problemUrl = getRequiredText(formData, "problemUrl");
+  const title = getRequiredText(formData, "title");
+  const groupPath = SLUG_PATTERN.test(groupSlug)
+    ? `/groups/${groupSlug}`
+    : "/dashboard";
+
+  const link = problemLink(problemUrl);
+  if (!link || title.length > 160) {
+    redirect(withStatus(groupPath, "error", "문제 제목을 확인해주세요."));
+  }
+
+  const { supabase, user } = await requireUser(groupPath);
+  const { data: group } = await supabase
+    .from("groups")
+    .select("id")
+    .eq("slug", groupSlug)
+    .maybeSingle();
+  const { data: member } = group
+    ? await supabase
+        .from("group_members")
+        .select("role, status")
+        .eq("group_id", group.id)
+        .eq("user_id", user.id)
+        .maybeSingle()
+    : { data: null };
+  if (
+    !group ||
+    member?.status !== "ACTIVE" ||
+    !["OWNER", "REVIEWER"].includes(member.role)
+  ) {
+    redirect(
+      withStatus(
+        groupPath,
+        "error",
+        "소유자와 검수자만 문제 제목을 고칠 수 있습니다.",
+      ),
+    );
+  }
+
+  // 목록이 같은 링크를 한 문제로 묶으므로 그룹 안의 같은 링크 기록을 함께 바꿉니다.
+  // 컬럼 단위 권한으로 problem_title 외에는 보낼 수 없습니다.
+  const { data: updated, error } = await supabase
+    .from("proofs")
+    .update({ problem_title: title || null })
+    .eq("group_id", group.id)
+    .eq("problem_url", link.url)
+    .select("id");
+
+  if (error || !updated?.length) {
+    redirect(withStatus(groupPath, "error", "문제 제목을 저장하지 못했습니다."));
+  }
+
+  revalidatePath(groupPath);
+  redirect(
+    withStatus(
+      groupPath,
+      "message",
+      title ? "문제 제목을 바꿨습니다." : "문제 제목을 비웠습니다.",
+    ),
+  );
+}
+
 export async function deleteProofAction(formData: FormData) {
   const proofId = getRequiredText(formData, "proofId");
   const groupSlug = getRequiredText(formData, "groupSlug");

@@ -11,7 +11,6 @@
 - Supabase 프로젝트: `dzibporiiexvsndungkx` (`coding-test-verification-seoul`, Free)
 - Supabase 리전: Seoul (`ap-northeast-2`)
 - Vercel 함수 리전: `vercel.json`의 Seoul (`icn1`) 한 곳. Hobby 무료 플랜을 유지합니다.
-- 이전 Supabase 프로젝트: `lfukmjprduxmesciplrx` (Sydney). 검증이 끝날 때까지 지우지 않습니다. 절차와 되돌리기는 `docs/REGION_MIGRATION.md`를 봅니다.
 - GitHub OAuth 앱: https://github.com/settings/applications/3837795
 
 `main` push 시 Vercel Production에 자동 배포됩니다. GitHub OAuth 제공자는 활성화되어 있으며 Client Secret은 Supabase에만 저장했습니다. Vercel Production에 프로젝트 URL, Publishable Key, 사이트 URL을 등록했습니다. Preview에는 운영 DB 환경변수를 등록하지 않았습니다.
@@ -19,7 +18,7 @@
 ## 인증 주소
 
 - Supabase Site URL: `https://coding-test-verification.vercel.app`
-- GitHub OAuth callback: `https://dzibporiiexvsndungkx.supabase.co/auth/v1/callback`. 이전 프로젝트 콜백도 지우지 않고 남겨뒀습니다. OAuth App은 콜백을 10개까지 등록할 수 있어 롤백해도 GitHub 설정을 되돌릴 필요가 없습니다.
+- GitHub OAuth callback: `https://dzibporiiexvsndungkx.supabase.co/auth/v1/callback`. OAuth App은 콜백을 10개까지 등록할 수 있어 리전 이전 중에는 구·신 두 개를 같이 두었습니다. 삭제된 프로젝트를 가리키는 콜백이 아직 하나 남아 있는데, 동작하지 않으므로 정리만 하면 됩니다.
 - 허용된 앱 callback: `https://coding-test-verification.vercel.app/auth/callback**`, `http://localhost:3000/auth/callback**`
 
 초대 링크에서 로그인하거나 로그인이 만료되면 원래 경로로 복귀합니다. 초대 대상 확인에는 `auth.identities`의 GitHub 계정과 확인된 이메일을 사용합니다.
@@ -41,6 +40,7 @@ SQL Editor 또는 Supabase MCP의 `apply_migration`으로 아래 마이그레이
 - `20260907020000_member_profiles.sql`
 - `20260907030000_group_overview_activity_order.sql`
 - `20260907040000_group_overview_stable_order.sql`
+- `20260908000000_problem_title_by_reviewer.sql`
 
 적용 버전은 `supabase_migrations.schema_migrations`에도 등록합니다. 기존 마이그레이션을 재실행하지 않고 새 마이그레이션부터 적용합니다.
 
@@ -55,6 +55,8 @@ MCP의 `apply_migration`은 버전을 실행 시각으로 기록하므로 저장
 `20260907040000_group_overview_stable_order.sql`은 그 정렬을 다시 `user_id`로만 되돌립니다. 표시 순서를 화면으로 옮겼기 때문이며, 화면이 어차피 다시 정렬하므로 배포 순서와 무관합니다. 두 마이그레이션 모두 `jsonb_agg`의 집계 ORDER BY만 건드리고 스키마·권한은 그대로입니다.
 
 `20260907020000_member_profiles.sql`은 `profiles`에 `github_login`·`bio`를 더하고, 기존 `display_name` CHECK를 앞뒤 공백·제어문자까지 막도록 바꿉니다. `get_group_overview`는 시그니처를 유지한 채 `members`에 두 값을 더합니다. 새 코드가 두 컬럼을 조회하므로 `main` 배포보다 먼저 적용해야 하며, 구버전 코드는 두 컬럼을 읽지도 쓰지도 않아 적용 후에도 그대로 동작합니다. 적용 전 기존 `display_name`이 새 CHECK를 통과하는지, GitHub 아이디가 형식에 맞는지 읽기 전용으로 확인했습니다(프로필 6건 모두 통과).
+
+`20260908000000_problem_title_by_reviewer.sql`은 `proofs`에 `problem_title` 길이 CHECK를 더하고, `problem_title` 컬럼만 UPDATE 권한을 열어 소유자·검수자용 정책 `proofs_update_title_reviewer`를 만듭니다. 새 코드가 이 경로로 제목을 고치므로 `main` 배포보다 먼저 적용해야 하며, 적용 전에는 저장 버튼이 오류 안내로 끝납니다. 구버전 코드는 `proofs`를 UPDATE하지 않아 적용 후에도 그대로 동작합니다. 적용 전 `problem_title`이 160자를 넘거나 빈 문자열인 행이 없는지 확인해야 제약 추가가 실패하지 않습니다.
 
 그룹 생성·초대 수락·가입 승인·검수자 지정 함수가 연결되어 있습니다. 그룹 데이터는 ACTIVE 멤버만 조회하며, 작성자 본인의 풀이 검수는 차단됩니다.
 
