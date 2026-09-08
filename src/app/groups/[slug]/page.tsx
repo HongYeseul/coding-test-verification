@@ -573,6 +573,8 @@ export default async function GroupPage({
         />
       </div>
 
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start lg:gap-6">
+        <div className="min-w-0">
       {overview ? (
         <GroupOverview
           data={overview}
@@ -693,13 +695,16 @@ export default async function GroupPage({
           내용을 확인할 수 있어요.
         </p>
       </section>
+        </div>
 
-      <div className="mt-7">
-        <GroupProblems
-          rows={problemRows}
-          profileById={profileById}
-          currentUserId={user.id}
-        />
+        {/* 좁은 화면에서는 기록 아래로 쌓이고, 넓으면 스크롤을 따라옵니다. */}
+        <aside className="mt-7 lg:sticky lg:top-6 lg:mt-0 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto">
+          <GroupProblems
+            rows={problemRows}
+            profileById={profileById}
+            currentUserId={user.id}
+          />
+        </aside>
       </div>
 
       {isOwner && (pendingMemberships.length > 0 || manageableMembers.length > 0) && (

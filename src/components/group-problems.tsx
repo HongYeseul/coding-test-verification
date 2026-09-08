@@ -38,29 +38,29 @@ export function GroupProblems({
             return (
               <li
                 key={problem.url}
-                className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 last:border-b-0"
+                className="border-b border-line last:border-b-0"
               >
-                <div className="min-w-0">
-                  <div className="flex min-w-0 flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-soft px-2 py-0.5 text-[11px] text-sub">
-                      {problem.platform}
-                    </span>
-                    <p className="truncate text-[13px] font-semibold">
-                      {problem.title || problem.url.replace("https://", "")}
-                    </p>
-                  </div>
-                  <p className="mt-[3px] text-xs text-sub">
-                    {solverNames(problem.solverIds, profileById)} 등록
-                    {solvedByMe ? " · 나도 등록함" : ""}
-                  </p>
-                </div>
                 <a
                   href={problem.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="btn shrink-0"
+                  className="group/problem block px-4 py-3 hover:bg-soft"
                 >
-                  풀어보기 ↗
+                  <span className="mb-1 block">
+                    <span className="rounded-full bg-soft px-2 py-0.5 text-[11px] text-sub">
+                      {problem.platform}
+                    </span>
+                  </span>
+                  <span className="block text-[13px] font-semibold group-hover/problem:underline">
+                    {problem.title || problem.url.replace("https://", "")}
+                    <span aria-hidden="true" className="ml-1 text-xs text-sub">
+                      ↗
+                    </span>
+                  </span>
+                  <span className="mt-[3px] block text-xs text-sub">
+                    {solverNames(problem.solverIds, profileById)} 등록
+                    {solvedByMe ? " · 나도 등록함" : ""}
+                  </span>
                 </a>
               </li>
             );
