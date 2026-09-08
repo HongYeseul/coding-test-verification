@@ -147,6 +147,8 @@ Node.js 24에서 `pnpm test`, `pnpm check`를 실행합니다. 로컬 `.env.loca
   - `ThemeToggle`은 `useSyncExternalStore`로 저장소를 구독합니다. `useEffect` 안에서 `setState`를 부르면 프로젝트 ESLint 규칙(cascading renders)에 걸립니다.
   - 한 줄 소개 말풍선을 이름 아래에서 오른쪽(`left-full`)으로 옮기고 `rotate-45` 꼬리를 달았습니다. 말풍선 왼쪽 끝이 멤버 칸 오른쪽 끝과 일치하고 세로 중앙에 옵니다.
   - 주 이동 시 화면 전체가 깜빡이던 원인은 `src/app/groups/[slug]/loading.tsx`였습니다. `loading.js`는 `page.js` 전체를 Suspense로 감싸고, 같은 경로의 `?week=` 변경도 새 내비게이션이라 화면 전체가 스켈레톤으로 교체됩니다. 게다가 쿠키를 쓰는 동적 경로는 기본 `prefetch="auto"`에서 loading 경계까지만 프리페치되어 데이터가 아니라 스켈레톤만 미리 받습니다.
+  - 배포: 커밋 `0438024`가 Production에 배포됐고(배포 `6318341475`, 상태 `success`) `/`, `/dashboard`, `/settings/profile`이 200을 반환합니다. 배포된 CSS에서 `:root[data-theme=light|dark]`의 `color-scheme`과 Lightning CSS가 붙인 `light-dark()` 폴리필 변수, 말풍선의 `left-full`을 확인했고 첫 화면 HTML에 테마 부트스트랩 스크립트가 들어 있습니다. 마이그레이션과 환경변수 변경은 없습니다.
+  - 배포 CSS에 `mt-[5px]`·`pb-[17px]` 규칙이 남아 있지만 소스에는 없습니다. 이 문서가 두 클래스를 예시로 적고 있어 Tailwind가 Markdown에서 주워 생성한 것입니다(위 Markdown 스캔 항목과 같은 원인).
   - 이 파일을 지워 폴백을 없앴습니다. 폴백이 없으면 새 페이지가 준비될 때까지 현재 화면이 유지되어 깜빡임이 사라집니다. 대신 Next 문서가 이 상황에 권장하는 `useLinkStatus`로 주 이동 화살표에만 진행 표시를 답니다(`LinkPendingDot`). 트레이드오프로 그룹 화면 첫 진입에도 스켈레톤이 뜨지 않고 이전 화면이 유지됩니다. 첫 진입 로딩 표시가 필요하면 `loading.tsx`를 되살리되 깜빡임이 함께 돌아옵니다.
 - 스터디 소통 채널은 카카오톡입니다. 카카오톡 알림, 공동 목표, 응원 반응, 연속 참여 집계는 아직 구현하지 않았습니다.
 
