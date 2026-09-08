@@ -131,6 +131,7 @@ Node.js 24에서 `pnpm test`, `pnpm check`를 실행합니다. 로컬 `.env.loca
   - 문제 목록은 280px에 가로 배치가 들어가지 않아 `[플랫폼] / 제목 ↗ / 등록자` 세로 배치로 바꿨습니다. `풀어보기` 버튼을 없애고 항목 전체를 `<a>`로 감쌌으며, 제목이 링크로 보이도록 `group-hover/problem:underline`을 겁니다.
   - 소유자의 `멤버 관리`는 2단 밖 아래에 그대로 둡니다. 사이드로 옮기면 소유자와 일반 멤버의 레이아웃 뼈대가 달라집니다.
   - 1024px 미만에서는 `display:block`으로 돌아가 sticky가 풀리고 문제 목록이 기록 아래로 쌓입니다. DOM 순서가 그대로라 모바일 순서에 별도 처리가 필요 없습니다.
+  - 배포: 커밋 `32caf74`가 Production에 배포됐고(배포 `6318050226`, 상태 `success`) `/`, `/dashboard`, `/settings/profile`이 200을 반환합니다. 배포된 CSS에서 `lg:grid-cols-[minmax(0,1fr)_280px]`, `lg:sticky`, `lg:overflow-y-auto`, `group-hover/problem:underline`을 확인했습니다. 마이그레이션과 환경변수 변경은 없습니다.
 - 스터디 소통 채널은 카카오톡입니다. 카카오톡 알림, 공동 목표, 응원 반응, 연속 참여 집계는 아직 구현하지 않았습니다.
 
 ## 화면 개편
