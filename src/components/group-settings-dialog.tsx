@@ -28,20 +28,28 @@ export function GroupSettingsDialog({
 
   return (
     <>
-      <button type="button" className="btn" onClick={() => setOpen(true)}>
+      {/* 그룹 이름 옆에 놓이므로 글자 없이 아이콘만 씁니다. */}
+      <button
+        type="button"
+        aria-label="그룹 설정"
+        title="그룹 설정"
+        onClick={() => setOpen(true)}
+        className="grid size-9 shrink-0 place-items-center rounded-lg text-sub hover:bg-soft hover:text-ink"
+      >
         <svg
-          width="16"
-          height="16"
+          width="18"
+          height="18"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
           strokeWidth="1.8"
+          strokeLinecap="round"
           aria-hidden="true"
         >
-          <circle cx="12" cy="12" r="3" />
-          <path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.4 1.4m10 10 1.4 1.4m0-12.8-1.4 1.4m-10 10-1.4 1.4" />
+          <path d="M4 8h8M18 8h2M4 16h2M12 16h8" />
+          <circle cx="15" cy="8" r="2.4" />
+          <circle cx="9" cy="16" r="2.4" />
         </svg>
-        설정
       </button>
 
       <dialog

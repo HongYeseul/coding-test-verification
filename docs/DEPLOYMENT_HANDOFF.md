@@ -43,6 +43,8 @@ SQL Editor 또는 Supabase MCP의 `apply_migration`으로 아래 마이그레이
 - `20260908000000_group_problem_titles.sql`
 - `20260909000000_auto_approve_proofs.sql`
 - `20260909010000_public_group_board.sql`
+- `20260909020000_group_directory_activity.sql`
+- `20260909030000_drop_list_group_directory.sql`
 
 적용 버전은 `supabase_migrations.schema_migrations`에도 등록합니다. 기존 마이그레이션을 재실행하지 않고 새 마이그레이션부터 적용합니다.
 
@@ -65,6 +67,8 @@ MCP의 `apply_migration`은 버전을 실행 시각으로 기록하므로 저장
 `20260909000000_auto_approve_proofs.sql`은 `groups.auto_approve` 컬럼과 `proofs`의 `AUTO_APPROVED` 상태를 더하고, 등록·검수·취소 정책과 현황판 집계를 그 상태까지 다루도록 넓힙니다. 기본값이 꺼짐이고 정책은 넓히기만 하므로 구버전 코드와 그대로 호환됩니다. 다만 새 코드가 `groups.auto_approve`를 조회하므로 적용 전에 배포하면 그룹 페이지가 404가 됩니다. 그래서 이번에는 배포보다 먼저 적용했고, 적용 직후 자동 인정을 켠 그룹은 0개라 기존 동작이 바뀌지 않았습니다. `schema_migrations`의 버전은 `20260909000000`으로 고쳤습니다.
 
 `20260909010000_public_group_board.sql`은 `groups.is_public` 컬럼과 `list_group_directory()`·`get_public_group_board()` 두 함수를 더하고 이 함수에만 `anon` 실행 권한을 줍니다. 표 권한은 그대로 두어 `anon`은 여전히 `groups`·`profiles`·`proofs`를 직접 조회할 수 없습니다. 적용 후 `anon` 역할로 두 함수와 표 접근을 확인했고, 공개로 켠 그룹은 0개라 실제로 공개된 데이터는 없습니다.
+
+`20260909020000_group_directory_activity.sql`은 첫 화면 목록에 이번 주 활동을 더합니다. 반환 모양이 배열에서 객체로 바뀌므로 옛 함수를 고치지 않고 `get_group_directory()`를 새로 만들었습니다. 배포 전에 적용해도 구버전 화면이 빈 목록으로 보이지 않게 하려는 것입니다. 배포가 끝난 뒤 `20260909030000_drop_list_group_directory.sql`로 옛 `list_group_directory()`를 지웁니다. 이 순서를 지켜야 하며, 먼저 지우면 구버전 화면의 목록이 비어 보입니다.
 
 그룹 생성·초대 수락·가입 승인·검수자 지정 함수가 연결되어 있습니다. 그룹 데이터는 ACTIVE 멤버만 조회하며, 작성자 본인의 풀이 검수는 차단됩니다.
 

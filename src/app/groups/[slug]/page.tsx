@@ -536,8 +536,18 @@ export default async function GroupPage({
       }
     >
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1>{group.name}</h1>
+        <div className="min-w-0">
+          <div className="flex items-center gap-1">
+            <h1>{group.name}</h1>
+            {isOwner && (
+              <GroupSettingsDialog
+                groupId={group.id}
+                groupSlug={group.slug}
+                autoApprove={group.auto_approve}
+                isPublic={group.is_public}
+              />
+            )}
+          </div>
           <p className="mt-1 text-[15px] text-sub">
             멤버 {activeMemberIds.length}명 · 내 역할:{" "}
             {roleLabels[currentMembership.role] ?? "멤버"}
@@ -579,14 +589,6 @@ export default async function GroupPage({
                 </p>
               </form>
             </InvitePopover>
-          )}
-          {isOwner && (
-            <GroupSettingsDialog
-              groupId={group.id}
-              groupSlug={group.slug}
-              autoApprove={group.auto_approve}
-              isPublic={group.is_public}
-            />
           )}
           <PhotoProofForm
             groupId={group.id}

@@ -2,8 +2,19 @@
 export type GroupDirectoryEntry = {
   name: string;
   slug: string;
-  memberCount: number;
   isPublic: boolean;
+  memberCount: number;
+  /** 비공개 그룹은 이름과 인원수까지만 공개하므로 활동은 null입니다. */
+  weekApproved: number | null;
+  days: { date: string; approved: number }[] | null;
+};
+
+export type GroupDirectory = {
+  today: string;
+  weekStart: string;
+  totalMembers: number;
+  weekApproved: number;
+  groups: GroupDirectoryEntry[];
 };
 
 export type PublicGroupBoard = {
