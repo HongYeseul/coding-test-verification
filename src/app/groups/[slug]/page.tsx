@@ -123,19 +123,28 @@ function validDate(value: string) {
   return Number.isNaN(date.getTime()) ? "" : value;
 }
 
-function nextDate(value: string) {
-  const date = new Date(`${value}T00:00:00+09:00`);
+/** 스터디 하루는 한국시간 새벽 3시에 시작합니다. DB의 private.study_date와 같은 규칙입니다. */
+const STUDY_DAY_START = "T03:00:00+09:00";
+const STUDY_DAY_OFFSET_MS = 3 * 60 * 60 * 1000;
+
+function studyDayStart(value: string) {
+  return new Date(`${value}${STUDY_DAY_START}`).toISOString();
+}
+
+function nextStudyDayStart(value: string) {
+  const date = new Date(`${value}${STUDY_DAY_START}`);
   date.setUTCDate(date.getUTCDate() + 1);
   return date.toISOString();
 }
 
-function todayInKorea() {
+/** 새벽 3시 전에는 아직 어제입니다. */
+function studyToday() {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: "Asia/Seoul",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).formatToParts(new Date());
+  }).formatToParts(new Date(Date.now() - STUDY_DAY_OFFSET_MS));
   const part = (type: Intl.DateTimeFormatPartTypes) =>
     parts.find((item) => item.type === type)?.value ?? "";
   return `${part("year")}-${part("month")}-${part("day")}`;
@@ -326,7 +335,7 @@ export default async function GroupPage({
     else if (proofStatus === "rejected")
       proofRequest = proofRequest.eq("verification_status", "REJECTED");
 
-    const today = overview?.today ?? todayInKorea();
+    const today = overview?.today ?? studyToday();
     const dateStart =
       proofDate ||
       (proofPeriod === "today"
@@ -335,10 +344,7 @@ export default async function GroupPage({
           ? (overview?.weekStart ?? weekStart(today))
           : "");
     if (dateStart)
-      proofRequest = proofRequest.gte(
-        "created_at",
-        new Date(`${dateStart}T00:00:00+09:00`).toISOString(),
-      );
+      proofRequest = proofRequest.gte("created_at", studyDayStart(dateStart));
     const dateEnd =
       proofDate ||
       (proofPeriod === "today"
@@ -347,7 +353,7 @@ export default async function GroupPage({
           ? (overview?.weekEnd ?? "")
           : "");
     if (dateEnd)
-      proofRequest = proofRequest.lt("created_at", nextDate(dateEnd));
+      proofRequest = proofRequest.lt("created_at", nextStudyDayStart(dateEnd));
 
     const response = await proofRequest
       .order("accepted_at", { ascending: false })

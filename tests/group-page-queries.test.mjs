@@ -228,8 +228,8 @@ test("현황판 조건을 풀이 기록 서버 조회에 적용한다", async (t
     ["eq", "group_id", "group"],
     ["eq", "user_id", "user"],
     ["eq", "verification_status", "PENDING"],
-    ["gte", "created_at", "2026-09-04T15:00:00.000Z"],
-    ["lt", "created_at", "2026-09-05T15:00:00.000Z"],
+    ["gte", "created_at", "2026-09-04T18:00:00.000Z"],
+    ["lt", "created_at", "2026-09-05T18:00:00.000Z"],
   ]);
 });
 
@@ -314,8 +314,8 @@ test("주간 기간 필터는 선택한 주의 마지막 날까지만 조회한�
   const proofQuery = calls.find((call) => call.table === "proofs");
   assert.deepEqual(proofQuery.filters, [
     ["eq", "group_id", "group"],
-    ["gte", "created_at", "2026-08-30T15:00:00.000Z"],
-    ["lt", "created_at", "2026-09-06T15:00:00.000Z"],
+    ["gte", "created_at", "2026-08-30T18:00:00.000Z"],
+    ["lt", "created_at", "2026-09-06T18:00:00.000Z"],
   ]);
 });
 

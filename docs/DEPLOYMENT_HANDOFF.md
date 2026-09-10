@@ -45,6 +45,7 @@ SQL Editor 또는 Supabase MCP의 `apply_migration`으로 아래 마이그레이
 - `20260909010000_public_group_board.sql`
 - `20260909020000_group_directory_activity.sql`
 - `20260909030000_drop_list_group_directory.sql`
+- `20260910000000_study_day_starts_at_3am.sql`
 
 적용 버전은 `supabase_migrations.schema_migrations`에도 등록합니다. 기존 마이그레이션을 재실행하지 않고 새 마이그레이션부터 적용합니다.
 
@@ -69,6 +70,8 @@ MCP의 `apply_migration`은 버전을 실행 시각으로 기록하므로 저장
 `20260909010000_public_group_board.sql`은 `groups.is_public` 컬럼과 `list_group_directory()`·`get_public_group_board()` 두 함수를 더하고 이 함수에만 `anon` 실행 권한을 줍니다. 표 권한은 그대로 두어 `anon`은 여전히 `groups`·`profiles`·`proofs`를 직접 조회할 수 없습니다. 적용 후 `anon` 역할로 두 함수와 표 접근을 확인했고, 공개로 켠 그룹은 0개라 실제로 공개된 데이터는 없습니다.
 
 `20260909020000_group_directory_activity.sql`은 첫 화면 목록에 이번 주 활동을 더합니다. 반환 모양이 배열에서 객체로 바뀌므로 옛 함수를 고치지 않고 `get_group_directory()`를 새로 만들었습니다. 배포 전에 적용해도 구버전 화면이 빈 목록으로 보이지 않게 하려는 것입니다. 배포가 끝난 뒤 `20260909030000_drop_list_group_directory.sql`로 옛 `list_group_directory()`를 지웁니다. 이 순서를 지켜야 하며, 먼저 지우면 구버전 화면의 목록이 비어 보입니다.
+
+`20260910000000_study_day_starts_at_3am.sql`은 하루의 경계를 자정에서 한국시간 새벽 3시로 옮깁니다. `private.study_date()`를 만들고 현황판·첫 화면 목록·공개 리더보드 세 함수가 이 함수를 쓰도록 다시 정의합니다. 시그니처와 응답 구조는 그대로라 배포 순서와 무관하지만, 적용하는 순간 집계가 바뀝니다. 이미 쌓인 기록에도 같은 규칙이 적용되어 자정 직후 등록분은 전날로 옮겨집니다(적용 시점 기록 13건 중 1건). 앱의 기간 필터도 같은 경계를 쓰므로 코드와 함께 확인해야 합니다.
 
 그룹 생성·초대 수락·가입 승인·검수자 지정 함수가 연결되어 있습니다. 그룹 데이터는 ACTIVE 멤버만 조회하며, 작성자 본인의 풀이 검수는 차단됩니다.
 
