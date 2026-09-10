@@ -594,6 +594,7 @@ export default async function GroupPage({
             groupId={group.id}
             groupSlug={group.slug}
             userId={user.id}
+            autoApprove={group.auto_approve}
           />
         </div>
       </header>

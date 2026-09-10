@@ -31,10 +31,12 @@ export function PhotoProofForm({
   groupId,
   groupSlug,
   userId,
+  autoApprove,
 }: {
   groupId: string;
   groupSlug: string;
   userId: string;
+  autoApprove: boolean;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -330,7 +332,9 @@ export function PhotoProofForm({
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-[13px] text-sub">
-              등록 시각이 기록되고 검수 대기 상태가 됩니다.
+              {autoApprove
+                ? "등록 시각이 기록되고 바로 인정됩니다."
+                : "등록 시각이 기록되고 검수 대기 상태가 됩니다."}
             </span>
             <button
               type="submit"

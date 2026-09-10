@@ -31,7 +31,7 @@ const steps = [
   {
     number: "03",
     title: "풀이 인증",
-    description: "사진을 올려 풀이를 기록하고 검수자에게 확인받습니다.",
+    description: "사진을 올려 풀이를 기록합니다. 검수자가 확인하거나 바로 인정됩니다.",
   },
 ];
 
@@ -54,13 +54,13 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
   return (
     <AppShell
-      actions={<span className="text-[13px] text-sub">초대 전용</span>}
+      actions={<span className="text-[13px] text-sub">가입은 초대로</span>}
     >
       <header className="mb-6">
         <h1>오늘 푼 문제를 함께 확인합니다.</h1>
-        <p className="mt-1 max-w-xl text-[15px] text-sub">
-          허가된 멤버만 그룹과 인증 기록을 볼 수 있습니다. GitHub 계정으로
-          로그인한 뒤 초대 승인을 받아주세요.
+        <p className="mt-1 max-w-2xl text-[15px] text-sub">
+          공개로 연 스터디는 순위를 로그인 없이 볼 수 있습니다. 인증 사진과 풀이
+          기록은 그룹 멤버만 봅니다.
         </p>
       </header>
 
@@ -106,9 +106,6 @@ export default async function Home({ searchParams }: PageProps<"/">) {
               </li>
             ))}
           </ol>
-          <p className="mt-3 text-[12px] text-sub">
-            모든 풀이 인증은 그룹 소유자나 검수자가 사진으로 확인합니다.
-          </p>
         </div>
       </section>
 
