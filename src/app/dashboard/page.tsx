@@ -134,7 +134,8 @@ export default async function DashboardPage({
         )}
       </section>
 
-      <section className="grid gap-5 sm:grid-cols-2">
+      {/* 두 카드의 내용 길이가 달라 높이를 맞추면 빈칸만 커집니다. */}
+      <section className="grid items-start gap-5 sm:grid-cols-2">
         <form
           action={joinByCodeAction}
           className="grid gap-2 rounded-xl border border-line bg-soft p-5"

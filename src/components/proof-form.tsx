@@ -227,6 +227,77 @@ export function ProofForm({
   const openLabel = isCodingStudy ? "풀이 인증하기" : "인증하기";
   const dialogTitle = isCodingStudy ? "풀이 인증 등록" : "인증 등록";
 
+  const photoField = (
+    <>
+      <div className="grid justify-items-center gap-2 rounded-lg border border-dashed border-line px-4 py-6 text-center text-sub">
+        <label htmlFor="proof-photo" className="text-[15px]">
+          {isCodingStudy ? "풀이 결과가 보이는 사진 한 장" : "인증 사진 한 장"}
+          {!requiresPhoto && <span className="ml-1 text-[13px]">선택 사항</span>}
+        </label>
+        <input
+          id="proof-photo"
+          name="photo"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          required={requiresPhoto}
+          disabled={busy}
+          ref={photoInput}
+          onChange={(event) => prepare(event.target.files?.[0])}
+          className="text-[13px]"
+          aria-describedby="photo-help"
+        />
+        <p id="photo-help" className="text-[13px]">
+          복사한 캡처를 붙여넣어도 됩니다 · 20MB까지
+          {!requiresPhoto && " · 사진 없이 등록해도 됩니다"}
+        </p>
+      </div>
+
+      {preparing && (
+        <p role="status" className="text-[15px]">
+          사진 용량을 줄이고 있습니다…
+        </p>
+      )}
+
+      {prepared && (
+        <div className="grid gap-2">
+          <p className="text-[15px] font-medium">
+            저장될 사진: {displaySize(prepared.file.size)} →{" "}
+            {displaySize(prepared.blob.size)}
+          </p>
+          <a href={prepared.url} target="_blank" rel="noreferrer">
+            <Image
+              src={prepared.url}
+              alt="업로드할 압축 사진 미리보기"
+              width={640}
+              height={480}
+              unoptimized
+              className="max-h-72 w-full rounded-lg bg-soft object-contain"
+            />
+            <span className="mt-1 block text-[13px] text-sub underline">
+              크게 열어 글자 확인
+            </span>
+          </a>
+        </div>
+      )}
+    </>
+  );
+
+  const titleField = (
+    <div className="grid gap-2">
+      <label htmlFor="proof-title" className="text-[15px]">
+        {isCodingStudy ? "문제 이름" : "한 줄 메모"}{" "}
+        <span className="text-[13px] text-sub">선택 사항</span>
+      </label>
+      <input
+        id="proof-title"
+        name="title"
+        maxLength={160}
+        disabled={busy}
+        placeholder={isCodingStudy ? "예: 프로그래머스 더 맵게" : "예: 6시 기상"}
+      />
+    </div>
+  );
+
   return (
     <>
       <button
@@ -271,76 +342,18 @@ export function ProofForm({
           </div>
 
           <div className="my-4 grid gap-5">
-            <div className="grid justify-items-center gap-2 rounded-lg border border-dashed border-line px-4 py-6 text-center text-sub">
-              <label htmlFor="proof-photo" className="text-[15px]">
-                {isCodingStudy
-                  ? "풀이 결과가 보이는 사진 한 장"
-                  : "인증 사진 한 장"}
-                {!requiresPhoto && (
-                  <span className="ml-1 text-[13px]">선택 사항</span>
-                )}
-              </label>
-              <input
-                id="proof-photo"
-                name="photo"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                required={requiresPhoto}
-                disabled={busy}
-                ref={photoInput}
-                onChange={(event) => prepare(event.target.files?.[0])}
-                className="text-[13px]"
-                aria-describedby="photo-help"
-              />
-              <p id="photo-help" className="text-[13px]">
-                복사한 캡처를 붙여넣어도 됩니다 · 20MB까지
-                {!requiresPhoto && " · 사진 없이 등록해도 됩니다"}
-              </p>
-            </div>
-
-            {preparing && (
-              <p role="status" className="text-[15px]">
-                사진 용량을 줄이고 있습니다…
-              </p>
+            {/* 사진이 선택이면 먼저 쓰는 것은 메모라, 사진 영역을 뒤로 보냅니다. */}
+            {requiresPhoto ? (
+              <>
+                {photoField}
+                {titleField}
+              </>
+            ) : (
+              <>
+                {titleField}
+                {photoField}
+              </>
             )}
-
-            {prepared && (
-              <div className="grid gap-2">
-                <p className="text-[15px] font-medium">
-                  저장될 사진: {displaySize(prepared.file.size)} →{" "}
-                  {displaySize(prepared.blob.size)}
-                </p>
-                <a href={prepared.url} target="_blank" rel="noreferrer">
-                  <Image
-                    src={prepared.url}
-                    alt="업로드할 압축 사진 미리보기"
-                    width={640}
-                    height={480}
-                    unoptimized
-                    className="max-h-72 w-full rounded-lg bg-soft object-contain"
-                  />
-                  <span className="mt-1 block text-[13px] text-sub underline">
-                    크게 열어 글자 확인
-                  </span>
-                </a>
-              </div>
-            )}
-
-            <div className="grid gap-2">
-              <label htmlFor="proof-title" className="text-[15px]">
-                {isCodingStudy ? "문제 이름" : "한 줄 메모"}{" "}
-                <span className="text-[13px] text-sub">선택 사항</span>
-              </label>
-              <input
-                id="proof-title"
-                name="title"
-                maxLength={160}
-                disabled={busy}
-                placeholder={
-                  isCodingStudy ? "예: 프로그래머스 더 맵게" : "예: 6시 기상"
-                }
-              />
-            </div>
 
             {isCodingStudy && (
               <div className="grid gap-2">

@@ -520,7 +520,9 @@ export default async function GroupPage({
       statusTone: proofStatusTones[proof.verification_status] ?? "pending",
       source: account
         ? `${platformLabels[account.platform]} ${account.handle}`
-        : "사진 인증",
+        : proof.evidence_path
+          ? "사진 인증"
+          : "메모 인증",
       hasPhoto: Boolean(proof.evidence_path) && active,
       problemUrl: link?.url ?? null,
       problemPlatform: link?.platform ?? null,
@@ -640,7 +642,11 @@ export default async function GroupPage({
             : ""
         }
       >
-        <div className="min-w-0">
+        {/* 한 칸일 때도 두 칸 레이아웃의 왼쪽 칸(1024-280-24)과 같은 폭을 씁니다.
+            전폭으로 늘리면 기록 한 줄에서 제목과 날짜 사이가 크게 벌어집니다. */}
+        <div
+          className={group.is_coding_study ? "min-w-0" : "min-w-0 lg:max-w-[656px]"}
+        >
       {overview ? (
         <GroupOverview
           data={overview}

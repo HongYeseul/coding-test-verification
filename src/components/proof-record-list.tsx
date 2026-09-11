@@ -35,6 +35,13 @@ const toneClass = {
   rejected: "text-danger",
 } as const;
 
+/** 썸네일 열이 있고 없고에 따라 행 격자가 달라집니다. Tailwind가 찾을 수 있도록 통째로 적습니다. */
+function rowColumns(withPhoto: boolean) {
+  return withPhoto
+    ? "grid-cols-[44px_minmax(0,1fr)_60px_12px] sm:grid-cols-[52px_minmax(0,1fr)_100px_74px_18px]"
+    : "grid-cols-[minmax(0,1fr)_60px_12px] sm:grid-cols-[minmax(0,1fr)_100px_74px_18px]";
+}
+
 /** 목록을 훑을 때 상태가 먼저 보이도록 행 왼쪽에 색 막대를 둡니다. */
 const toneBar = {
   approved: "border-l-primary",
@@ -59,6 +66,8 @@ export function ProofRecordList({
   const noteRef = useRef<HTMLTextAreaElement>(null);
   const index = records.findIndex((record) => record.id === openId);
   const record = index >= 0 ? records[index] : null;
+  // 사진을 쓰지 않는 그룹에서 빈 썸네일 자리만 남지 않게 열 자체를 없앱니다.
+  const showPhotos = records.some((item) => item.hasPhoto);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -91,25 +100,27 @@ export function ProofRecordList({
           type="button"
           onClick={() => open(item.id)}
           aria-label={`${item.title} ${item.memberName} ${item.statusLabel} 상세 보기`}
-          className={`grid w-full grid-cols-[44px_minmax(0,1fr)_60px_12px] items-center gap-3 border-b border-l-[3px] border-line py-3 pr-0.5 pl-2 text-left hover:bg-soft sm:grid-cols-[52px_minmax(0,1fr)_100px_74px_18px] sm:gap-4 sm:pl-3 ${toneBar[item.statusTone]}`}
+          className={`grid w-full items-center gap-3 border-b border-l-[3px] border-line py-3 pr-0.5 pl-2 text-left hover:bg-soft sm:gap-4 sm:pl-3 ${rowColumns(showPhotos)} ${toneBar[item.statusTone]}`}
         >
-          <span className="relative grid size-[44px] place-items-center overflow-hidden rounded-[9px] bg-soft text-sub sm:size-[52px]">
-            {item.hasPhoto ? (
-              <Image
-                src={`/proofs/${item.id}/evidence`}
-                alt=""
-                fill
-                sizes="52px"
-                loading="lazy"
-                unoptimized
-                className="object-cover"
-              />
-            ) : (
-              <span aria-hidden="true" className="text-[17px] opacity-60">
-                ▤
-              </span>
-            )}
-          </span>
+          {showPhotos && (
+            <span className="relative grid size-[44px] place-items-center overflow-hidden rounded-[9px] bg-soft text-sub sm:size-[52px]">
+              {item.hasPhoto ? (
+                <Image
+                  src={`/proofs/${item.id}/evidence`}
+                  alt=""
+                  fill
+                  sizes="52px"
+                  loading="lazy"
+                  unoptimized
+                  className="object-cover"
+                />
+              ) : (
+                <span aria-hidden="true" className="text-[17px] opacity-60">
+                  ▤
+                </span>
+              )}
+            </span>
+          )}
           <span className="min-w-0">
             <span className="block truncate text-[17px] font-semibold">
               {item.title}
@@ -133,6 +144,7 @@ export function ProofRecordList({
         </button>
       ))}
 
+      {/* 사진이 없으면 채울 것이 정보뿐이라 좁게 엽니다. */}
       <dialog
         ref={dialogRef}
         aria-label="인증 상세 및 검수"
@@ -140,10 +152,18 @@ export function ProofRecordList({
         onClick={(event) => {
           if (event.target === dialogRef.current) setOpenId(null);
         }}
-        className="m-auto h-[min(680px,calc(100dvh-48px))] w-[min(960px,calc(100%-48px))] overflow-hidden rounded-[14px] border border-line bg-canvas p-0 text-ink backdrop:bg-black/40 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:rounded-none max-sm:border-0"
+        className={`m-auto overflow-hidden rounded-[14px] border border-line bg-canvas p-0 text-ink backdrop:bg-black/40 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:rounded-none max-sm:border-0 ${
+          record?.hasPhoto
+            ? "h-[min(680px,calc(100dvh-48px))] w-[min(960px,calc(100%-48px))]"
+            : "max-h-[min(680px,calc(100dvh-48px))] w-[min(560px,calc(100%-48px))]"
+        }`}
       >
         {record && (
-          <div className="grid h-full grid-rows-[auto_minmax(0,1fr)_auto]">
+          <div
+            className={`grid grid-rows-[auto_minmax(0,1fr)_auto] ${
+              record.hasPhoto ? "h-full" : "max-sm:h-full"
+            }`}
+          >
             <header className="flex min-w-0 items-center justify-between gap-4 border-b border-line px-4 py-3 sm:px-6 sm:py-4">
               <div className="min-w-0">
                 <h3 className="truncate">{record.title}</h3>
@@ -160,9 +180,13 @@ export function ProofRecordList({
               </button>
             </header>
 
-            <div className="grid min-h-0 overflow-hidden max-sm:flex max-sm:flex-col max-sm:overflow-y-auto sm:grid-cols-[minmax(0,1fr)_256px]">
-              <div className="relative flex min-h-0 flex-col items-center justify-center gap-3 bg-soft p-6 text-center max-sm:h-60 max-sm:shrink-0">
-                {record.hasPhoto ? (
+            <div
+              className={`grid min-h-0 overflow-hidden max-sm:flex max-sm:flex-col max-sm:overflow-y-auto ${
+                record.hasPhoto ? "sm:grid-cols-[minmax(0,1fr)_256px]" : "sm:grid-cols-1"
+              }`}
+            >
+              {record.hasPhoto && (
+                <div className="relative flex min-h-0 flex-col items-center justify-center gap-3 bg-soft p-6 text-center max-sm:h-60 max-sm:shrink-0">
                   <a
                     href={`/proofs/${record.id}/evidence`}
                     target="_blank"
@@ -178,14 +202,14 @@ export function ProofRecordList({
                       className="object-contain"
                     />
                   </a>
-                ) : (
-                  <p className="text-[13px] text-sub">
-                    사진 없이 등록된 기록입니다.
-                  </p>
-                )}
-              </div>
+                </div>
+              )}
 
-              <aside className="flex min-h-0 flex-col gap-5 overflow-y-auto border-line p-5 max-sm:border-t sm:border-l sm:p-6">
+              <aside
+                className={`flex min-h-0 flex-col gap-5 overflow-y-auto border-line p-5 max-sm:border-t sm:p-6 ${
+                  record.hasPhoto ? "sm:border-l" : ""
+                }`}
+              >
                 <div className="flex items-center justify-between gap-2">
                   <h2>인증 정보</h2>
                   <span
@@ -300,7 +324,10 @@ export function ProofRecordList({
                   <form action={deleteProofAction}>
                     <input type="hidden" name="proofId" value={record.id} />
                     <input type="hidden" name="groupSlug" value={groupSlug} />
-                    <CancelProofButton retry={record.cancelRetry} />
+                    <CancelProofButton
+                      retry={record.cancelRetry}
+                      hasPhoto={record.hasPhoto}
+                    />
                   </form>
                 )}
               </aside>
