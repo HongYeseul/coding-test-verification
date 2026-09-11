@@ -180,4 +180,34 @@
     background: none;
     color: var(--sub);
   }
+
+  /* 도장 자국. 원형 안쪽에 테두리를 하나 더 둬 인장처럼 보이게 합니다.
+     테두리 색은 글자색을 따라가므로 채운 칸과 옅은 칸 모두에서 맞습니다. */
+  .stamp {
+    border-radius: 9999px;
+    outline: 1px solid color-mix(in srgb, currentColor 38%, transparent);
+    outline-offset: -4px;
+  }
+
+  /* 눌러 찍는 순간. 크게 들어와 살짝 기운 채로 자리를 잡습니다. */
+  @media (prefers-reduced-motion: no-preference) {
+    .stamp-press {
+      animation: stamp-press 420ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+    }
+  }
+}
+
+@keyframes stamp-press {
+  0% {
+    transform: scale(1.6) rotate(-16deg);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(0.95) rotate(-4deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(-6deg);
+    opacity: 1;
+  }
 }

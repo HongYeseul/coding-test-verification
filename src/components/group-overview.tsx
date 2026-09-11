@@ -7,6 +7,14 @@ import {
   type OverviewMember,
 } from "@/lib/group-overview";
 import { LinkPendingDot } from "@/components/link-pending-dot";
+
+/** 손으로 찍은 것처럼 칸마다 조금씩 기울입니다. 같은 칸은 다시 그려도 같은 각도입니다. */
+const stampTilts = ["-rotate-3", "-rotate-1", "rotate-1", "rotate-3"] as const;
+function stampTilt(seed: string) {
+  let sum = 0;
+  for (const character of seed) sum = (sum + character.charCodeAt(0)) % 997;
+  return stampTilts[sum % stampTilts.length];
+}
 import { githubHandle } from "@/lib/profile";
 import { RefreshOverviewButton } from "@/components/refresh-overview-button";
 
@@ -261,13 +269,14 @@ export function GroupOverview({
                     const isToday = date === data.today;
                     const marker =
                       waiting > 0 ? "◷" : approved > 0 ? "✓" : "×";
-                    // 승인만 채우고 대기·반려는 테두리로 둡니다. 채워진 칸이 곧 성과입니다.
+                    // 승인만 도장으로 찍고 대기·반려는 네모 테두리로 둡니다.
+                    // 모양이 다르므로 찍힌 칸이 한눈에 그 주의 성과로 읽힙니다.
                     const cellTone =
                       waiting > 0
-                        ? "border border-line bg-canvas text-warn"
+                        ? "rounded-lg border border-line bg-canvas text-warn"
                         : approved > 0
-                          ? "bg-primary text-primary-ink"
-                          : "border border-line bg-canvas text-danger";
+                          ? `stamp bg-primary text-primary-ink ${stampTilt(member.userId + date)}`
+                          : "rounded-lg border border-line bg-canvas text-danger";
                     const description = `${member.displayName} ${shortDate(date)} 승인 ${approved}건, 검수 대기 ${waiting}건, 반려 ${rejected}건`;
 
                     return (
@@ -282,7 +291,7 @@ export function GroupOverview({
                             href={`/groups/${groupSlug}?proofMember=${member.userId}&proofDate=${date}${weekParam}#proof-records`}
                             title={description}
                             aria-label={`${description}. 인증 기록 보기`}
-                            className={`inline-grid h-[32px] w-6 place-items-center rounded-lg font-[650] sm:size-[34px] ${cellTone}`}
+                            className={`inline-grid size-[26px] place-items-center text-[13px] font-[650] sm:size-[34px] sm:text-[15px] ${cellTone}`}
                           >
                             <span aria-hidden="true">
                               {marker}
@@ -292,7 +301,7 @@ export function GroupOverview({
                         ) : (
                           <span
                             title={isFuture ? "예정" : "미등록"}
-                            className={`inline-grid h-[32px] w-6 place-items-center text-sub sm:size-[34px] ${
+                            className={`inline-grid size-[26px] place-items-center text-sub sm:size-[34px] ${
                               isFuture ? "opacity-25" : "opacity-45"
                             }`}
                           >

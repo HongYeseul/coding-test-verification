@@ -5,7 +5,7 @@ import "./globals.css";
 import { themeBootstrapScript } from "@/lib/theme";
 
 export const metadata: Metadata = {
-  title: "Coding Proof",
+  title: "도장",
   description: "초대된 멤버끼리 매일의 인증 기록을 확인하는 공간",
 };
 

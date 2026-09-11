@@ -46,6 +46,7 @@ export function ProofForm({
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [stamped, setStamped] = useState(false);
   const [preparing, setPreparing] = useState(false);
   const [prepared, setPrepared] = useState<{
     file: File;
@@ -155,6 +156,7 @@ export function ProofForm({
       return;
     }
     submitting.current = true;
+    setStamped(false);
     setBusy(true);
     setMessage(hasFile ? "사진을 등록하고 있습니다." : "인증을 등록하고 있습니다.");
     try {
@@ -201,6 +203,7 @@ export function ProofForm({
       recordKey.current = "";
       form.reset();
       setPrepared(null);
+      setStamped(true);
       setOpen(false);
       const stored =
         hasFile && storedSize
@@ -311,8 +314,16 @@ export function ProofForm({
         <p
           role="status"
           aria-live="polite"
-          className="fixed bottom-5 left-1/2 z-10 w-max max-w-[calc(100%-32px)] -translate-x-1/2 rounded-[10px] border border-line bg-canvas px-4 py-3 text-[15px] shadow-[0_4px_20px_rgba(0,0,0,0.13)]"
+          className="fixed bottom-5 left-1/2 z-10 flex w-max max-w-[calc(100%-32px)] -translate-x-1/2 items-center gap-3 rounded-[10px] border border-line bg-canvas px-4 py-3 text-[15px] shadow-[0_4px_20px_rgba(0,0,0,0.13)]"
         >
+          {stamped && (
+            <span
+              aria-hidden="true"
+              className="stamp stamp-press grid size-7 shrink-0 -rotate-6 place-items-center bg-primary text-[15px] font-[650] text-primary-ink"
+            >
+              ✓
+            </span>
+          )}
           {message}
         </p>
       )}

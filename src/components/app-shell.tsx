@@ -18,13 +18,14 @@ export function AppShell({
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4 sm:mb-6">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/" className="flex items-center gap-3">
+            {/* 눌러 찍은 도장처럼 원형에 안쪽 테두리를 두고 살짝 기울입니다. */}
             <span
               aria-hidden="true"
-              className="grid size-[26px] place-items-center rounded-md bg-brand-soft text-brand"
+              className="grid size-[26px] -rotate-6 place-items-center rounded-full bg-brand-soft text-[13px] font-[650] text-brand outline-1 outline-offset-[-4px] outline-brand/40"
             >
               ✓
             </span>
-            <span className="font-[650] tracking-[-0.4px]">Coding Proof</span>
+            <span className="font-[650] tracking-[-0.4px]">도장</span>
           </Link>
           {context && (
             <span className="truncate text-[13px] text-sub">/ {context}</span>

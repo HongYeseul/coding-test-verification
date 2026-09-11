@@ -142,12 +142,12 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                   </span>
                   {group.days ? (
                     <span className="flex shrink-0 flex-col items-end gap-1.5">
-                      {/* 그룹 화면의 주간 인증 매트릭스를 한 줄로 줄인 모양입니다. */}
+                      {/* 그룹 화면의 주간 도장판을 한 줄로 줄인 모양입니다. */}
                       <span aria-hidden="true" className="flex gap-1">
                         {group.days.map((day) => (
                           <span
                             key={day.date}
-                            className={`h-3.5 w-2.5 rounded-[2px] border ${
+                            className={`size-2.5 rounded-full border ${
                               day.approved > 0
                                 ? "border-brand bg-brand"
                                 : "border-line bg-soft"
