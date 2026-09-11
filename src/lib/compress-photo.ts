@@ -111,7 +111,7 @@ export async function compressPhoto(file: File): Promise<Blob> {
       return file;
     if (!compressed || compressed.size > MAX_PHOTO_BYTES)
       throw new Error(
-        "압축 후에도 300KB를 초과합니다. 문제명·아이디·통과 결과가 보이도록 필요한 부분만 잘라 다시 선택해주세요.",
+        "압축 후에도 300KB를 초과합니다. 확인할 글자가 보이도록 필요한 부분만 잘라 다시 선택해주세요.",
       );
     return compressed;
   } finally {

@@ -94,6 +94,8 @@ const UUID_PATTERN =
 export async function createGroupAction(formData: FormData) {
   const name = getRequiredText(formData, "name");
   const slug = getRequiredText(formData, "slug").toLowerCase();
+  // 체크하지 않은 상자는 아무 값도 보내지 않으므로 빈 문자열이 곧 꺼짐입니다.
+  const isCodingStudy = getRequiredText(formData, "isCodingStudy") === "on";
 
   if (name.length < 1 || name.length > 60 || !SLUG_PATTERN.test(slug)) {
     redirect(
@@ -105,6 +107,7 @@ export async function createGroupAction(formData: FormData) {
   const { error } = await supabase.rpc("create_group", {
     group_name: name,
     group_slug: slug,
+    coding_study: isCodingStudy,
   });
 
   if (error) {
@@ -272,6 +275,8 @@ export async function updateGroupSettingsAction(formData: FormData) {
   // 체크하지 않은 상자는 아무 값도 보내지 않으므로 빈 문자열이 곧 꺼짐입니다.
   const autoApprove = getRequiredText(formData, "autoApprove") === "on";
   const isPublic = getRequiredText(formData, "isPublic") === "on";
+  const requiresPhoto = getRequiredText(formData, "requiresPhoto") === "on";
+  const isCodingStudy = getRequiredText(formData, "isCodingStudy") === "on";
   if (!UUID_PATTERN.test(groupId) || !SLUG_PATTERN.test(groupSlug)) {
     redirect(withStatus("/dashboard", "error", "그룹을 확인해주세요."));
   }
@@ -290,20 +295,23 @@ export async function updateGroupSettingsAction(formData: FormData) {
   }
   const { error } = await supabase
     .from("groups")
-    .update({ auto_approve: autoApprove, is_public: isPublic })
+    .update({
+      auto_approve: autoApprove,
+      is_public: isPublic,
+      requires_photo: requiresPhoto,
+      is_coding_study: isCodingStudy,
+    })
     .eq("id", groupId);
   if (error) {
     redirect(withStatus(groupPath, "error", "설정을 저장하지 못했습니다."));
   }
   revalidatePath(groupPath);
   revalidatePath("/");
-  redirect(
-    withStatus(
-      groupPath,
-      "message",
-      `자동 인정 ${autoApprove ? "켬" : "끔"} · 공개 리더보드 ${
-        isPublic ? "켬" : "끔"
-      }으로 저장했습니다.`,
-    ),
-  );
+  const summary = [
+    `자동 인정 ${autoApprove ? "켬" : "끔"}`,
+    `공개 리더보드 ${isPublic ? "켬" : "끔"}`,
+    `사진 필수 ${requiresPhoto ? "켬" : "끔"}`,
+    `코딩 테스트 스터디 ${isCodingStudy ? "켬" : "끔"}`,
+  ].join(" · ");
+  redirect(withStatus(groupPath, "message", `${summary}으로 저장했습니다.`));
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { InvitePopover } from "@/components/invite-popover";
-import { PhotoProofForm } from "@/components/photo-proof-form";
+import { ProofForm } from "@/components/proof-form";
 import { getSiteUrl } from "@/lib/supabase/config";
 import { notFound, redirect } from "next/navigation";
 
@@ -228,7 +228,9 @@ export default async function GroupPage({
   const { supabase, user } = await requireUser(`/groups/${slug}`);
   const { data: group } = await supabase
     .from("groups")
-    .select("id, name, slug, owner_id, auto_approve, is_public")
+    .select(
+      "id, name, slug, owner_id, auto_approve, is_public, requires_photo, is_coding_study",
+    )
     .eq("slug", slug)
     .maybeSingle();
 
@@ -389,24 +391,29 @@ export default async function GroupPage({
             .in("id", accountIds)
         : Promise.resolve({ data: [] }),
       // 문제 목록은 기록 목록의 필터와 무관하게 그룹 전체에서 최근 링크를 모읍니다.
-      supabase
-        .from("proofs")
-        .select("problem_url, problem_title, user_id, created_at")
-        .eq("group_id", group.id)
-        .not("problem_url", "is", null)
-        .in("verification_status", [
-          "PENDING",
-          "AUTO_APPROVED",
-          "MANUAL_REVIEWED",
-          "API_VERIFIED",
-        ])
-        .order("created_at", { ascending: false })
-        .limit(200),
+      // 코딩 테스트 스터디가 아니면 화면에 없는 목록이라 조회하지 않습니다.
+      group.is_coding_study
+        ? supabase
+            .from("proofs")
+            .select("problem_url, problem_title, user_id, created_at")
+            .eq("group_id", group.id)
+            .not("problem_url", "is", null)
+            .in("verification_status", [
+              "PENDING",
+              "AUTO_APPROVED",
+              "MANUAL_REVIEWED",
+              "API_VERIFIED",
+            ])
+            .order("created_at", { ascending: false })
+            .limit(200)
+        : Promise.resolve({ data: [] }),
       // 소유자·검수자가 정한 제목입니다. 기록에 적힌 제목보다 앞섭니다.
-      supabase
-        .from("group_problem_titles")
-        .select("url, title")
-        .eq("group_id", group.id),
+      group.is_coding_study
+        ? supabase
+            .from("group_problem_titles")
+            .select("url, title")
+            .eq("group_id", group.id)
+        : Promise.resolve({ data: [] }),
     ]);
   const accounts = (accountData ?? []) as PlatformAccountRow[];
   const problemRows = (problemData ?? []) as ProblemProofRow[];
@@ -418,6 +425,17 @@ export default async function GroupPage({
   );
 
   const canReview = ["OWNER", "REVIEWER"].includes(currentMembership.role);
+  const recordsTitle = group.is_coding_study ? "풀이 기록" : "인증 기록";
+  // tabHref의 groupSlug처럼, 안쪽 함수에서는 좁혀진 group 대신 값을 꺼내 씁니다.
+  const isCodingStudy = group.is_coding_study;
+  const untitledRecordTitle = (proof: ProofRow) =>
+    proof.evidence_path
+      ? isCodingStudy
+        ? "사진 풀이 기록"
+        : "사진 인증 기록"
+      : proof.platform_account_id
+        ? proof.problem_key
+        : "인증 기록";
   const pendingMemberships = memberships.filter(
     (membership) => membership.status === "PENDING",
   );
@@ -487,9 +505,8 @@ export default async function GroupPage({
     const { date, time } = proofDateTime(proof.accepted_at);
     return {
       id: proof.id,
-      title:
-        proof.problem_title ||
-        (proof.evidence_path ? "사진 풀이 기록" : proof.problem_key),
+      // 사진 없는 기록의 problem_key는 재시도를 막는 열쇠일 뿐이라 보여주지 않습니다.
+      title: proof.problem_title || untitledRecordTitle(proof),
       memberName: profileById.get(proof.user_id)?.display_name ?? "멤버",
       memberHandle: githubHandle(profileById.get(proof.user_id)?.github_login),
       memberBio: profileById.get(proof.user_id)?.bio ?? null,
@@ -551,6 +568,8 @@ export default async function GroupPage({
                 groupSlug={group.slug}
                 autoApprove={group.auto_approve}
                 isPublic={group.is_public}
+                requiresPhoto={group.requires_photo}
+                isCodingStudy={group.is_coding_study}
               />
             )}
           </div>
@@ -596,11 +615,13 @@ export default async function GroupPage({
               </form>
             </InvitePopover>
           )}
-          <PhotoProofForm
+          <ProofForm
             groupId={group.id}
             groupSlug={group.slug}
             userId={user.id}
             autoApprove={group.auto_approve}
+            requiresPhoto={group.requires_photo}
+            isCodingStudy={group.is_coding_study}
           />
         </div>
       </header>
@@ -612,7 +633,13 @@ export default async function GroupPage({
         />
       </div>
 
-      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start lg:gap-6">
+      <div
+        className={
+          group.is_coding_study
+            ? "lg:grid lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start lg:gap-6"
+            : ""
+        }
+      >
         <div className="min-w-0">
       {overview ? (
         <GroupOverview
@@ -630,9 +657,13 @@ export default async function GroupPage({
         </p>
       )}
 
-      <section id="proof-records" aria-label="풀이 기록" className="scroll-mt-4">
+      <section
+        id="proof-records"
+        aria-label={recordsTitle}
+        className="scroll-mt-4"
+      >
         <div className="mb-3">
-          <h2>풀이 기록</h2>
+          <h2>{recordsTitle}</h2>
         </div>
 
         <nav aria-label="기록 분류" className="flex gap-6 border-b border-line">
@@ -721,12 +752,18 @@ export default async function GroupPage({
           records={records}
           groupSlug={group.slug}
           emptyTitle={
-            hasProofFilters ? "해당하는 기록이 없어요" : "아직 등록된 풀이가 없어요"
+            hasProofFilters
+              ? "해당하는 기록이 없어요"
+              : group.is_coding_study
+                ? "아직 등록된 풀이가 없어요"
+                : "아직 등록된 인증이 없어요"
           }
           emptyDescription={
             hasProofFilters
               ? "멤버 또는 기간을 바꿔보세요."
-              : "풀이 인증하기로 첫 기록을 남겨보세요."
+              : group.is_coding_study
+                ? "풀이 인증하기로 첫 기록을 남겨보세요."
+                : "인증하기로 첫 기록을 남겨보세요."
           }
         />
         <p className="mt-4 text-[12px] text-sub">
@@ -737,16 +774,18 @@ export default async function GroupPage({
         </div>
 
         {/* 좁은 화면에서는 기록 아래로 쌓이고, 넓으면 스크롤을 따라옵니다. */}
-        <aside className="mt-7 lg:sticky lg:top-6 lg:mt-0 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto">
-          <GroupProblems
-            rows={problemRows}
-            groupTitles={groupTitles}
-            profileById={profileById}
-            currentUserId={user.id}
-            groupSlug={group.slug}
-            canEditTitle={canReview}
-          />
-        </aside>
+        {group.is_coding_study && (
+          <aside className="mt-7 lg:sticky lg:top-6 lg:mt-0 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto">
+            <GroupProblems
+              rows={problemRows}
+              groupTitles={groupTitles}
+              profileById={profileById}
+              currentUserId={user.id}
+              groupSlug={group.slug}
+              canEditTitle={canReview}
+            />
+          </aside>
+        )}
       </div>
 
       {isOwner && (pendingMemberships.length > 0 || manageableMembers.length > 0) && (

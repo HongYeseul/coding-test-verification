@@ -9,7 +9,7 @@ import {
 } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { createPhotoProofAction } from "@/app/actions/proofs";
+import { createProofRecordAction } from "@/app/actions/proofs";
 import { createClient } from "@/lib/supabase/client";
 import {
   MAX_PROBLEM_URL_LENGTH,
@@ -27,16 +27,20 @@ function displaySize(bytes: number) {
     : `${Math.max(1, Math.round(bytes / 1024))}KB`;
 }
 
-export function PhotoProofForm({
+export function ProofForm({
   groupId,
   groupSlug,
   userId,
   autoApprove,
+  requiresPhoto,
+  isCodingStudy,
 }: {
   groupId: string;
   groupSlug: string;
   userId: string;
   autoApprove: boolean;
+  requiresPhoto: boolean;
+  isCodingStudy: boolean;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -78,6 +82,8 @@ export function PhotoProofForm({
   const upload = useRef<{ file: File; path: string; size: number } | null>(
     null,
   );
+  // 사진이 없는 기록에는 경로가 없으므로 이 열쇠가 재시도 중복을 막습니다.
+  const recordKey = useRef("");
   const submitting = useRef(false);
 
   async function prepare(file: File | undefined) {
@@ -126,32 +132,38 @@ export function PhotoProofForm({
     const data = new FormData(form);
     const fileInput = form.elements.namedItem("photo") as HTMLInputElement;
     const file = fileInput.files?.[0];
-    if (!(file instanceof File)) return;
-    if (preparing || !prepared || prepared.file !== file) {
-      setMessage("사진 압축이 끝나면 등록할 수 있습니다.");
-      return;
+    const hasFile = file instanceof File;
+    if (!hasFile && requiresPhoto) return;
+    let compressed: Blob | null = null;
+    if (hasFile) {
+      if (preparing || !prepared || prepared.file !== file) {
+        setMessage("사진 압축이 끝나면 등록할 수 있습니다.");
+        return;
+      }
+      const validationError = photoError(file, MAX_SOURCE_PHOTO_BYTES);
+      if (validationError) {
+        setMessage(validationError);
+        return;
+      }
+      compressed = prepared.blob;
     }
-    const validationError = photoError(file, MAX_SOURCE_PHOTO_BYTES);
-    if (validationError) {
-      setMessage(validationError);
-      return;
-    }
-    const problemUrl = String(data.get("problemUrl") ?? "").trim();
+    const problemUrl = isCodingStudy
+      ? String(data.get("problemUrl") ?? "").trim()
+      : "";
     if (problemUrl && !problemLink(problemUrl)) {
       setMessage(PROBLEM_URL_ERROR);
       return;
     }
     submitting.current = true;
     setBusy(true);
-    setMessage("사진을 등록하고 있습니다.");
+    setMessage(hasFile ? "사진을 등록하고 있습니다." : "인증을 등록하고 있습니다.");
     try {
-      const supabase = createClient();
-      if (!upload.current || upload.current.file !== file) {
+      if (hasFile && compressed && (!upload.current || upload.current.file !== file)) {
         const previousPath = upload.current?.path;
-        const compressed = prepared.blob;
         setMessage(
           `사진 업로드 중: ${displaySize(file.size)} → ${displaySize(compressed.size)}`,
         );
+        const supabase = createClient();
         const path = `${groupId}/${userId}/${crypto.randomUUID()}.${PHOTO_EXTENSIONS[compressed.type]}`;
         const { error } = await supabase.storage
           .from("proof-evidence")
@@ -171,10 +183,12 @@ export function PhotoProofForm({
           await supabase.storage.from("proof-evidence").remove([previousPath]);
         }
       }
-      const result = await createPhotoProofAction({
+      if (!hasFile && !recordKey.current) recordKey.current = crypto.randomUUID();
+      const result = await createProofRecordAction({
         groupId,
         groupSlug,
-        evidencePath: upload.current.path,
+        evidencePath: hasFile ? (upload.current?.path ?? "") : "",
+        recordKey: recordKey.current,
         title: String(data.get("title") ?? ""),
         problemUrl,
       });
@@ -182,13 +196,18 @@ export function PhotoProofForm({
         setMessage(result.error);
         return;
       }
-      const storedSize = upload.current.size;
+      const storedSize = upload.current?.size;
       upload.current = null;
+      recordKey.current = "";
       form.reset();
       setPrepared(null);
       setOpen(false);
+      const stored =
+        hasFile && storedSize
+          ? ` (${displaySize(file.size)} → ${displaySize(storedSize)})`
+          : "";
       setMessage(
-        `사진을 풀이 기록으로 등록했습니다 (${displaySize(file.size)} → ${displaySize(storedSize)}). ${
+        `인증을 등록했습니다${stored}. ${
           result.autoApproved
             ? "바로 인정됐습니다."
             : "검수 승인을 기다려주세요."
@@ -197,13 +216,16 @@ export function PhotoProofForm({
       router.refresh();
     } catch {
       setMessage(
-        "처리 결과를 확인하지 못했습니다. 같은 사진으로 다시 시도해주세요.",
+        "처리 결과를 확인하지 못했습니다. 같은 내용으로 다시 시도해주세요.",
       );
     } finally {
       submitting.current = false;
       setBusy(false);
     }
   }
+
+  const openLabel = isCodingStudy ? "풀이 인증하기" : "인증하기";
+  const dialogTitle = isCodingStudy ? "풀이 인증 등록" : "인증 등록";
 
   return (
     <>
@@ -212,7 +234,7 @@ export function PhotoProofForm({
         className="btn btn-primary"
         onClick={() => setOpen(true)}
       >
-        <span aria-hidden="true">+</span> 풀이 인증하기
+        <span aria-hidden="true">+</span> {openLabel}
       </button>
       {!open && message && (
         <p
@@ -226,7 +248,7 @@ export function PhotoProofForm({
 
       <dialog
         ref={dialogRef}
-        aria-label="풀이 인증 등록"
+        aria-label={dialogTitle}
         onClose={() => setOpen(false)}
         onClick={(event) => {
           if (event.target === dialogRef.current && !busy) setOpen(false);
@@ -235,7 +257,9 @@ export function PhotoProofForm({
       >
         <form onSubmit={submit} onPaste={pastePhoto}>
           <div className="flex items-center justify-between gap-3">
-            <h3>오늘 푼 문제를 공유해요</h3>
+            <h3>
+              {isCodingStudy ? "오늘 푼 문제를 공유해요" : "오늘의 인증"}
+            </h3>
             <button
               type="button"
               className="btn btn-ghost"
@@ -249,14 +273,19 @@ export function PhotoProofForm({
           <div className="my-4 grid gap-5">
             <div className="grid justify-items-center gap-2 rounded-lg border border-dashed border-line px-4 py-6 text-center text-sub">
               <label htmlFor="proof-photo" className="text-[15px]">
-                풀이 결과가 보이는 사진 한 장
+                {isCodingStudy
+                  ? "풀이 결과가 보이는 사진 한 장"
+                  : "인증 사진 한 장"}
+                {!requiresPhoto && (
+                  <span className="ml-1 text-[13px]">선택 사항</span>
+                )}
               </label>
               <input
                 id="proof-photo"
                 name="photo"
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
-                required
+                required={requiresPhoto}
                 disabled={busy}
                 ref={photoInput}
                 onChange={(event) => prepare(event.target.files?.[0])}
@@ -265,6 +294,7 @@ export function PhotoProofForm({
               />
               <p id="photo-help" className="text-[13px]">
                 복사한 캡처를 붙여넣어도 됩니다 · 20MB까지
+                {!requiresPhoto && " · 사진 없이 등록해도 됩니다"}
               </p>
             </div>
 
@@ -298,36 +328,42 @@ export function PhotoProofForm({
 
             <div className="grid gap-2">
               <label htmlFor="proof-title" className="text-[15px]">
-                문제 이름 <span className="text-[13px] text-sub">선택 사항</span>
+                {isCodingStudy ? "문제 이름" : "한 줄 메모"}{" "}
+                <span className="text-[13px] text-sub">선택 사항</span>
               </label>
               <input
                 id="proof-title"
                 name="title"
                 maxLength={160}
                 disabled={busy}
-                placeholder="예: 프로그래머스 더 맵게"
+                placeholder={
+                  isCodingStudy ? "예: 프로그래머스 더 맵게" : "예: 6시 기상"
+                }
               />
             </div>
 
-            <div className="grid gap-2">
-              <label htmlFor="proof-problem-url" className="text-[15px]">
-                문제 링크 <span className="text-[13px] text-sub">선택 사항</span>
-              </label>
-              <input
-                id="proof-problem-url"
-                name="problemUrl"
-                inputMode="url"
-                maxLength={MAX_PROBLEM_URL_LENGTH}
-                disabled={busy}
-                placeholder="https://school.programmers.co.kr/learn/courses/30/lessons/12345"
-                aria-describedby="problem-url-help"
-              />
-              <p id="problem-url-help" className="text-[13px] text-sub">
-                프로그래머스, 백준, LeetCode, Codeforces, AtCoder, HackerRank,
-                Codewars의 https 주소만 받습니다. 넣으면 다른 멤버가 같은 문제를
-                바로 풀어볼 수 있어요.
-              </p>
-            </div>
+            {isCodingStudy && (
+              <div className="grid gap-2">
+                <label htmlFor="proof-problem-url" className="text-[15px]">
+                  문제 링크{" "}
+                  <span className="text-[13px] text-sub">선택 사항</span>
+                </label>
+                <input
+                  id="proof-problem-url"
+                  name="problemUrl"
+                  inputMode="url"
+                  maxLength={MAX_PROBLEM_URL_LENGTH}
+                  disabled={busy}
+                  placeholder="https://school.programmers.co.kr/learn/courses/30/lessons/12345"
+                  aria-describedby="problem-url-help"
+                />
+                <p id="problem-url-help" className="text-[13px] text-sub">
+                  프로그래머스, 백준, LeetCode, Codeforces, AtCoder, HackerRank,
+                  Codewars의 https 주소만 받습니다. 넣으면 다른 멤버가 같은
+                  문제를 바로 풀어볼 수 있어요.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -338,10 +374,10 @@ export function PhotoProofForm({
             </span>
             <button
               type="submit"
-              disabled={busy || preparing || !prepared}
+              disabled={busy || preparing || (requiresPhoto && !prepared)}
               className="btn btn-primary"
             >
-              {busy ? "등록 중…" : "검수 요청하기"}
+              {busy ? "등록 중…" : autoApprove ? "인증 등록하기" : "검수 요청하기"}
             </button>
           </div>
           <p role="status" aria-live="polite" className="mt-3 text-[15px]">

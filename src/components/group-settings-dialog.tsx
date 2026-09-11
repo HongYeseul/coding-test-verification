@@ -10,11 +10,15 @@ export function GroupSettingsDialog({
   groupSlug,
   autoApprove,
   isPublic,
+  requiresPhoto,
+  isCodingStudy,
 }: {
   groupId: string;
   groupSlug: string;
   autoApprove: boolean;
   isPublic: boolean;
+  requiresPhoto: boolean;
+  isCodingStudy: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -111,6 +115,39 @@ export function GroupSettingsDialog({
                   켜면 로그인하지 않은 사람도 멤버 닉네임과 승인 건수를 볼 수
                   있습니다. 사진·문제 링크·검수 내용은 공개되지 않습니다. 끄더라도
                   그룹 이름과 인원수는 첫 화면 목록에 나옵니다.
+                </span>
+              </span>
+            </label>
+
+            <label className="flex items-start gap-2 text-[15px]">
+              <input
+                type="checkbox"
+                name="requiresPhoto"
+                defaultChecked={requiresPhoto}
+                className="mt-1"
+              />
+              <span>
+                사진 필수
+                <span className="mt-1 block text-[13px] text-sub">
+                  끄면 사진 없이 한 줄 메모만으로도 인증을 남길 수 있습니다.
+                  이미 등록된 기록은 그대로 둡니다.
+                </span>
+              </span>
+            </label>
+
+            <label className="flex items-start gap-2 text-[15px]">
+              <input
+                type="checkbox"
+                name="isCodingStudy"
+                defaultChecked={isCodingStudy}
+                className="mt-1"
+              />
+              <span>
+                코딩 테스트 스터디
+                <span className="mt-1 block text-[13px] text-sub">
+                  켜면 문제 링크 입력과 ‘우리 그룹이 푼 문제’ 목록을 씁니다.
+                  꺼도 이미 남긴 링크는 지워지지 않고, 다시 켜면 그대로
+                  돌아옵니다.
                 </span>
               </span>
             </label>

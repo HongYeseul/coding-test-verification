@@ -15,6 +15,8 @@ async function renderGroup(
       { id: "user", display_name: "멤버", github_login: "member", bio: null },
     ],
     overview = null,
+    isCodingStudy = true,
+    requiresPhoto = true,
   } = {},
 ) {
   const calls = [];
@@ -69,7 +71,13 @@ async function renderGroup(
         then(resolve, reject) {
           calls.push({ table, filters, single, columns });
           const rows = {
-            groups: { id: "group", slug: "study", name: "스터디" },
+            groups: {
+              id: "group",
+              slug: "study",
+              name: "스터디",
+              is_coding_study: isCodingStudy,
+              requires_photo: requiresPhoto,
+            },
             group_members: single
               ? { role, status }
               : [{ user_id: "user", role, status }],
@@ -113,7 +121,7 @@ async function renderGroup(
     `
     const { requireUser, redirect, notFound, githubHandle } = globalThis.__groupPageImports;
     const React = { createElement: (type, props, ...children) => ({ type, props, children }) };
-    const Link='a', PhotoProofForm='form', StatusMessage='div', GroupOverview='section', InvitePopover='div', GroupProblems='section', GroupSettingsDialog='div', AppShell='main', ProofRecordList='div', ProofFilterForm='form';
+    const Link='a', ProofForm='form', StatusMessage='div', GroupOverview='section', InvitePopover='div', GroupProblems='section', GroupSettingsDialog='div', AppShell='main', ProofRecordList='div', ProofFilterForm='form';
     const problemLink=(value)=>value ? { url: value, platform: '플랫폼' } : null;
     const approveMembershipAction=()=>{}, rotateInviteCodeAction=()=>{}, setMemberRoleAction=()=>{}, deleteProofAction=()=>{}, reviewProofAction=()=>{};
     const firstQueryValue=(value)=>value, getSiteUrl=()=>"https://example.invalid";
@@ -280,6 +288,16 @@ test("문제 목록은 기록 필터와 무관하게 그룹 전체의 링크를 
       ["PENDING", "AUTO_APPROVED", "MANUAL_REVIEWED", "API_VERIFIED"],
     ],
   ]);
+});
+
+test("코딩 테스트 스터디가 아니면 문제 목록과 제목을 조회하지 않는다", async (t) => {
+  const { calls, render } = await renderGroup(t, { isCodingStudy: false });
+  await render();
+  assert.equal(calls.find(isProblemQuery), undefined);
+  assert.equal(
+    calls.find((call) => call.table === "group_problem_titles"),
+    undefined,
+  );
 });
 
 test("선택한 주를 현황판 조회 인자로 넘긴다", async (t) => {

@@ -170,6 +170,7 @@ export default async function DashboardPage({
           <h2>스터디 그룹 만들기</h2>
           <p className="text-[13px] text-sub">
             그룹을 만들면 소유자가 되어 초대코드를 발급하고 인증을 검수합니다.
+            코딩 테스트, 기상, 운동 등 무엇을 인증할지는 그룹이 정합니다.
           </p>
           <label htmlFor="name" className="mt-2 text-[15px]">
             그룹 이름
@@ -192,6 +193,16 @@ export default async function DashboardPage({
             placeholder="algorithm-study"
             className="font-mono"
           />
+          <label className="mt-2 flex items-start gap-2 text-[15px]">
+            <input type="checkbox" name="isCodingStudy" className="mt-1" />
+            <span>
+              코딩 테스트 스터디예요
+              <span className="mt-1 block text-[13px] text-sub">
+                문제 링크 입력과 ‘우리 그룹이 푼 문제’ 목록을 씁니다. 나중에
+                그룹 설정에서 바꿀 수 있어요.
+              </span>
+            </span>
+          </label>
           <button type="submit" className="btn btn-primary mt-2 justify-self-start">
             그룹 만들기
           </button>

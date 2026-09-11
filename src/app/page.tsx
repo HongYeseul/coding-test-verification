@@ -30,8 +30,9 @@ const steps = [
   },
   {
     number: "03",
-    title: "풀이 인증",
-    description: "사진을 올려 풀이를 기록합니다. 검수자가 확인하거나 바로 인정됩니다.",
+    title: "인증 등록",
+    description:
+      "사진이나 한 줄 메모로 오늘의 인증을 남깁니다. 검수자가 확인하거나 바로 인정됩니다.",
   },
 ];
 
@@ -57,10 +58,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       actions={<span className="text-[13px] text-sub">가입은 초대로</span>}
     >
       <header className="mb-6">
-        <h1>오늘 푼 문제를 함께 확인합니다.</h1>
+        <h1>매일 하기로 한 일을 함께 확인합니다.</h1>
         <p className="mt-1 max-w-2xl text-[15px] text-sub">
-          공개로 연 스터디는 순위를 로그인 없이 볼 수 있습니다. 인증 사진과 풀이
-          기록은 그룹 멤버만 봅니다.
+          코딩 테스트, 기상, 운동 무엇이든 스터디가 정합니다. 공개로 연 스터디는
+          순위를 로그인 없이 볼 수 있고, 인증 사진과 기록은 그룹 멤버만 봅니다.
         </p>
       </header>
 
@@ -111,7 +112,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
       <section aria-labelledby="group-directory-title" className="mt-7">
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h2 id="group-directory-title">함께 풀고 있는 스터디</h2>
+          <h2 id="group-directory-title">함께 하고 있는 스터디</h2>
           {directory && groups.length > 0 && (
             <p className="text-[13px] text-sub">
               스터디 <Figure>{groups.length}</Figure>개 · 멤버{" "}

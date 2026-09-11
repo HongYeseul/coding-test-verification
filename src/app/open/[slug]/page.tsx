@@ -129,11 +129,11 @@ export default async function PublicGroupBoardPage({
       )}
 
       <p className="mt-3 text-[12px] text-sub">
-        이번 주 인정된 풀이가 많은 순입니다. 한 주는 월요일에 시작합니다.
+        이번 주 인정 건수가 많은 순입니다. 한 주는 월요일에 시작합니다.
       </p>
 
       <p className="mt-7 text-[13px] text-sub">
-        공개되는 값은 닉네임과 인정된 풀이 건수뿐입니다. 인증 사진·문제 링크·검수
+        공개되는 값은 닉네임과 인정 건수뿐입니다. 인증 사진·문제 링크·검수
         내용은 그룹 멤버만 볼 수 있습니다.{" "}
         <Link href="/" className="underline">
           다른 스터디 둘러보기

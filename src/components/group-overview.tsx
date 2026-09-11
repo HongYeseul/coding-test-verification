@@ -118,7 +118,7 @@ export function GroupOverview({
   proofFilterQuery: string;
 }) {
   const isCurrentWeek = data.weekStart === data.currentWeekStart;
-  // 선택한 주를 유지한 채 풀이 기록 필터로 이동하기 위한 조각입니다.
+  // 선택한 주를 유지한 채 인증 기록 필터로 이동하기 위한 조각입니다.
   const weekParam = isCurrentWeek ? "" : `&week=${data.weekStart}`;
   const members = sortedMembers(data.members);
   const weekLabel = isCurrentWeek ? "이번 주" : "선택한 주";
@@ -281,7 +281,7 @@ export function GroupOverview({
                           <Link
                             href={`/groups/${groupSlug}?proofMember=${member.userId}&proofDate=${date}${weekParam}#proof-records`}
                             title={description}
-                            aria-label={`${description}. 풀이 기록 보기`}
+                            aria-label={`${description}. 인증 기록 보기`}
                             className={`inline-grid h-[32px] w-6 place-items-center rounded-lg font-[650] sm:size-[34px] ${cellTone}`}
                           >
                             <span aria-hidden="true">

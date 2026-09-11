@@ -135,7 +135,7 @@ export function ProofRecordList({
 
       <dialog
         ref={dialogRef}
-        aria-label="풀이 상세 및 검수"
+        aria-label="인증 상세 및 검수"
         onClose={() => setOpenId(null)}
         onClick={(event) => {
           if (event.target === dialogRef.current) setOpenId(null);
@@ -171,7 +171,7 @@ export function ProofRecordList({
                   >
                     <Image
                       src={`/proofs/${record.id}/evidence`}
-                      alt="풀이 인증 사진"
+                      alt="인증 사진"
                       fill
                       sizes="(max-width: 640px) 100vw, 700px"
                       unoptimized

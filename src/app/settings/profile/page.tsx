@@ -70,7 +70,7 @@ export default async function ProfileSettingsPage({
           placeholder="그룹에서 보일 이름"
         />
         <p className="text-[13px] text-sub">
-          {MAX_DISPLAY_NAME_LENGTH}자까지 쓸 수 있습니다. 주간 현황과 풀이
+          {MAX_DISPLAY_NAME_LENGTH}자까지 쓸 수 있습니다. 주간 현황과 인증
           기록에 이 이름이 나옵니다.
         </p>
 
@@ -82,7 +82,7 @@ export default async function ProfileSettingsPage({
           name="bio"
           maxLength={MAX_BIO_LENGTH}
           defaultValue={profile?.bio ?? ""}
-          placeholder="매일 한 문제씩 풀고 있어요"
+          placeholder="매일 조금씩 이어가고 있어요"
         />
         <p className="text-[13px] text-sub">
           비워둘 수 있고 {MAX_BIO_LENGTH}자까지 쓸 수 있습니다.

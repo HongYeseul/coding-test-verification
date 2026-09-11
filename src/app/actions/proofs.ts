@@ -11,14 +11,19 @@ import {
   PROBLEM_URL_ERROR,
 } from "@/lib/proof-input";
 
-export async function createPhotoProofAction(input: {
+export async function createProofRecordAction(input: {
   groupId: string;
   groupSlug: string;
+  /** 사진 없이 등록하는 그룹에서는 빈 문자열입니다. */
   evidencePath: string;
+  /** 사진이 없을 때 재시도가 기록을 하나만 만들도록 브라우저가 붙이는 열쇠입니다. */
+  recordKey: string;
   title: string;
   problemUrl: string;
 }): Promise<{ error?: string; autoApproved?: boolean }> {
-  const { groupId, groupSlug, evidencePath } = input;
+  const { groupId, groupSlug } = input;
+  const evidencePath = input.evidencePath.trim();
+  const recordKey = input.recordKey.trim();
   const title = input.title.trim();
   const problemUrl = input.problemUrl.trim();
   const link = problemUrl ? problemLink(problemUrl) : null;
@@ -26,12 +31,13 @@ export async function createPhotoProofAction(input: {
   if (
     !UUID_PATTERN.test(groupId) ||
     !SLUG_PATTERN.test(groupSlug) ||
-    !isPhotoPath(evidencePath, groupId, user.id) ||
-    title.length > 160
+    title.length > 160 ||
+    (evidencePath
+      ? !isPhotoPath(evidencePath, groupId, user.id)
+      : !UUID_PATTERN.test(recordKey))
   ) {
-    return { error: "사진과 제목을 확인해주세요." };
+    return { error: "인증 내용을 확인해주세요." };
   }
-  if (problemUrl && !link) return { error: PROBLEM_URL_ERROR };
   const [{ data: member }, { data: group }] = await Promise.all([
     supabase
       .from("group_members")
@@ -41,39 +47,46 @@ export async function createPhotoProofAction(input: {
       .maybeSingle(),
     supabase
       .from("groups")
-      .select("auto_approve")
+      .select("auto_approve, requires_photo, is_coding_study")
       .eq("id", groupId)
       .maybeSingle(),
   ]);
-  if (member?.status !== "ACTIVE")
-    return { error: "활성 멤버만 풀이를 등록할 수 있습니다." };
+  if (member?.status !== "ACTIVE" || !group)
+    return { error: "활성 멤버만 인증을 등록할 수 있습니다." };
+  if (!evidencePath && group.requires_photo)
+    return { error: "이 그룹은 사진 인증이 필요합니다." };
+  if (problemUrl && !group.is_coding_study)
+    return { error: "이 그룹은 문제 링크를 사용하지 않습니다." };
+  if (problemUrl && !link) return { error: PROBLEM_URL_ERROR };
   // 자동 인정 그룹은 등록하는 순간 인정으로 시작하고 검수자가 반려할 때만 내려갑니다.
-  const autoApproved = Boolean(group?.auto_approve);
+  const autoApproved = Boolean(group.auto_approve);
   const { error } = await supabase.from("proofs").insert({
     group_id: groupId,
     user_id: user.id,
-    evidence_path: evidencePath,
-    problem_key: evidencePath.split("/")[2],
+    evidence_path: evidencePath || null,
+    problem_key: evidencePath ? evidencePath.split("/")[2] : recordKey,
     problem_title: title || null,
     problem_url: link?.url ?? null,
     verification_status: autoApproved ? "AUTO_APPROVED" : "PENDING",
     accepted_at: new Date().toISOString(),
   });
   if (error) {
-    // 응답 유실 후 같은 사진으로 재시도해도 기록은 한 번만 생성합니다.
+    // 응답 유실 후 같은 내용으로 재시도해도 기록은 한 번만 생성합니다.
+    const duplicate = supabase
+      .from("proofs")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("group_id", groupId)
+      .neq("verification_status", "CANCELING");
     const { data: existing } =
       error.code === "23505"
-        ? await supabase
-            .from("proofs")
-            .select("id")
-            .eq("evidence_path", evidencePath)
-            .eq("user_id", user.id)
-            .eq("group_id", groupId)
-            .neq("verification_status", "CANCELING")
-            .maybeSingle()
+        ? await (evidencePath
+            ? duplicate.eq("evidence_path", evidencePath)
+            : duplicate.is("evidence_path", null).eq("problem_key", recordKey)
+          ).maybeSingle()
         : { data: null };
     if (!existing)
-      return { error: "사진 기록을 저장하지 못했습니다. 다시 시도해주세요." };
+      return { error: "인증 기록을 저장하지 못했습니다. 다시 시도해주세요." };
   }
   revalidatePath(`/groups/${groupSlug}`);
   return { autoApproved };
