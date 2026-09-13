@@ -74,7 +74,7 @@ export async function joinByCodeAction(formData: FormData) {
   }
   const message =
     data?.status === "RATE_LIMITED"
-      ? "코드를 너무 여러 번 틀렸습니다. 15분 뒤에 다시 시도해주세요."
+      ? "입력 횟수를 초과했습니다. 15분 후 다시 시도해주세요."
       : data?.status === "REVOKED"
         ? "가입할 수 없습니다. 그룹 소유자에게 문의해주세요."
         : "유효하지 않거나 만료된 초대코드입니다.";
