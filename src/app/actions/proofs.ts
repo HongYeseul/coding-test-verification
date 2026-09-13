@@ -19,14 +19,16 @@ export async function createProofRecordAction(input: {
   title: string;
   problemUrl: string;
   solutionCode?: string;
+  tags?: string;
 }): Promise<ProofRecordResult> {
-  const { groupSlug, solutionCode = "", ...record } = input;
+  const { groupSlug, solutionCode = "", tags = "", ...record } = input;
   if (!SLUG_PATTERN.test(groupSlug))
     return { error: "인증 내용을 확인해주세요." };
   const { supabase, user } = await requireUser();
   const result = await createProofRecord(supabase, user.id, {
     ...record,
     solutionCode,
+    tags,
   });
   if (result.error) return result;
   revalidatePath(`/groups/${groupSlug}`);

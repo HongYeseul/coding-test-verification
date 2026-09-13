@@ -74,3 +74,33 @@ export function problemLink(value: string | null | undefined): ProblemLink | nul
   const url = `https://${host}${path}`;
   return url.length <= MAX_PROBLEM_URL_LENGTH ? { url, platform } : null;
 }
+
+export const MAX_TAGS = 5;
+export const MAX_TAG_LENGTH = 20;
+export const TAG_ERROR = `태그는 ${MAX_TAGS}개까지, 하나에 ${MAX_TAG_LENGTH}자까지 넣을 수 있습니다.`;
+
+/**
+ * 쉼표로 나눠 적은 주제를 태그 목록으로 만듭니다.
+ * 앞뒤 공백과 연속 공백을 정리하고, 대소문자만 다른 태그는 하나로 봅니다.
+ * DB의 private.valid_proof_tags와 같은 규칙입니다.
+ */
+export function parseTags(value: string | null | undefined): string[] {
+  if (!value) return [];
+  const seen = new Set<string>();
+  const tags: string[] = [];
+  for (const piece of value.split(",")) {
+    // 보이지 않는 문자를 지우고 공백을 한 칸으로 모읍니다.
+    const tag = piece.replace(/[\p{Cc}\p{Cf}]/gu, "").replace(/\s+/gu, " ").trim();
+    if (!tag) continue;
+    const key = tag.toLocaleLowerCase("ko-KR");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    tags.push(tag);
+  }
+  return tags;
+}
+
+/** 화면과 확장이 같은 모양으로 다시 적을 수 있게 합칩니다. */
+export function formatTags(tags: string[] | null | undefined) {
+  return (tags ?? []).join(", ");
+}

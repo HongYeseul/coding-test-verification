@@ -19,8 +19,11 @@
       <label for="group">스터디</label>
       <select id="group"></select>
 
-      <label for="title">한 줄 메모 <span class="hint">선택</span></label>
-      <input id="title" maxlength="160" placeholder="예: 프로그래머스 더 맵게" />
+      <label for="title" id="title-label">문제 제목 <span class="hint">선택</span></label>
+      <input id="title" maxlength="160" placeholder="예: 더 맵게" />
+
+      <label for="tags">주제 태그 <span class="hint">쉼표로 구분 · 선택</span></label>
+      <input id="tags" placeholder="예: 해시, 정렬" />
 
       <p id="link" class="hint" hidden></p>
 

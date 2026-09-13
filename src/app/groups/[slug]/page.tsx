@@ -60,6 +60,7 @@ type ProofRow = {
   accepted_at: string;
   verification_status: string;
   solution_code: string | null;
+  tags: string[] | null;
 };
 
 type ReviewRow = {
@@ -314,7 +315,7 @@ export default async function GroupPage({
     let proofRequest = supabase
       .from("proofs")
       .select(
-        "id, user_id, platform_account_id, problem_key, problem_url, problem_title, accepted_at, verification_status, evidence_path, solution_code",
+        "id, user_id, platform_account_id, problem_key, problem_url, problem_title, accepted_at, verification_status, evidence_path, solution_code, tags",
       )
       .eq("group_id", group.id);
     if (memberFilter) proofRequest = proofRequest.eq("user_id", memberFilter);
@@ -526,6 +527,7 @@ export default async function GroupPage({
             : "메모 인증",
       hasPhoto: Boolean(proof.evidence_path) && active,
       solutionCode: active ? (proof.solution_code ?? null) : null,
+      tags: proof.tags ?? [],
       problemUrl: link?.url ?? null,
       problemPlatform: link?.platform ?? null,
       reviewLabel: review

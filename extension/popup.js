@@ -9,6 +9,8 @@ const view = {
   status: document.getElementById("status"),
   group: document.getElementById("group"),
   title: document.getElementById("title"),
+  titleLabel: document.getElementById("title-label"),
+  tags: document.getElementById("tags"),
   link: document.getElementById("link"),
   submit: document.getElementById("submit"),
 };
@@ -35,9 +37,14 @@ function renderLink() {
   view.link.hidden = !url;
   view.link.textContent = url ? `문제 링크: ${url}` : "";
   const group = selectedGroup();
-  view.title.placeholder = group?.is_coding_study
-    ? "예: 프로그래머스 더 맵게"
-    : "예: 6시 기상";
+  // 화면의 등록 창과 같은 말을 씁니다.
+  view.titleLabel.childNodes[0].nodeValue = group?.is_coding_study
+    ? "문제 제목 "
+    : "한 줄 메모 ";
+  view.title.placeholder = group?.is_coding_study ? "예: 더 맵게" : "예: 6시 기상";
+  view.tags.placeholder = group?.is_coding_study
+    ? "예: 해시, 정렬"
+    : "예: 새벽, 러닝";
 }
 
 async function loadGroups(session) {
@@ -103,6 +110,7 @@ async function submit() {
         evidencePath,
         recordKey: "",
         title: view.title.value,
+        tags: view.tags.value,
         problemUrl: problemUrl(),
       }),
     });

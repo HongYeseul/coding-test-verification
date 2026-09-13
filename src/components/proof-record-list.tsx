@@ -21,6 +21,7 @@ export type ProofRecord = {
   source: string;
   hasPhoto: boolean;
   solutionCode: string | null;
+  tags: string[];
   problemUrl: string | null;
   problemPlatform: string | null;
   reviewLabel: string | null;
@@ -129,6 +130,7 @@ export function ProofRecordList({
             <span className="mt-1 block truncate text-[13px] text-sub">
               {item.memberName}
               {item.isMine ? " · 나" : ""}
+              {item.tags.length > 0 && ` · ${item.tags.join(" · ")}`}
             </span>
           </span>
           <span className="hidden text-[13px] text-sub tabular-nums sm:block">
@@ -230,6 +232,21 @@ export function ProofRecordList({
                     {record.statusLabel}
                   </span>
                 </div>
+                {record.tags.length > 0 && (
+                  <div>
+                    <p className="text-[13px] text-sub">주제</p>
+                    <p className="mt-1 flex flex-wrap gap-1.5">
+                      {record.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-full border border-line bg-soft px-2 py-0.5 text-[13px]"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </p>
+                  </div>
+                )}
                 <div>
                   <p className="text-[13px] text-sub">작성자</p>
                   <p>

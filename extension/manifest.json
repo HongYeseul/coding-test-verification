@@ -32,6 +32,7 @@
         "https://school.programmers.co.kr/learn/courses/30/lessons/*"
       ],
       "js": [
+        "content/confetti.js",
         "content/programmers.js"
       ],
       "css": [

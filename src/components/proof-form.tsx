@@ -13,6 +13,8 @@ import { createProofRecordAction } from "@/app/actions/proofs";
 import { createClient } from "@/lib/supabase/client";
 import {
   MAX_PROBLEM_URL_LENGTH,
+  MAX_TAGS,
+  MAX_TAG_LENGTH,
   PROBLEM_URL_ERROR,
   MAX_SOURCE_PHOTO_BYTES,
   PHOTO_EXTENSIONS,
@@ -192,6 +194,7 @@ export function ProofForm({
         evidencePath: hasFile ? (upload.current?.path ?? "") : "",
         recordKey: recordKey.current,
         title: String(data.get("title") ?? ""),
+        tags: String(data.get("tags") ?? ""),
         problemUrl,
       });
       if (result.error) {
@@ -288,7 +291,7 @@ export function ProofForm({
   const titleField = (
     <div className="grid gap-2">
       <label htmlFor="proof-title" className="text-[15px]">
-        {isCodingStudy ? "문제 이름" : "한 줄 메모"}{" "}
+        {isCodingStudy ? "문제 제목" : "한 줄 메모"}{" "}
         <span className="text-[13px] text-sub">선택 사항</span>
       </label>
       <input
@@ -296,8 +299,27 @@ export function ProofForm({
         name="title"
         maxLength={160}
         disabled={busy}
-        placeholder={isCodingStudy ? "예: 프로그래머스 더 맵게" : "예: 6시 기상"}
+        placeholder={isCodingStudy ? "예: 더 맵게" : "예: 6시 기상"}
       />
+    </div>
+  );
+
+  const tagField = (
+    <div className="grid gap-2">
+      <label htmlFor="proof-tags" className="text-[15px]">
+        주제 태그 <span className="text-[13px] text-sub">선택 사항</span>
+      </label>
+      <input
+        id="proof-tags"
+        name="tags"
+        disabled={busy}
+        placeholder={isCodingStudy ? "예: 해시, 정렬" : "예: 새벽, 러닝"}
+        aria-describedby="tags-help"
+      />
+      <p id="tags-help" className="text-[13px] text-sub">
+        쉼표로 나눠 적습니다. {MAX_TAGS}개까지, 하나에 {MAX_TAG_LENGTH}자까지요.
+        나중에 무엇을 연습해왔는지 훑어볼 때 씁니다.
+      </p>
     </div>
   );
 
@@ -365,6 +387,7 @@ export function ProofForm({
                 {photoField}
               </>
             )}
+            {tagField}
 
             {isCodingStudy && (
               <div className="grid gap-2">

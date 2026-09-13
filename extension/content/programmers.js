@@ -115,5 +115,7 @@
     const code = submittedCode();
     if (!code || code === registeredCode) return;
     showButton(code);
+    // 버튼과 같은 자리에서 터뜨려 둘이 한 동작으로 읽히게 합니다.
+    window.dojangConfetti?.();
   }, POLL_MS);
 })();
