@@ -117,8 +117,17 @@
 
     const stamp = el("button", "dojang-stamp", "도장 찍기");
     stamp.type = "button";
-    const note = el("p", "dojang-note", "스터디에 기록으로 남깁니다.");
+    // 무엇을 하는 카드인지는 이미 보고 있으므로 기본 설명은 두지 않습니다.
+    // 스터디를 골라야 하거나 실패했을 때만 아래 줄이 뜹니다.
+    const note = el("p", "dojang-note");
+    note.hidden = true;
     body.append(stamp, note);
+
+    function tell(text, bad = false) {
+      note.textContent = text;
+      note.hidden = !text;
+      note.classList.toggle("dojang-bad", bad);
+    }
     card.append(head, body);
     (visibleModal() ?? document.body).append(card);
     // 모달이 뜬 직후라 포커스가 아직 오가는 중일 수 있어 한 박자 뒤에 잡습니다.
@@ -134,7 +143,7 @@
       for (const group of groups) picker.append(new Option(group.name, group.id));
       wrap.append(picker);
       body.insertBefore(wrap, tagWrap);
-      note.textContent = "스터디를 고르면 바로 남깁니다.";
+      tell("스터디를 고르면 바로 남깁니다.");
       picker.addEventListener("change", () => {
         if (picker.value) void send(picker.value);
       });
@@ -146,7 +155,7 @@
       stamp.disabled = true;
       // 처음 누르면 GitHub 창이 열리므로 무엇을 기다리는지 알려줍니다.
       stamp.textContent = groupId ? "남기는 중…" : "연결하고 남기는 중…";
-      note.classList.remove("dojang-bad");
+      tell("");
       const result = await chrome.runtime.sendMessage({
         type: "submit-code",
         solutionCode: code,
@@ -159,8 +168,7 @@
       if (result?.error) {
         stamp.disabled = false;
         stamp.textContent = "다시 시도";
-        note.textContent = result.error;
-        note.classList.add("dojang-bad");
+        tell(result.error, true);
         return;
       }
       registeredCode = code;

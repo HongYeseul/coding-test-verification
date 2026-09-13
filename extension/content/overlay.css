@@ -134,6 +134,10 @@
   font-size: 12px;
 }
 
+.dojang-note[hidden] {
+  display: none;
+}
+
 .dojang-note.dojang-bad {
   color: #ab3a31;
 }
