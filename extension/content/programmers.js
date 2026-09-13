@@ -82,6 +82,13 @@
    * 무엇이 올라가는지 먼저 보여주고, 태그를 적어 함께 보낼 수 있게 합니다.
    * 이 카드는 저절로 사라지지 않습니다. 적던 태그가 날아가면 안 되고,
    * 5초를 놓쳤다고 인증을 못 남기게 되면 더 곤란합니다.
+   *
+   * 카드를 모달 안에 넣는 이유가 있습니다. 부트스트랩 모달은 document에
+   * focusin을 걸어 두고 모달 바깥으로 나간 포커스를 도로 끌어옵니다
+   * (enforceFocus). body에 붙이면 태그 입력칸을 눌러도 포커스가 곧바로
+   * 모달로 되돌아가 글자가 한 자도 들어가지 않습니다. jQuery가 캡처 단계에서
+   * 잡기 때문에 stopPropagation으로는 막지 못합니다. 모달 안에 있으면
+   * contains() 검사를 통과해 그냥 놔둡니다.
    */
   function showCard(code) {
     if (document.querySelector(".dojang-card")) return;
@@ -112,7 +119,9 @@
     const note = el("p", "dojang-note", "스터디 기록으로 남깁니다.");
     body.append(stamp, note);
     card.append(head, body);
-    document.body.append(card);
+    (visibleModal() ?? document.body).append(card);
+    // 모달이 뜬 직후라 포커스가 아직 오가는 중일 수 있어 한 박자 뒤에 잡습니다.
+    setTimeout(() => tags.focus(), 0);
 
     /** 스터디가 여럿이면 이 카드 안에서 고릅니다. */
     function askGroup(groups) {
@@ -176,6 +185,9 @@
 
   /** 무엇이 저장됐는지 보여주고 5초 뒤에 사라집니다. 읽는 중에는 멈춥니다. */
   function showResult(card, { title, tags, autoApproved }) {
+    // 결과에는 입력칸이 없으니 모달 밖으로 옮깁니다.
+    // 모달을 닫아도 무엇이 저장됐는지는 남아 있어야 합니다.
+    document.body.append(card);
     card.replaceChildren();
     const head = el("div", "dojang-head");
     const seal = el("span", "dojang-seal", "✓");
