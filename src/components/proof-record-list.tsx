@@ -345,7 +345,7 @@ export function ProofRecordList({
                   </div>
                 ) : record.statusTone === "pending" ? (
                   <p className="text-[13px] text-sub">
-                    다른 검수자의 확인을 기다리고 있어요.
+                    다른 검수자의 확인을 기다리고 있습니다.
                   </p>
                 ) : null}
 

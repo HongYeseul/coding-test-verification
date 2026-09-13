@@ -42,7 +42,7 @@ export default async function ProfileSettingsPage({
       <header className="mb-6">
         <h1>프로필</h1>
         <p className="mt-1 text-[15px] text-sub">
-          여기서 정한 닉네임과 소개가 함께 있는 그룹의 멤버에게 보입니다.
+          여기서 정한 닉네임과 소개는 같은 그룹에 있는 멤버에게 보입니다.
         </p>
       </header>
 
@@ -105,7 +105,7 @@ export default async function ProfileSettingsPage({
         </p>
         <p className="mt-2 text-[13px] text-sub">
           닉네임을 바꿔도 누구인지 확인할 수 있도록 가입 승인과 멤버 관리
-          화면에는 GitHub 아이디가 함께 보입니다. 이 값은 로그인한 GitHub
+          화면에는 GitHub 아이디가 함께 보입니다. 아이디는 로그인한 GitHub
           계정에서 가져오며 직접 바꿀 수 없습니다.
         </p>
       </section>

@@ -21,7 +21,7 @@ const steps = [
   {
     number: "01",
     title: "초대 확인",
-    description: "그룹에서 발급한 초대코드나 초대 링크가 있어야 가입합니다.",
+    description: "그룹에서 받은 초대코드나 초대 링크가 있어야 가입할 수 있습니다.",
   },
   {
     number: "02",
@@ -69,7 +69,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         <div className="grid content-start gap-3 rounded-surface border border-line bg-soft p-5">
           <h2>GitHub로 로그인</h2>
           <p className="text-[13px] text-sub">
-            초대 대상 확인에는 GitHub 계정을 사용합니다.
+            초대받은 사람인지는 GitHub 계정으로 확인합니다.
           </p>
           <div className="mt-2">
             <GithubSignInButton configured={configured} nextPath={next} />
@@ -81,8 +81,8 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           )}
           {!configured && (
             <p className="text-[13px] text-sub">
-              현재는 프로젝트 설정 단계입니다. Supabase 연결 후 로그인이
-              활성화됩니다.
+              현재는 프로젝트 설정 단계입니다. Supabase를 연결하면 로그인을
+              쓸 수 있습니다.
             </p>
           )}
         </div>
@@ -195,7 +195,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           </ul>
         ) : (
           <p className="rounded-surface border border-line px-5 py-10 text-center text-[13px] text-sub">
-            아직 열린 스터디가 없습니다. 로그인하면 새 스터디를 만들 수 있어요.
+            아직 열린 스터디가 없어요. 로그인하면 새 스터디를 만들 수 있어요.
           </p>
         )}
       </section>

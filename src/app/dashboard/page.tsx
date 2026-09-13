@@ -143,7 +143,7 @@ export default async function DashboardPage({
           <h2>초대코드로 가입</h2>
           <p className="text-[13px] text-sub">
             받은 5자리 코드를 넣으면 가입을 신청합니다. 소유자가 승인해야 기록을
-            볼 수 있어요.
+            볼 수 있습니다.
           </p>
           <label htmlFor="invite-code" className="mt-2 text-[15px]">
             초대코드
@@ -170,7 +170,7 @@ export default async function DashboardPage({
         >
           <h2>스터디 그룹 만들기</h2>
           <p className="text-[13px] text-sub">
-            그룹을 만들면 소유자가 되어 초대코드를 발급하고 인증을 검수합니다.
+            그룹을 만들면 소유자가 되어 초대코드를 만들고 인증을 검수합니다.
             코딩 테스트, 기상, 운동 등 무엇을 인증할지는 그룹이 정합니다.
           </p>
           <label htmlFor="name" className="mt-2 text-[15px]">
@@ -200,7 +200,7 @@ export default async function DashboardPage({
               코딩 테스트 스터디예요
               <span className="mt-1 block text-[13px] text-sub">
                 문제 링크 입력과 ‘우리 그룹이 푼 문제’ 목록을 씁니다. 나중에
-                그룹 설정에서 바꿀 수 있어요.
+                그룹 설정에서 바꿀 수 있습니다.
               </span>
             </span>
           </label>

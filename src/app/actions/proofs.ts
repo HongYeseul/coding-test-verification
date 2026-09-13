@@ -221,7 +221,7 @@ export async function reviewProofAction(formData: FormData) {
   });
 
   if (error) {
-    redirect(withStatus(groupPath, "error", "검수를 완료하지 못했습니다."));
+    redirect(withStatus(groupPath, "error", "검수를 마치지 못했습니다."));
   }
 
   revalidatePath(groupPath);
@@ -285,7 +285,7 @@ export async function deleteProofAction(formData: FormData) {
         withStatus(
           groupPath,
           "error",
-          "사진 삭제를 완료하지 못했습니다. 기록의 ‘삭제 다시 시도’를 눌러주세요.",
+          "사진을 지우지 못했습니다. 기록의 ‘삭제 다시 시도’를 눌러주세요.",
         ),
       );
     }

@@ -778,7 +778,7 @@ export default async function GroupPage({
         />
         <p className="mt-4 text-[12px] text-sub">
           최근 등록순으로 최대 50개까지 보여줍니다. 기록을 누르면 사진과 검수
-          내용을 확인할 수 있어요.
+          내용을 확인할 수 있습니다.
         </p>
       </section>
         </div>

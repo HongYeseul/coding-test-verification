@@ -178,7 +178,7 @@ export function ProofForm({
           });
         if (error) {
           setMessage(
-            "사진 업로드에 실패했습니다. 로그인 상태와 네트워크를 확인해주세요.",
+            "사진을 올리지 못했습니다. 로그인 상태와 네트워크를 확인해주세요.",
           );
           return;
         }
@@ -217,7 +217,7 @@ export function ProofForm({
         `인증을 등록했습니다${stored}. ${
           result.autoApproved
             ? "바로 인정됐습니다."
-            : "검수 승인을 기다려주세요."
+            : "검수를 기다려주세요."
         }`,
       );
       router.refresh();
@@ -401,7 +401,7 @@ export function ProofForm({
                 <p id="problem-url-help" className="text-[13px] text-sub">
                   프로그래머스, 백준, LeetCode, Codeforces, AtCoder, HackerRank,
                   Codewars의 https 주소만 받습니다. 넣으면 다른 멤버가 같은
-                  문제를 바로 풀어볼 수 있어요.
+                  문제를 바로 풀어볼 수 있습니다.
                 </p>
               </div>
             )}

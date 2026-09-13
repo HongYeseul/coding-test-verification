@@ -59,7 +59,7 @@ export async function compressPhoto(file: File): Promise<Blob> {
       await image.decode();
     } catch {
       throw new Error(
-        "사진을 읽을 수 없습니다. 정상적인 JPG, PNG, WebP 파일을 선택해주세요.",
+        "사진을 읽을 수 없습니다. JPG, PNG, WebP 파일인지 확인해주세요.",
       );
     }
     const size = photoDimensions(image.naturalWidth, image.naturalHeight);

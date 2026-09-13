@@ -22,7 +22,7 @@ export default async function JoinPage({
       <header className="mb-6">
         <h1>초대코드로 가입하기</h1>
         <p className="mt-1 text-[15px] text-sub">
-          로그인 후 가입을 신청해주세요. 그룹 소유자가 승인하면 그룹 기록을
+          로그인한 뒤 가입을 신청해주세요. 그룹 소유자가 승인하면 그룹 기록을
           공유할 수 있습니다.
         </p>
       </header>
