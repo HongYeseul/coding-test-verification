@@ -46,7 +46,7 @@ function rowColumns(withPhoto: boolean) {
 
 /** 목록을 훑을 때 상태가 먼저 보이도록 행 왼쪽에 색 막대를 둡니다. */
 const toneBar = {
-  approved: "border-l-primary",
+  approved: "border-l-brand",
   pending: "border-l-warn",
   rejected: "border-l-danger",
 } as const;

@@ -119,7 +119,7 @@ async function submit() {
     });
     const result = await response.json().catch(() => null);
     if (!response.ok)
-      throw new Error(result?.error ?? "기록을 남기지 못했습니다.");
+      throw new Error(result?.error ?? "도장을 찍지 못했습니다.");
 
     view.title.value = "";
     say(
@@ -128,7 +128,7 @@ async function submit() {
         : "도장을 찍었습니다. 검수를 기다려주세요.",
     );
   } catch (error) {
-    say(error instanceof Error ? error.message : "등록하지 못했습니다.", true);
+    say(error instanceof Error ? error.message : "도장을 찍지 못했습니다.", true);
   } finally {
     view.submit.disabled = false;
   }

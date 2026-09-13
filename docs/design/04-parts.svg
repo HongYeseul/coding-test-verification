@@ -39,7 +39,7 @@
 <text x="64" y="306" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">터치 기기에서는</text>
 <text x="64" y="323" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">44px로 커집니다.</text>
 <rect x="236" y="234" width="128" height="40" rx="8" fill="#1a4784"/>
-<text x="300.0" y="259" font-size="14" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="550" text-anchor="middle">풀이 인증하기</text>
+<text x="300.0" y="259" font-size="14" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="550" text-anchor="middle">도장 찍기</text>
 <rect x="384" y="234" width="128" height="40" rx="8" fill="#ffffff" stroke="#e3e7ec"/>
 <text x="448.0" y="259" font-size="14" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="550" text-anchor="middle">취소</text>
 <text x="596.0" y="259" font-size="14" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="550" text-anchor="middle">닫기</text>

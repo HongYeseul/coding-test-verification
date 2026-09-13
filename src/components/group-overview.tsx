@@ -341,7 +341,10 @@ export function GroupOverview({
 
       <div className="flex flex-wrap justify-between gap-4 px-3 pt-3 pb-3 text-[12px] text-sub sm:px-5">
         <span className="flex flex-wrap gap-3">
-          <span>✓ 승인</span>
+          {/* 판에 찍히는 것과 같은 도장을 그대로 보여줍니다. */}
+          <span className="flex items-center gap-1">
+            <Seal className="size-4" /> 승인
+          </span>
           <span>◷ 검수 대기</span>
           <span>× 반려</span>
           <span>· 미등록</span>

@@ -86,9 +86,9 @@ const roleLabels: Record<string, string> = {
 
 const proofStatusLabels: Record<string, string> = {
   PENDING: "◷ 검수 대기",
-  AUTO_APPROVED: "✓ 자동 인정",
-  MANUAL_REVIEWED: "✓ 승인",
-  API_VERIFIED: "✓ 자동 확인",
+  AUTO_APPROVED: "자동 인정",
+  MANUAL_REVIEWED: "승인",
+  API_VERIFIED: "자동 확인",
   REJECTED: "× 반려",
   CANCELING: "× 취소 처리 중",
 };

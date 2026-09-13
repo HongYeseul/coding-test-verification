@@ -14,7 +14,7 @@ const LAST_GROUP_KEY = "dojang.lastGroup";
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type !== "submit-code") return false;
   submit(message).then(sendResponse, (error) =>
-    sendResponse({ error: error?.message ?? "등록하지 못했습니다." }),
+    sendResponse({ error: error?.message ?? "도장을 찍지 못했습니다." }),
   );
   // 비동기로 답하므로 채널을 열어둡니다.
   return true;
@@ -94,6 +94,6 @@ async function submit({ solutionCode, problemUrl, title, tags, groupId }) {
     }),
   });
   const result = await response.json().catch(() => null);
-  if (!response.ok) return { error: result?.error ?? "등록하지 못했습니다." };
+  if (!response.ok) return { error: result?.error ?? "도장을 찍지 못했습니다." };
   return { autoApproved: Boolean(result.autoApproved) };
 }

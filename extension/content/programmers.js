@@ -213,7 +213,7 @@
     body.append(row("내용", "풀이 코드"));
     if (tags.length) body.append(row("태그", tags.join(", ")));
     body.append(
-      row("상태", autoApproved ? "바로 인정됨" : "검수 대기"),
+      row("상태", autoApproved ? "자동 인정" : "검수 대기"),
     );
     const timer = el("div", "dojang-timer");
     card.append(head, body, timer);

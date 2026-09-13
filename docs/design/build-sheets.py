@@ -339,7 +339,7 @@ def page_parts():
     p, y = [], 250
     p.append(label(y, "버튼", ["높이 40px,", "모서리 8px.", "터치 기기에서는", "44px로 커집니다."]))
     btns = [
-        ("풀이 인증하기", PRIMARY, "#ffffff", None),
+        ("도장 찍기", PRIMARY, "#ffffff", None),
         ("취소", "#ffffff", INK, LINE),
         ("닫기", None, SUB, None),
     ]
