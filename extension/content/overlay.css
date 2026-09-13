@@ -8,64 +8,150 @@
   pointer-events: none;
 }
 
-.dojang-float {
+.dojang-card {
   position: fixed;
   top: 16px;
   right: 16px;
   z-index: 2147483000;
+  width: 288px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.24);
+  color: #202923;
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Noto Sans KR", sans-serif;
+  text-align: left;
+}
+
+.dojang-head {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
-  border: 0;
-  border-radius: 10px;
+  padding: 12px 14px;
   background: #315d2b;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22);
   color: #ffffff;
-  font: 550 14px/1.4 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
-    "Noto Sans KR", sans-serif;
-  cursor: pointer;
+  font-weight: 600;
 }
 
-.dojang-float:disabled {
-  cursor: default;
-  opacity: 0.6;
-}
-
-/* 팝업의 로고와 같은 도장 자국입니다. */
-.dojang-float .dojang-seal {
+/* 로고와 같은 도장 자국입니다. */
+.dojang-seal {
   display: grid;
   place-items: center;
-  width: 20px;
-  height: 20px;
+  flex: none;
+  width: 22px;
+  height: 22px;
   border-radius: 9999px;
   outline: 1px solid rgba(255, 255, 255, 0.45);
   outline-offset: -3px;
-  font-size: 11px;
+  font-size: 12px;
   transform: rotate(-6deg);
 }
 
-/* 스터디가 여럿일 때 버튼 안에서 고르는 목록입니다. */
-.dojang-float .dojang-pick {
-  max-width: 160px;
-  padding: 4px 6px;
+.dojang-close {
+  margin-left: auto;
+  padding: 0 2px;
   border: 0;
-  border-radius: 6px;
+  background: none;
+  color: rgba(255, 255, 255, 0.75);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dojang-body {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+}
+
+/* 무엇이 올라가는지 한눈에 보이도록 줄마다 이름과 값을 나눕니다. */
+.dojang-row {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.dojang-row > span:first-child {
+  flex: none;
+  width: 52px;
+  color: #737c75;
+}
+
+.dojang-row > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dojang-card input,
+.dojang-card select {
+  width: 100%;
+  padding: 7px 9px;
+  border: 1px solid #e7ebe6;
+  border-radius: 7px;
   background: #ffffff;
   color: #202923;
   font: inherit;
   font-size: 13px;
+}
+
+.dojang-card label {
+  display: block;
+  margin-bottom: 4px;
+  color: #737c75;
+  font-size: 12px;
+}
+
+.dojang-stamp {
+  width: 100%;
+  min-height: 38px;
+  border: 0;
+  border-radius: 8px;
+  background: #315d2b;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 600;
   cursor: pointer;
 }
 
-.dojang-float.dojang-done {
-  background: #ffffff;
-  color: #202923;
+.dojang-stamp:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.dojang-note {
+  margin: 0;
+  color: #737c75;
+  font-size: 12px;
+}
+
+.dojang-note.dojang-bad {
+  color: #a94c46;
+}
+
+/* 사라질 때까지 남은 시간을 바닥에서 줄어드는 막대로 보여줍니다. */
+.dojang-timer {
+  height: 3px;
+  background: #b6db9c;
+  transform-origin: left;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .dojang-float {
+  .dojang-card {
     animation: dojang-in 260ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+  }
+
+  .dojang-timer {
+    animation: dojang-drain 5s linear forwards;
+  }
+
+  /* 읽거나 만지는 중에는 사라지지 않습니다. */
+  .dojang-card:hover .dojang-timer,
+  .dojang-card:focus-within .dojang-timer {
+    animation-play-state: paused;
   }
 }
 
@@ -77,5 +163,14 @@
   to {
     transform: none;
     opacity: 1;
+  }
+}
+
+@keyframes dojang-drain {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
   }
 }

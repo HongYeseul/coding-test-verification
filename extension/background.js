@@ -57,7 +57,7 @@ async function resolveGroup(session, requestedGroupId) {
   return { chooseGroup: groups };
 }
 
-async function submit({ solutionCode, problemUrl, title, groupId }) {
+async function submit({ solutionCode, problemUrl, title, tags, groupId }) {
   // 연결돼 있지 않으면 이 자리에서 바로 GitHub 창을 엽니다.
   let session = await getSession();
   if (!session) {
@@ -90,7 +90,7 @@ async function submit({ solutionCode, problemUrl, title, groupId }) {
       title: title ?? "",
       problemUrl: problemUrl ?? "",
       solutionCode,
-      tags: "",
+      tags: tags ?? "",
     }),
   });
   const result = await response.json().catch(() => null);

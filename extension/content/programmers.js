@@ -60,88 +60,162 @@
     return `https://${host}${window.location.pathname.replace(/\/+$/, "")}`;
   }
 
-  function removeButton() {
-    document.querySelector(".dojang-float")?.remove();
+  function removeCard() {
+    document.querySelector(".dojang-card")?.remove();
   }
 
-  function showButton(code) {
-    if (document.querySelector(".dojang-float")) return;
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "dojang-float";
-    // innerHTML 대신 DOM으로 만듭니다. 페이지 CSP와 스토어 심사 모두에서 안전합니다.
-    const seal = document.createElement("span");
-    seal.className = "dojang-seal";
-    seal.setAttribute("aria-hidden", "true");
-    seal.textContent = "✓";
-    const label = document.createElement("span");
-    label.className = "dojang-label";
-    label.textContent = "도장 찍기";
-    button.append(seal, label);
+  function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text != null) node.textContent = text;
+    return node;
+  }
 
-    /** 스터디가 여럿이면 버튼 옆에서 고르게 합니다. 팝업을 찾아갈 필요가 없습니다. */
+  function row(name, value) {
+    const line = el("div", "dojang-row");
+    line.append(el("span", null, name), el("span", null, value));
+    return line;
+  }
+
+  /**
+   * 정답을 맞히면 우측 상단에 카드를 띄웁니다.
+   * 무엇이 올라가는지 먼저 보여주고, 태그를 적어 함께 보낼 수 있게 합니다.
+   * 이 카드는 저절로 사라지지 않습니다. 적던 태그가 날아가면 안 되고,
+   * 5초를 놓쳤다고 인증을 못 남기게 되면 더 곤란합니다.
+   */
+  function showCard(code) {
+    if (document.querySelector(".dojang-card")) return;
+    const card = el("div", "dojang-card");
+    const head = el("div", "dojang-head");
+    const seal = el("span", "dojang-seal", "✓");
+    seal.setAttribute("aria-hidden", "true");
+    const close = el("button", "dojang-close", "×");
+    close.type = "button";
+    close.setAttribute("aria-label", "닫기");
+    close.addEventListener("click", removeCard);
+    head.append(seal, el("span", null, "정답입니다"), close);
+
+    const body = el("div", "dojang-body");
+    const title = problemTitle();
+    body.append(row("문제", title || "제목 없음"));
+    body.append(row("코드", `${code.split("\n").length}줄 · ${code.length}자`));
+
+    const tagWrap = el("div");
+    tagWrap.append(el("label", null, "주제 태그 (쉼표로 구분, 선택)"));
+    const tags = el("input");
+    tags.placeholder = "예: 해시, 정렬";
+    tagWrap.append(tags);
+    body.append(tagWrap);
+
+    const stamp = el("button", "dojang-stamp", "도장 찍기");
+    stamp.type = "button";
+    const note = el("p", "dojang-note", "스터디 기록으로 남깁니다.");
+    body.append(stamp, note);
+    card.append(head, body);
+    document.body.append(card);
+
+    /** 스터디가 여럿이면 이 카드 안에서 고릅니다. */
     function askGroup(groups) {
-      if (button.querySelector(".dojang-pick")) return;
-      const picker = document.createElement("select");
-      picker.className = "dojang-pick";
-      picker.append(new Option("스터디 고르기", ""));
+      if (body.querySelector(".dojang-pick")) return;
+      const wrap = el("div");
+      wrap.append(el("label", null, "어느 스터디에 남길까요"));
+      const picker = el("select", "dojang-pick");
+      picker.append(new Option("고르기", ""));
       for (const group of groups) picker.append(new Option(group.name, group.id));
-      // 버튼 안에 있으므로 선택을 누르는 것이 등록으로 번지지 않게 막습니다.
-      picker.addEventListener("click", (event) => event.stopPropagation());
-      picker.addEventListener("change", (event) => {
-        event.stopPropagation();
+      wrap.append(picker);
+      body.insertBefore(wrap, tagWrap);
+      note.textContent = "스터디를 고르면 바로 남깁니다.";
+      picker.addEventListener("change", () => {
         if (picker.value) void send(picker.value);
       });
-      label.textContent = "어느 스터디에";
-      button.append(picker);
-      button.disabled = false;
+      stamp.disabled = false;
+      stamp.textContent = "도장 찍기";
     }
 
     async function send(groupId) {
-      button.disabled = true;
-      button.querySelector(".dojang-pick")?.remove();
+      stamp.disabled = true;
       // 처음 누르면 GitHub 창이 열리므로 무엇을 기다리는지 알려줍니다.
-      label.textContent = groupId ? "남기는 중…" : "연결하고 남기는 중…";
+      stamp.textContent = groupId ? "남기는 중…" : "연결하고 남기는 중…";
+      note.classList.remove("dojang-bad");
       const result = await chrome.runtime.sendMessage({
         type: "submit-code",
         solutionCode: code,
         problemUrl: problemUrl(),
-        title: problemTitle(),
+        title,
+        tags: tags.value,
         groupId,
       });
       if (result?.chooseGroup) return askGroup(result.chooseGroup);
       if (result?.error) {
-        button.disabled = false;
-        label.textContent = result.error;
+        stamp.disabled = false;
+        stamp.textContent = "다시 시도";
+        note.textContent = result.error;
+        note.classList.add("dojang-bad");
         return;
       }
-      // 같은 코드로 다시 뜨지 않게 기억합니다.
       registeredCode = code;
-      button.classList.add("dojang-done");
-      label.textContent = result?.autoApproved
-        ? "도장을 찍었습니다"
-        : "검수 대기로 남겼습니다";
-      setTimeout(removeButton, 4000);
+      showResult(card, {
+        title,
+        tags: parseTags(tags.value),
+        autoApproved: Boolean(result?.autoApproved),
+      });
     }
 
-    button.addEventListener("click", () => {
-      if (button.disabled) return;
-      void send();
+    stamp.addEventListener("click", () => {
+      if (!stamp.disabled) void send();
     });
+  }
 
-    document.body.append(button);
+  /** 쉼표로 나눈 태그를 화면에 되비추기 위한 것입니다. 서버가 다시 정리합니다. */
+  function parseTags(value) {
+    return value
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+  }
+
+  /** 무엇이 저장됐는지 보여주고 5초 뒤에 사라집니다. 읽는 중에는 멈춥니다. */
+  function showResult(card, { title, tags, autoApproved }) {
+    card.replaceChildren();
+    const head = el("div", "dojang-head");
+    const seal = el("span", "dojang-seal", "✓");
+    seal.setAttribute("aria-hidden", "true");
+    const close = el("button", "dojang-close", "×");
+    close.type = "button";
+    close.setAttribute("aria-label", "닫기");
+    close.addEventListener("click", removeCard);
+    head.append(seal, el("span", null, "도장을 찍었습니다"), close);
+
+    const body = el("div", "dojang-body");
+    body.append(row("문제", title || "제목 없음"));
+    body.append(row("내용", "풀이 코드"));
+    if (tags.length) body.append(row("태그", tags.join(", ")));
+    body.append(
+      row("상태", autoApproved ? "바로 인정됨" : "검수 대기"),
+    );
+    const timer = el("div", "dojang-timer");
+    card.append(head, body, timer);
+
+    // 움직임을 줄이기로 한 사용자에게는 막대가 움직이지 않으므로 시간으로 지웁니다.
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      timer.remove();
+      setTimeout(removeCard, 5000);
+      return;
+    }
+    timer.addEventListener("animationend", removeCard);
   }
 
   setInterval(() => {
     const modal = visibleModal();
     if (!modal || !passed(modal)) {
-      // 모달이 닫히면 버튼도 함께 치웁니다.
-      if (!document.querySelector(".dojang-float.dojang-done")) removeButton();
+      // 모달이 닫히면 카드도 함께 치웁니다. 결과를 보여주는 중이면 그대로 둡니다.
+      if (!document.querySelector(".dojang-timer")) removeCard();
       return;
     }
     const code = submittedCode();
     if (!code || code === registeredCode) return;
-    showButton(code);
+    showCard(code);
     // 버튼과 같은 자리에서 터뜨려 둘이 한 동작으로 읽히게 합니다.
     window.dojangConfetti?.();
   }, POLL_MS);
