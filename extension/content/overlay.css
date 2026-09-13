@@ -1,3 +1,11 @@
+/* 카드 안쪽만 테두리 기준으로 계산합니다. 이게 없으면 width:100%인 입력칸이
+   padding과 border만큼 카드 밖으로 삐져나옵니다. 프로그래머스에서는 부트스트랩이
+   깔아둔 리셋에 얹혀 가려져 있었습니다 — 남의 페이지 스타일에 기대면 안 됩니다. */
+.dojang-card,
+.dojang-card * {
+  box-sizing: border-box;
+}
+
 /* 축하 조각을 덮는 캔버스입니다. 클릭은 그대로 통과시킵니다. */
 .dojang-confetti {
   position: fixed;

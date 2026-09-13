@@ -13,6 +13,12 @@
   --r-control: 8px;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   width: 300px;
   margin: 0;

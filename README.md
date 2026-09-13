@@ -27,13 +27,77 @@
 
 사진의 문제명·풀이 날짜를 자동 추출하지 않으며 등록 시각을 기록합니다. 사진 확인은 그룹의 `OWNER`와 `REVIEWER`가 합니다.
 
-## 자동 인정
+## 디자인 시스템
 
-소유자는 스터디 이름 옆 설정 아이콘을 눌러 여는 모달에서 ‘자동 인정’을 켤 수 있습니다. 자주 여는 화면이 아니라 본문에 상시로 두지 않습니다. 아이콘은 조절기 모양이며, 상단바의 테마 아이콘과 겹치지 않도록 톱니바퀴 대신 골랐습니다. 켜면 새 기록이 등록하는 순간 인정으로 시작하고, 소유자·검수자가 반려할 때만 미인정으로 내려갑니다. 기본값은 꺼짐이라 지금까지처럼 검수 대기로 들어옵니다. 설정을 바꿔도 이미 등록된 기록의 상태는 그대로입니다.
+| | |
+|---|---|
+| [![도장](docs/design/01-seal.svg)](docs/design/01-seal.svg) | [![색](docs/design/02-colour.svg)](docs/design/02-colour.svg) |
+| [![타이포](docs/design/03-type.svg)](docs/design/03-type.svg) | [![구성 요소](docs/design/04-parts.svg)](docs/design/04-parts.svg) |
 
-자동 인정된 기록은 목록에 `✓ 자동 인정`으로 보이고 현황판의 승인 집계에 함께 들어갑니다. 검수 대기 집계에는 들어가지 않습니다. 즉시 인정이라 잘못 올린 사진을 본인이 지울 수 있도록, 자동 인정된 본인 기록은 취소할 수 있습니다. 반려된 기록은 지금처럼 본인도 취소할 수 없습니다.
+브랜드는 파랑입니다. 예전에는 초록 하나가 브랜드 정체성이면서 동시에 ‘승인·성공’이라는 의미색이었습니다. 도장판이 초록으로 차오를 때 그게 우리 색이라서인지 다들 잘해서인지 구분되지 않았습니다. 브랜드를 파랑으로 옮기면서 두 축을 갈랐고, 승인은 색이 아니라 도장이 찍혔다는 사실이 지게 했습니다. 별도의 ‘성공 초록’이 사라져 색이 하나 줄었습니다.
 
-반려는 계속 소유자와 검수자만 할 수 있고 이유를 적어야 합니다. 설정이 꺼진 그룹에서는 브라우저에서 직접 요청해도 인정 상태로 등록되지 않도록 `proofs_insert_self` 정책이 `private.group_auto_approves()`로 막습니다.
+값과 규칙은 [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md)에 있습니다. 색 토큰, 도장,
+상태 표현, 타이포, 모서리, 확장 프로그램의 제약을 다룹니다.
+
+## 크롬 확장 프로그램
+
+`extension/`에 있습니다. 앱을 열고 그룹을 찾아 모달을 띄우는 과정을 줄입니다.
+
+- **아이콘 클릭**: 보고 있는 탭 화면을 캡처해 등록합니다. 페이지 내용을 읽지 않고 `activeTab`만 쓰므로 코딩 사이트 권한이 필요 없습니다.
+- **프로그래머스에서 정답이 되면**: 오른쪽 위에 카드가 떠, 주제 태그를 적고 누르면 제출한 코드가 그대로 기록됩니다. 채점 결과 모달의 제목과 사용자가 제출한 코드만 읽고 문제 설명은 읽지 않습니다.
+
+![정답 순간에 뜨는 카드](extension/screenshots/card-input.png)
+
+신원은 웹과 같은 GitHub OAuth를 `chrome.identity`로 태워 확보합니다. 별도 키 체계나 테이블이 없고 서버는 지금처럼 토큰을 확인합니다. 등록은 `POST /api/proofs`로 받으며, 화면이 쓰는 서버 액션과 같은 규칙(`src/lib/proof-record.ts`)을 공유합니다.
+
+[릴리스 페이지](https://github.com/HongYeseul/coding-test-verification/releases/latest)에서 zip을 받아 압축을 풀고, 크롬의 ‘압축해제된 확장 프로그램을 로드합니다’로 그 폴더를 고르면 끝입니다. 기본값이 운영 환경이라 주소나 키를 입력할 필요가 없습니다.
+
+`manifest.json`의 `key`로 확장 아이디를 `pkpabpnpecgcpakaehojnphgeajoieih`에 고정했습니다. 누가 설치하든 같은 아이디라 로그인 복귀 주소 `https://pkpabpnpecgcpakaehojnphgeajoieih.chromiumapp.org/*`를 Supabase에 한 번만 등록하면 됩니다.
+
+로컬 개발용 사본은 `bash extension/install.sh`가 만들어 줍니다. 자세한 절차와 깨질 수 있는 부분은 [`extension/README.md`](extension/README.md)에 있습니다.
+
+## 구성
+
+- Next.js App Router, TypeScript, Tailwind CSS
+- Supabase Auth, PostgreSQL, Storage
+- Vercel
+- Node.js 24, pnpm 11
+
+별도 서버를 운영하지 않습니다. GitHub의 `main` 브랜치를 Vercel Production에 연결하고, 다른 브랜치와 Pull Request는 Preview 배포로 확인합니다.
+
+## 로컬 실행
+
+```bash
+nvm install
+nvm use
+corepack enable
+pnpm install
+cp .env.example .env.local
+pnpm dev
+```
+
+`http://localhost:3000`에서 확인합니다. Supabase 환경변수가 비어 있으면 화면은 열리지만 GitHub 로그인 버튼은 비활성화됩니다.
+
+## 환경변수
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
+프로젝트 URL과 Publishable Key는 Supabase의 Connect 화면에서 확인합니다. 관리자 키는 현재 필요하지 않으며 브라우저 환경변수로 추가하면 안 됩니다.
+
+## 명령어
+
+```bash
+pnpm dev
+pnpm lint
+pnpm typecheck
+pnpm build
+pnpm check
+pnpm test
+```
 
 ## 인증 종류
 
@@ -53,6 +117,14 @@
 사진 필수를 끈 그룹의 기록에는 사진 경로가 없어 `proofs_evidence_path_unique`가 재시도 중복을 막아주지 못합니다. 대신 브라우저가 만든 열쇠를 `problem_key`에 넣고 `(group_id, user_id, problem_key)`에 부분 유일 인덱스를 걸어 같은 자리를 맡깁니다. 이 열쇠는 화면에 보여주지 않습니다.
 
 설정을 바꿔도 이미 등록된 기록은 그대로입니다. 사진 필수 확인은 등록할 때만 하므로, 사진 없이 등록한 뒤 사진 필수를 다시 켜도 그 기록의 검수는 막히지 않습니다. 코딩 테스트를 꺼도 남긴 링크는 지워지지 않고 다시 켜면 목록에 돌아옵니다.
+
+## 자동 인정
+
+소유자는 스터디 이름 옆 설정 아이콘을 눌러 여는 모달에서 ‘자동 인정’을 켤 수 있습니다. 자주 여는 화면이 아니라 본문에 상시로 두지 않습니다. 아이콘은 조절기 모양이며, 상단바의 테마 아이콘과 겹치지 않도록 톱니바퀴 대신 골랐습니다. 켜면 새 기록이 등록하는 순간 인정으로 시작하고, 소유자·검수자가 반려할 때만 미인정으로 내려갑니다. 기본값은 꺼짐이라 지금까지처럼 검수 대기로 들어옵니다. 설정을 바꿔도 이미 등록된 기록의 상태는 그대로입니다.
+
+자동 인정된 기록은 목록에 `✓ 자동 인정`으로 보이고 현황판의 승인 집계에 함께 들어갑니다. 검수 대기 집계에는 들어가지 않습니다. 즉시 인정이라 잘못 올린 사진을 본인이 지울 수 있도록, 자동 인정된 본인 기록은 취소할 수 있습니다. 반려된 기록은 지금처럼 본인도 취소할 수 없습니다.
+
+반려는 계속 소유자와 검수자만 할 수 있고 이유를 적어야 합니다. 설정이 꺼진 그룹에서는 브라우저에서 직접 요청해도 인정 상태로 등록되지 않도록 `proofs_insert_self` 정책이 `private.group_auto_approves()`로 막습니다.
 
 ## 화면 구성
 
@@ -124,67 +196,6 @@ GitHub 아이디는 로그인 계정의 `auth.identities`에서만 채우며 사
 
 현황판 상단의 화살표로 다른 주를 볼 수 있습니다. 선택한 주는 주소의 `week` 값으로 유지하므로 링크를 그대로 공유하거나 뒤로 가기로 돌아갈 수 있습니다. 그룹이 만들어진 주보다 이전과 아직 오지 않은 주는 열지 않으며, 어떤 날짜를 넣어도 그 주 월요일로 맞춥니다. 이 판단은 모두 `get_group_overview`에서 처리합니다. 주간 승인과 인증 매트릭스는 선택한 주를 따르고 오늘 참여·누적 승인·검수 대기는 시점과 무관하게 현재 값을 보여줍니다.
 
-## 크롬 확장 프로그램
-
-`extension/`에 있습니다. 앱을 열고 그룹을 찾아 모달을 띄우는 과정을 줄입니다.
-
-- **아이콘 클릭**: 보고 있는 탭 화면을 캡처해 등록합니다. 페이지 내용을 읽지 않고 `activeTab`만 쓰므로 코딩 사이트 권한이 필요 없습니다.
-- **프로그래머스에서 정답이 되면**: 오른쪽 위에 카드가 떠, 주제 태그를 적고 누르면 제출한 코드가 그대로 기록됩니다. 채점 결과 모달의 제목과 사용자가 제출한 코드만 읽고 문제 설명은 읽지 않습니다.
-
-![정답 순간에 뜨는 카드](extension/screenshots/card-input.png)
-
-신원은 웹과 같은 GitHub OAuth를 `chrome.identity`로 태워 확보합니다. 별도 키 체계나 테이블이 없고 서버는 지금처럼 토큰을 확인합니다. 등록은 `POST /api/proofs`로 받으며, 화면이 쓰는 서버 액션과 같은 규칙(`src/lib/proof-record.ts`)을 공유합니다.
-
-[릴리스 페이지](https://github.com/HongYeseul/coding-test-verification/releases/latest)에서 zip을 받아 압축을 풀고, 크롬의 ‘압축해제된 확장 프로그램을 로드합니다’로 그 폴더를 고르면 끝입니다. 기본값이 운영 환경이라 주소나 키를 입력할 필요가 없습니다.
-
-`manifest.json`의 `key`로 확장 아이디를 `pkpabpnpecgcpakaehojnphgeajoieih`에 고정했습니다. 누가 설치하든 같은 아이디라 로그인 복귀 주소 `https://pkpabpnpecgcpakaehojnphgeajoieih.chromiumapp.org/*`를 Supabase에 한 번만 등록하면 됩니다.
-
-로컬 개발용 사본은 `bash extension/install.sh`가 만들어 줍니다. 자세한 절차와 깨질 수 있는 부분은 [`extension/README.md`](extension/README.md)에 있습니다.
-
-## 구성
-
-- Next.js App Router, TypeScript, Tailwind CSS
-- Supabase Auth, PostgreSQL, Storage
-- Vercel
-- Node.js 24, pnpm 11
-
-별도 서버를 운영하지 않습니다. GitHub의 `main` 브랜치를 Vercel Production에 연결하고, 다른 브랜치와 Pull Request는 Preview 배포로 확인합니다.
-
-## 디자인 시스템
-
-| | |
-|---|---|
-| [![도장](docs/design/01-seal.svg)](docs/design/01-seal.svg) | [![색](docs/design/02-colour.svg)](docs/design/02-colour.svg) |
-| [![타이포](docs/design/03-type.svg)](docs/design/03-type.svg) | [![구성 요소](docs/design/04-parts.svg)](docs/design/04-parts.svg) |
-
-브랜드는 파랑입니다. 예전에는 초록 하나가 브랜드 정체성이면서 동시에 ‘승인·성공’이라는 의미색이었습니다. 도장판이 초록으로 차오를 때 그게 우리 색이라서인지 다들 잘해서인지 구분되지 않았습니다. 브랜드를 파랑으로 옮기면서 두 축을 갈랐고, 승인은 색이 아니라 도장이 찍혔다는 사실이 지게 했습니다. 별도의 ‘성공 초록’이 사라져 색이 하나 줄었습니다.
-
-값과 규칙은 [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md)에 있습니다. 색 토큰, 도장,
-상태 표현, 타이포, 모서리, 확장 프로그램의 제약을 다룹니다.
-
-## 로컬 실행
-
-```bash
-nvm install
-nvm use
-corepack enable
-pnpm install
-cp .env.example .env.local
-pnpm dev
-```
-
-`http://localhost:3000`에서 확인합니다. Supabase 환경변수가 비어 있으면 화면은 열리지만 GitHub 로그인 버튼은 비활성화됩니다.
-
-## 환경변수
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-```
-
-프로젝트 URL과 Publishable Key는 Supabase의 Connect 화면에서 확인합니다. 관리자 키는 현재 필요하지 않으며 브라우저 환경변수로 추가하면 안 됩니다.
-
 ## Supabase 설정
 
 1. Supabase 프로젝트를 생성합니다.
@@ -242,17 +253,6 @@ DB 권한 회귀 테스트는 SQL Editor에서 `supabase/tests/invite_codes_and_
 문제 링크의 DB 제약은 `supabase/tests/problem_links.sql`로 검증합니다. 그룹 문제 제목의 역할별 저장·삭제 권한과 링크 형식은 `supabase/tests/group_problem_titles.sql`로 검증합니다. 사진 필수 차단·사진 없는 등록·재시도 멱등성은 `supabase/tests/group_proof_settings.sql`로, 코드가 사진을 대신하는 규칙과 길이 제한은 `supabase/tests/solution_code.sql`로, 자동 인정 등록·반려 권한과 본인 취소는 `supabase/tests/auto_approve_proofs.sql`로, 비공개 그룹 차단과 공개 범위는 `supabase/tests/public_group_board.sql`로, 새벽 3시 경계는 `supabase/tests/study_day.sql`로 검증합니다.
 
 실제 브라우저 압축 검증은 `node tests/photo-compression-server.mjs` 실행 후 `http://127.0.0.1:3913`에서 진행합니다. 생성한 이미지로 압축 크기·해상도·손상 파일 처리를 확인하며 운영 DB와 Storage는 사용하지 않습니다.
-
-## 명령어
-
-```bash
-pnpm dev
-pnpm lint
-pnpm typecheck
-pnpm build
-pnpm check
-pnpm test
-```
 
 ## 디렉터리
 
