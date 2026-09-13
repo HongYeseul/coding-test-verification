@@ -167,6 +167,35 @@ export async function createProofAction(formData: FormData) {
   );
 }
 
+/**
+ * 응원을 남기거나 거둡니다. 하트 하나라 성공 메시지는 띄우지 않고 화면만 다시 그립니다.
+ * 본인 기록·취소 중인 기록·남의 그룹은 RLS가 막고, 여기서는 입력 모양만 확인합니다.
+ */
+export async function toggleCheerAction(formData: FormData) {
+  const proofId = getRequiredText(formData, "proofId");
+  const groupSlug = getRequiredText(formData, "groupSlug");
+  const cheered = getRequiredText(formData, "cheered") === "true";
+  if (!UUID_PATTERN.test(proofId) || !SLUG_PATTERN.test(groupSlug)) return;
+
+  const { supabase, user } = await requireUser();
+  if (cheered) {
+    await supabase
+      .from("proof_cheers")
+      .delete()
+      .eq("proof_id", proofId)
+      .eq("user_id", user.id);
+  } else {
+    // 이미 있으면 그대로 둡니다. 두 번 눌러도 응원은 하나입니다.
+    await supabase
+      .from("proof_cheers")
+      .upsert(
+        { proof_id: proofId, user_id: user.id },
+        { onConflict: "proof_id,user_id", ignoreDuplicates: true },
+      );
+  }
+  revalidatePath(`/groups/${groupSlug}`);
+}
+
 export async function reviewProofAction(formData: FormData) {
   const proofId = getRequiredText(formData, "proofId");
   const groupSlug = getRequiredText(formData, "groupSlug");

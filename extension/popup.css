@@ -1,12 +1,13 @@
 /* 웹앱과 같은 색·간격 규칙을 씁니다. */
 :root {
   color-scheme: light dark;
-  --canvas: light-dark(#ffffff, #14181d);
-  --ink: light-dark(#1b2027, #e9edf2);
-  --sub: light-dark(#69737e, #98a3af);
-  --line: light-dark(#e3e7ec, #2f353d);
+  --canvas: light-dark(#f5f3ee, #15171a);
+  --surface: light-dark(#fdfcfa, #1c1f24);
+  --ink: light-dark(#1a1d22, #ebe9e3);
+  --sub: light-dark(#6d6a63, #9a978f);
+  --line: light-dark(#e3dfd5, #2f3238);
   --brand: light-dark(#1d5091, #8fc0f2);
-  --brand-soft: light-dark(#e9f0fa, #1b2e47);
+  --brand-soft: light-dark(#e6edf7, #1b2e47);
   --primary: light-dark(#1a4784, #9ac6f5);
   --primary-ink: light-dark(#ffffff, #0f2038);
   /* 웹앱과 같은 모서리 규칙입니다. */
@@ -59,7 +60,7 @@ input {
   padding: 8px 10px;
   border: 1px solid var(--line);
   border-radius: var(--r-control);
-  background: var(--canvas);
+  background: var(--surface);
   color: var(--ink);
   font: inherit;
 }
@@ -69,7 +70,7 @@ button {
   min-height: 40px;
   border: 1px solid var(--line);
   border-radius: var(--r-control);
-  background: var(--canvas);
+  background: var(--surface);
   color: var(--ink);
   font: inherit;
   font-weight: 550;

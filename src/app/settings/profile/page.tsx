@@ -55,7 +55,7 @@ export default async function ProfileSettingsPage({
 
       <form
         action={updateProfileAction}
-        className="grid gap-2 rounded-surface border border-line p-5 sm:max-w-[520px]"
+        className="grid gap-2 rounded-surface border border-line bg-surface p-5 sm:max-w-[520px]"
       >
         <label htmlFor="displayName" className="text-[15px]">
           닉네임

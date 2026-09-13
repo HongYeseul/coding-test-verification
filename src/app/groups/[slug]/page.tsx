@@ -14,6 +14,7 @@ import { StatusMessage } from "@/components/status-message";
 import { requireUser } from "@/lib/auth";
 import { firstQueryValue } from "@/lib/form";
 import { GroupOverview } from "@/components/group-overview";
+import { TodayStrip } from "@/components/today-strip";
 import { GroupProblems } from "@/components/group-problems";
 import { GroupSettingsDialog } from "@/components/group-settings-dialog";
 import { ProofFilterForm } from "@/components/proof-filter-form";
@@ -69,6 +70,11 @@ type ReviewRow = {
   note: string | null;
 };
 
+type CheerRow = {
+  proof_id: string;
+  user_id: string;
+};
+
 const platformLabels: Record<string, string> = {
   CODEFORCES: "Codeforces",
   PROGRAMMERS: "프로그래머스",
@@ -85,12 +91,12 @@ const roleLabels: Record<string, string> = {
 };
 
 const proofStatusLabels: Record<string, string> = {
-  PENDING: "◷ 검수 대기",
+  PENDING: "검수 대기",
   AUTO_APPROVED: "자동 인정",
   MANUAL_REVIEWED: "승인",
   API_VERIFIED: "자동 확인",
-  REJECTED: "× 반려",
-  CANCELING: "× 취소 처리 중",
+  REJECTED: "반려",
+  CANCELING: "취소 처리 중",
 };
 
 const proofStatusTones: Record<string, ProofRecord["statusTone"]> = {
@@ -379,6 +385,7 @@ export default async function GroupPage({
     { data: accountData },
     { data: problemData },
     { data: groupTitleData },
+    { data: cheerData },
   ] = await Promise.all([
       proofIds.length
         ? supabase
@@ -416,11 +423,26 @@ export default async function GroupPage({
             .select("url, title")
             .eq("group_id", group.id)
         : Promise.resolve({ data: [] }),
+      // 응원은 남긴 순서대로 이름을 보여줍니다.
+      proofIds.length
+        ? supabase
+            .from("proof_cheers")
+            .select("proof_id, user_id")
+            .in("proof_id", proofIds)
+            .order("created_at")
+        : Promise.resolve({ data: [] }),
     ]);
   const accounts = (accountData ?? []) as PlatformAccountRow[];
   const problemRows = (problemData ?? []) as ProblemProofRow[];
   const groupTitles = (groupTitleData ?? []) as GroupProblemTitleRow[];
   const reviews = (reviewData ?? []) as ReviewRow[];
+  const cheers = (cheerData ?? []) as CheerRow[];
+  const cheersByProofId = new Map<string, CheerRow[]>();
+  for (const cheer of cheers) {
+    const list = cheersByProofId.get(cheer.proof_id) ?? [];
+    list.push(cheer);
+    cheersByProofId.set(cheer.proof_id, list);
+  }
   const accountById = new Map(accounts.map((account) => [account.id, account]));
   const reviewByProofId = new Map(
     reviews.map((review) => [review.proof_id, review]),
@@ -503,6 +525,7 @@ export default async function GroupPage({
     const active = proof.verification_status !== "CANCELING";
     const link = active ? problemLink(proof.problem_url) : null;
     const { date, time } = proofDateTime(proof.accepted_at);
+    const proofCheers = cheersByProofId.get(proof.id) ?? [];
     return {
       id: proof.id,
       // 사진 없는 기록의 problem_key는 재시도를 막는 열쇠일 뿐이라 보여주지 않습니다.
@@ -547,6 +570,11 @@ export default async function GroupPage({
           proof.verification_status,
         ),
       cancelRetry: proof.verification_status === "CANCELING",
+      cheerNames: proofCheers.map(
+        (cheer) => profileById.get(cheer.user_id)?.display_name ?? "멤버",
+      ),
+      cheered: proofCheers.some((cheer) => cheer.user_id === user.id),
+      cheerable: proof.user_id !== user.id && active,
     };
   });
 
@@ -652,12 +680,15 @@ export default async function GroupPage({
           className={group.is_coding_study ? "min-w-0" : "min-w-0 lg:max-w-[656px]"}
         >
       {overview ? (
-        <GroupOverview
-          data={overview}
-          currentUserId={user.id}
-          groupSlug={group.slug}
-          proofFilterQuery={proofFilterQuery}
-        />
+        <>
+          <TodayStrip data={overview} currentUserId={user.id} />
+          <GroupOverview
+            data={overview}
+            currentUserId={user.id}
+            groupSlug={group.slug}
+            proofFilterQuery={proofFilterQuery}
+          />
+        </>
       ) : (
         <p
           role="alert"
@@ -776,7 +807,7 @@ export default async function GroupPage({
         />
         <p className="mt-4 text-[12px] text-sub">
           최근 등록순으로 최대 50개까지 보여줍니다. 기록을 누르면 사진과 검수
-          내용을 확인할 수 있습니다.
+          내용을 확인할 수 있습니다. 하트는 멤버가 남긴 응원입니다.
         </p>
       </section>
         </div>
@@ -804,7 +835,7 @@ export default async function GroupPage({
               <p className="mt-3 text-[13px] text-sub">
                 가입 승인 대기 {pendingMemberships.length}명
               </p>
-              <ul className="mt-2 rounded-surface border border-line">
+              <ul className="mt-2 rounded-surface border border-line bg-surface">
                 {pendingMemberships.map((membership) => (
                   <li
                     key={membership.user_id}
@@ -835,7 +866,7 @@ export default async function GroupPage({
           {manageableMembers.length > 0 && (
             <>
               <p className="mt-4 text-[13px] text-sub">검수자 지정</p>
-              <ul className="mt-2 rounded-surface border border-line">
+              <ul className="mt-2 rounded-surface border border-line bg-surface">
                 {manageableMembers.map((membership) => (
                   <li
                     key={membership.user_id}

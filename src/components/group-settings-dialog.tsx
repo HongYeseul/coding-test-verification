@@ -63,7 +63,7 @@ export function GroupSettingsDialog({
         onClick={(event) => {
           if (event.target === dialogRef.current) setOpen(false);
         }}
-        className="m-auto max-h-[calc(100dvh-40px)] w-[min(520px,calc(100%-32px))] overflow-y-auto rounded-surface border border-line bg-canvas p-6 text-ink backdrop:bg-black/40"
+        className="m-auto max-h-[calc(100dvh-40px)] w-[min(520px,calc(100%-32px))] overflow-y-auto rounded-surface border border-line bg-surface p-6 text-ink backdrop:bg-black/40"
       >
         {/* 취소하고 다시 열면 저장된 값으로 돌아오도록 폼을 다시 그립니다. */}
         <form

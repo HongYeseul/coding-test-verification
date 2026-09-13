@@ -27,85 +27,85 @@
   <symbol id="seal-lg" viewBox="0 0 120 120">
     <g filter="url(#ink)"><rect width="120" height="120" fill="currentColor" mask="url(#face)"/></g>
   </symbol></defs>
-  <rect width="1080" height="1440" fill="#ffffff"/>
-<text x="64" y="52" font-size="11.5" fill="#69737e" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="500" letter-spacing="0.12em">도장 디자인 시스템</text>
-<text x="1016" y="52" font-size="11.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="500" letter-spacing="0.12em" text-anchor="end">4 / 4</text>
-<line x1="64" y1="72" x2="1016" y2="72" stroke="#e3e7ec" stroke-width="1"/>
-<text x="64" y="152" font-size="52" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="700" letter-spacing="-0.03em">구성 요소</text>
-<line x1="64" y1="190" x2="1016" y2="190" stroke="#e3e7ec" stroke-width="1"/>
-<text x="64" y="250" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">버튼</text>
-<text x="64" y="272" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">높이 40px,</text>
-<text x="64" y="289" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">모서리 8px.</text>
-<text x="64" y="306" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">터치 기기에서는</text>
-<text x="64" y="323" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">44px로 커집니다.</text>
+  <rect width="1080" height="1440" fill="#f5f3ee"/>
+<text x="64" y="52" font-size="11.5" fill="#6d6a63" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="500" letter-spacing="0.12em">도장 디자인 시스템</text>
+<text x="1016" y="52" font-size="11.5" fill="#aaa79f" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="500" letter-spacing="0.12em" text-anchor="end">4 / 4</text>
+<line x1="64" y1="72" x2="1016" y2="72" stroke="#e3dfd5" stroke-width="1"/>
+<text x="64" y="152" font-size="52" fill="#1a1d22" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="700" letter-spacing="-0.03em">구성 요소</text>
+<line x1="64" y1="190" x2="1016" y2="190" stroke="#e3dfd5" stroke-width="1"/>
+<text x="64" y="250" font-size="12" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">버튼</text>
+<text x="64" y="272" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">높이 40px,</text>
+<text x="64" y="289" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">모서리 8px.</text>
+<text x="64" y="306" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">터치 기기에서는</text>
+<text x="64" y="323" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">44px로 커집니다.</text>
 <rect x="236" y="234" width="128" height="40" rx="8" fill="#1a4784"/>
 <text x="300.0" y="259" font-size="14" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="550" text-anchor="middle">도장 찍기</text>
-<rect x="384" y="234" width="128" height="40" rx="8" fill="#ffffff" stroke="#e3e7ec"/>
-<text x="448.0" y="259" font-size="14" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="550" text-anchor="middle">취소</text>
-<text x="596.0" y="259" font-size="14" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="550" text-anchor="middle">닫기</text>
-<text x="236" y="302" font-size="11.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">btn-primary · btn · btn-ghost</text>
-<line x1="64" y1="356" x2="1016" y2="356" stroke="#e3e7ec" stroke-width="1"/>
-<text x="64" y="400" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">입력</text>
-<text x="64" y="422" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">포커스 링은</text>
-<text x="64" y="439" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">브랜드 파랑입니다.</text>
-<text x="64" y="456" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">중성 배경 어디서든</text>
-<text x="64" y="473" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">또렷합니다.</text>
-<rect x="236" y="384" width="300" height="42" rx="8" fill="#ffffff" stroke="#e3e7ec"/>
-<text x="250" y="411" font-size="15" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">양궁대회</text>
+<rect x="384" y="234" width="128" height="40" rx="8" fill="#ffffff" stroke="#e3dfd5"/>
+<text x="448.0" y="259" font-size="14" fill="#1a1d22" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="550" text-anchor="middle">취소</text>
+<text x="596.0" y="259" font-size="14" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="550" text-anchor="middle">닫기</text>
+<text x="236" y="302" font-size="11.5" fill="#aaa79f" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">btn-primary · btn · btn-ghost</text>
+<line x1="64" y1="356" x2="1016" y2="356" stroke="#e3dfd5" stroke-width="1"/>
+<text x="64" y="400" font-size="12" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">입력</text>
+<text x="64" y="422" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">포커스 링은</text>
+<text x="64" y="439" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">브랜드 파랑입니다.</text>
+<text x="64" y="456" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">중성 배경 어디서든</text>
+<text x="64" y="473" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">또렷합니다.</text>
+<rect x="236" y="384" width="300" height="42" rx="8" fill="#ffffff" stroke="#e3dfd5"/>
+<text x="250" y="411" font-size="15" fill="#1a1d22" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">양궁대회</text>
 <rect x="573" y="381" width="306" height="48" rx="10" fill="none" stroke="#1d5091" stroke-width="2"/>
-<rect x="576" y="384" width="300" height="42" rx="8" fill="#ffffff" stroke="#e3e7ec"/>
-<text x="590" y="411" font-size="15" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">완전탐색, 재귀</text>
-<text x="236" y="458" font-size="11.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">기본</text>
-<text x="576" y="458" font-size="11.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">포커스</text>
-<line x1="64" y1="514" x2="1016" y2="514" stroke="#e3e7ec" stroke-width="1"/>
-<text x="64" y="560" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">상태</text>
-<text x="64" y="582" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">색보다 형태가</text>
-<text x="64" y="599" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">먼저입니다. 색을</text>
-<text x="64" y="616" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">구분하지 못해도,</text>
-<text x="64" y="633" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">흑백으로 찍어도</text>
-<text x="64" y="650" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">나뉩니다.</text>
+<rect x="576" y="384" width="300" height="42" rx="8" fill="#ffffff" stroke="#e3dfd5"/>
+<text x="590" y="411" font-size="15" fill="#1a1d22" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">완전탐색, 재귀</text>
+<text x="236" y="458" font-size="11.5" fill="#aaa79f" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">기본</text>
+<text x="576" y="458" font-size="11.5" fill="#aaa79f" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">포커스</text>
+<line x1="64" y1="514" x2="1016" y2="514" stroke="#e3dfd5" stroke-width="1"/>
+<text x="64" y="560" font-size="12" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">상태</text>
+<text x="64" y="582" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">색보다 형태가</text>
+<text x="64" y="599" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">먼저입니다. 색을</text>
+<text x="64" y="616" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">구분하지 못해도,</text>
+<text x="64" y="633" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">흑백으로 찍어도</text>
+<text x="64" y="650" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">나뉩니다.</text>
 <g transform="rotate(-4 255.0 565.0)" color="#1d5091"><use href="#seal-sm" x="236" y="546" width="38" height="38"/></g>
-<text x="236" y="612" font-size="13" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="600">승인</text>
-<text x="236" y="632" font-size="11.5" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">동그란 도장</text>
-<rect x="396" y="546" width="38" height="38" rx="8" fill="#ffffff" stroke="#e3e7ec"/>
+<text x="236" y="612" font-size="13" fill="#1a1d22" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="600">승인</text>
+<text x="236" y="632" font-size="11.5" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">동그란 도장</text>
+<rect x="396" y="546" width="38" height="38" rx="8" fill="#ffffff" stroke="#e3dfd5"/>
 <text x="415" y="572" font-size="17" fill="#8d5a15" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="650" text-anchor="middle">◷</text>
-<text x="396" y="612" font-size="13" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="600">검수 대기</text>
-<text x="396" y="632" font-size="11.5" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">둥근 네모 테두리</text>
-<rect x="556" y="546" width="38" height="38" rx="8" fill="#ffffff" stroke="#e3e7ec"/>
+<text x="396" y="612" font-size="13" fill="#1a1d22" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="600">검수 대기</text>
+<text x="396" y="632" font-size="11.5" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">둥근 네모 테두리</text>
+<rect x="556" y="546" width="38" height="38" rx="8" fill="#ffffff" stroke="#e3dfd5"/>
 <text x="575" y="572" font-size="17" fill="#ab3a31" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="650" text-anchor="middle">×</text>
-<text x="556" y="612" font-size="13" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="600">반려</text>
-<text x="556" y="632" font-size="11.5" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">둥근 네모 테두리</text>
-<line x1="64" y1="694" x2="1016" y2="694" stroke="#e3e7ec" stroke-width="1"/>
-<text x="64" y="740" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">도장판</text>
-<text x="64" y="762" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">승인만 형태가 달라</text>
-<text x="64" y="779" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">찍힌 칸이 곧 그 주의</text>
-<text x="64" y="796" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">성과로 읽힙니다.</text>
-<text x="255" y="718" font-size="11.5" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">월</text>
+<text x="556" y="612" font-size="13" fill="#1a1d22" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="600">반려</text>
+<text x="556" y="632" font-size="11.5" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">둥근 네모 테두리</text>
+<line x1="64" y1="694" x2="1016" y2="694" stroke="#e3dfd5" stroke-width="1"/>
+<text x="64" y="740" font-size="12" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">도장판</text>
+<text x="64" y="762" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">승인만 형태가 달라</text>
+<text x="64" y="779" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">찍힌 칸이 곧 그 주의</text>
+<text x="64" y="796" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">성과로 읽힙니다.</text>
+<text x="255" y="718" font-size="11.5" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">월</text>
 <g transform="rotate(-7 255.0 751.0)" color="#1d5091"><use href="#seal-sm" x="236" y="732" width="38" height="38"/></g>
-<text x="317" y="718" font-size="11.5" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">화</text>
+<text x="317" y="718" font-size="11.5" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">화</text>
 <g transform="rotate(-3 317.0 751.0)" color="#1d5091"><use href="#seal-sm" x="298" y="732" width="38" height="38"/></g>
-<text x="379" y="718" font-size="11.5" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">수</text>
-<rect x="360" y="732" width="38" height="38" rx="8" fill="#ffffff" stroke="#e3e7ec"/>
+<text x="379" y="718" font-size="11.5" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">수</text>
+<rect x="360" y="732" width="38" height="38" rx="8" fill="#ffffff" stroke="#e3dfd5"/>
 <text x="379" y="758" font-size="17" fill="#8d5a15" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="650" text-anchor="middle">◷</text>
-<text x="441" y="718" font-size="11.5" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">목</text>
+<text x="441" y="718" font-size="11.5" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">목</text>
 <g transform="rotate(5 441.0 751.0)" color="#1d5091"><use href="#seal-sm" x="422" y="732" width="38" height="38"/></g>
-<text x="503" y="718" font-size="11.5" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">금</text>
+<text x="503" y="718" font-size="11.5" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">금</text>
 <g transform="rotate(-7 503.0 751.0)" color="#1d5091"><use href="#seal-sm" x="484" y="732" width="38" height="38"/></g>
-<text x="565" y="718" font-size="11.5" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">토</text>
-<text x="565" y="758" font-size="17" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">·</text>
-<text x="627" y="718" font-size="11.5" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">일</text>
-<text x="627" y="758" font-size="17" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">–</text>
-<text x="236" y="808" font-size="12" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">두 건 이상이면 칸 어깨에 건수를 답니다. 도장 안에는 숫자를 넣을 수 없습니다.</text>
-<line x1="64" y1="874" x2="1016" y2="874" stroke="#e3e7ec" stroke-width="1"/>
-<text x="64" y="920" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">모서리</text>
-<text x="64" y="942" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">다섯 종이 섞여</text>
-<text x="64" y="959" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">있던 것을 둘로</text>
-<text x="64" y="976" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">모았습니다.</text>
-<rect x="236" y="904" width="72" height="56" rx="8" fill="#e9f0fa" stroke="#1d5091"/>
-<text x="328" y="924" font-size="13" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">--r-control</text>
-<text x="328" y="946" font-size="12" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">8px · 홀로 서는 조작 요소 — 버튼, 입력, 셀렉트, 도장판 칸</text>
-<rect x="236" y="992" width="72" height="56" rx="12" fill="#e9f0fa" stroke="#1d5091"/>
-<text x="328" y="1012" font-size="13" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">--r-surface</text>
-<text x="328" y="1034" font-size="12" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">12px · 다른 것을 담는 면 — 카드, 목록 묶음, 다이얼로그</text>
-<text x="236" y="1110" font-size="12" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">테두리가 있는 면의 안쪽 모서리는 calc(var(--r-surface) - 1px)로 테두리만큼 줄입니다.</text>
+<text x="565" y="718" font-size="11.5" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">토</text>
+<text x="565" y="758" font-size="17" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">·</text>
+<text x="627" y="718" font-size="11.5" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">일</text>
+<text x="627" y="758" font-size="17" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" text-anchor="middle">–</text>
+<text x="236" y="808" font-size="12" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">두 건 이상이면 칸 어깨에 건수를 답니다. 도장 안에는 숫자를 넣을 수 없습니다.</text>
+<line x1="64" y1="874" x2="1016" y2="874" stroke="#e3dfd5" stroke-width="1"/>
+<text x="64" y="920" font-size="12" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">모서리</text>
+<text x="64" y="942" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">다섯 종이 섞여</text>
+<text x="64" y="959" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">있던 것을 둘로</text>
+<text x="64" y="976" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">모았습니다.</text>
+<rect x="236" y="904" width="72" height="56" rx="8" fill="#e6edf7" stroke="#1d5091"/>
+<text x="328" y="924" font-size="13" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">--r-control</text>
+<text x="328" y="946" font-size="12" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">8px · 홀로 서는 조작 요소 — 버튼, 입력, 셀렉트, 도장판 칸</text>
+<rect x="236" y="992" width="72" height="56" rx="12" fill="#e6edf7" stroke="#1d5091"/>
+<text x="328" y="1012" font-size="13" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">--r-surface</text>
+<text x="328" y="1034" font-size="12" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">12px · 다른 것을 담는 면 — 카드, 목록 묶음, 다이얼로그</text>
+<text x="236" y="1110" font-size="12" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">테두리가 있는 면의 안쪽 모서리는 calc(var(--r-surface) - 1px)로 테두리만큼 줄입니다.</text>
 </svg>

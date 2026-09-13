@@ -27,9 +27,9 @@
   --r-control: 8px;
   --r-surface: 12px;
   border-radius: var(--r-surface);
-  background: #ffffff;
+  background: #fdfcfa;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.24);
-  color: #1b2027;
+  color: #1a1d22;
   font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
     "Noto Sans KR", sans-serif;
   text-align: left;
@@ -82,7 +82,7 @@
 .dojang-row > span:first-child {
   flex: none;
   width: 52px;
-  color: #69737e;
+  color: #6d6a63;
 }
 
 .dojang-row > span:last-child {
@@ -96,10 +96,10 @@
 .dojang-card select {
   width: 100%;
   padding: 7px 9px;
-  border: 1px solid #e3e7ec;
+  border: 1px solid #e3dfd5;
   border-radius: var(--r-control);
   background: #ffffff;
-  color: #1b2027;
+  color: #1a1d22;
   font: inherit;
   font-size: 13px;
 }
@@ -107,7 +107,7 @@
 .dojang-card label {
   display: block;
   margin-bottom: 4px;
-  color: #69737e;
+  color: #6d6a63;
   font-size: 12px;
 }
 
@@ -130,7 +130,7 @@
 
 .dojang-note {
   margin: 0;
-  color: #69737e;
+  color: #6d6a63;
   font-size: 12px;
 }
 

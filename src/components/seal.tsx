@@ -82,6 +82,27 @@ export function SealDefs() {
             />
           </g>
         </symbol>
+
+        {/* 검수 대기용 점선 도장. 같은 엄지를 윤곽으로만 그려 ‘아직 채워지지 않았다’로 읽힙니다.
+            채움과 점선은 형태가 달라 색을 구분하지 못해도 승인과 갈립니다. */}
+        <symbol id="dojang-ghost" viewBox={VIEW_BOX}>
+          <circle
+            cx="60"
+            cy="60"
+            r="52"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="5"
+            strokeDasharray="8 6.5"
+          />
+          <use
+            href="#dojang-thumb"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="4.2"
+            strokeLinejoin="round"
+          />
+        </symbol>
       </defs>
     </svg>
   );
@@ -91,6 +112,7 @@ export function Seal({
   className,
   tilt,
   press = false,
+  ghost = false,
 }: {
   /** 크기를 정하는 클래스입니다. 예: `size-7`, `size-[30px] sm:size-[38px]` */
   className: string;
@@ -98,15 +120,17 @@ export function Seal({
   tilt?: string;
   /** 방금 찍힌 자리에서만 켭니다. */
   press?: boolean;
+  /** 검수 대기. 잉크 대신 점선 윤곽으로 찍습니다. */
+  ghost?: boolean;
 }) {
   return (
     <svg
       aria-hidden="true"
       viewBox={VIEW_BOX}
-      className={`seal${press ? " seal-press" : ""} ${className}`}
+      className={`seal${ghost ? " seal-ghost" : ""}${press ? " seal-press" : ""} ${className}`}
       style={tilt ? ({ "--seal-tilt": tilt } as CSSProperties) : undefined}
     >
-      <use href="#dojang-seal" />
+      <use href={ghost ? "#dojang-ghost" : "#dojang-seal"} />
     </svg>
   );
 }

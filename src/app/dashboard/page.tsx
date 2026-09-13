@@ -96,7 +96,7 @@ export default async function DashboardPage({
 
       <section aria-label="참여 중인 그룹" className="mb-7">
         {groups.length ? (
-          <ul className="rounded-surface border border-line">
+          <ul className="rounded-surface border border-line bg-surface">
             {groups.map((group) => {
               const membership = membershipByGroupId.get(group.id);
               return (
@@ -123,7 +123,7 @@ export default async function DashboardPage({
             })}
           </ul>
         ) : (
-          <div className="flex min-h-[180px] flex-col justify-center rounded-surface border border-line px-4 py-8 text-center text-sub">
+          <div className="flex min-h-[180px] flex-col justify-center rounded-surface border border-line bg-surface px-4 py-8 text-center text-sub">
             <strong className="mb-1 block text-[17px] font-semibold text-ink">
               아직 참여 중인 그룹이 없어요
             </strong>

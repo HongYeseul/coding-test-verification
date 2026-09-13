@@ -89,7 +89,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
         <div>
           <h2 className="mb-3">그룹이 열리기까지</h2>
-          <ol className="rounded-surface border border-line">
+          <ol className="rounded-surface border border-line bg-surface">
             {steps.map((step) => (
               <li
                 key={step.number}
@@ -128,7 +128,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         </div>
 
         {groups.length ? (
-          <ul className="rounded-surface border border-line">
+          <ul className="rounded-surface border border-line bg-surface">
             {groups.map((group) => {
               const row = (
                 <>
@@ -194,7 +194,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             })}
           </ul>
         ) : (
-          <p className="rounded-surface border border-line px-5 py-10 text-center text-[13px] text-sub">
+          <p className="rounded-surface border border-line bg-surface px-5 py-10 text-center text-[13px] text-sub">
             아직 열린 스터디가 없어요. 로그인하면 새 스터디를 만들 수 있어요.
           </p>
         )}

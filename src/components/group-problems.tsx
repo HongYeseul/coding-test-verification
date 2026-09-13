@@ -43,7 +43,7 @@ export function GroupProblems({
       </div>
 
       {problems.length ? (
-        <ul className="rounded-surface border border-line">
+        <ul className="rounded-surface border border-line bg-surface">
           {problems.map((problem) => {
             const solvedByMe = problem.solverIds.includes(currentUserId);
             return (
@@ -109,7 +109,7 @@ export function GroupProblems({
           })}
         </ul>
       ) : (
-        <p className="rounded-surface border border-line px-5 py-10 text-center text-[13px] text-sub">
+        <p className="rounded-surface border border-line bg-surface px-5 py-10 text-center text-[13px] text-sub">
           아직 문제 링크가 없습니다. 도장을 찍을 때 문제 링크를 넣으면 여기에
           모입니다.
         </p>

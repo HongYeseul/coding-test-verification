@@ -50,6 +50,7 @@ export function ProofForm({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [stamped, setStamped] = useState(false);
+  const [linkPlatform, setLinkPlatform] = useState("");
   const [preparing, setPreparing] = useState(false);
   const [prepared, setPrepared] = useState<{
     file: File;
@@ -206,6 +207,7 @@ export function ProofForm({
       upload.current = null;
       recordKey.current = "";
       form.reset();
+      setLinkPlatform("");
       setPrepared(null);
       setStamped(true);
       setOpen(false);
@@ -331,13 +333,14 @@ export function ProofForm({
         className="btn btn-primary"
         onClick={() => setOpen(true)}
       >
-        <span aria-hidden="true">+</span> {openLabel}
+        <Seal className="size-5 text-primary-ink" tilt="-6deg" />
+        {openLabel}
       </button>
       {!open && message && (
         <p
           role="status"
           aria-live="polite"
-          className="fixed bottom-5 left-1/2 z-10 flex w-max max-w-[calc(100%-32px)] -translate-x-1/2 items-center gap-3 rounded-control border border-line bg-canvas px-4 py-3 text-[15px] shadow-[0_4px_20px_rgba(0,0,0,0.13)]"
+          className="fixed bottom-5 left-1/2 z-10 flex w-max max-w-[calc(100%-32px)] -translate-x-1/2 items-center gap-3 rounded-control border border-line bg-surface px-4 py-3 text-[15px] shadow-[0_4px_20px_rgba(0,0,0,0.13)]"
         >
           {stamped && <Seal className="size-8 shrink-0" press />}
           {message}
@@ -351,7 +354,7 @@ export function ProofForm({
         onClick={(event) => {
           if (event.target === dialogRef.current && !busy) setOpen(false);
         }}
-        className="m-auto max-h-[calc(100dvh-40px)] w-[min(620px,calc(100%-32px))] overflow-y-auto rounded-surface border border-line bg-canvas p-6 text-ink backdrop:bg-black/40"
+        className="m-auto max-h-[calc(100dvh-40px)] w-[min(620px,calc(100%-32px))] overflow-y-auto rounded-surface border border-line bg-surface p-6 text-ink backdrop:bg-black/40"
       >
         <form onSubmit={submit} onPaste={pastePhoto}>
           <div className="flex items-center justify-between gap-3">
@@ -397,11 +400,27 @@ export function ProofForm({
                   disabled={busy}
                   placeholder="https://school.programmers.co.kr/learn/courses/30/lessons/12345"
                   aria-describedby="problem-url-help"
+                  onChange={(event) =>
+                    setLinkPlatform(
+                      problemLink(event.target.value.trim())?.platform ?? "",
+                    )
+                  }
                 />
                 <p id="problem-url-help" className="text-[13px] text-sub">
-                  프로그래머스, 백준, LeetCode, Codeforces, AtCoder, HackerRank,
-                  Codewars의 https 주소만 받습니다. 넣으면 다른 멤버가 같은
-                  문제를 바로 풀어볼 수 있습니다.
+                  {linkPlatform ? (
+                    // 주소를 알아봤다는 걸 바로 돌려줍니다. 틀린 주소는 등록할 때 알립니다.
+                    <span className="inline-flex items-center gap-1.5 text-brand">
+                      <span aria-hidden="true">✓</span>
+                      {linkPlatform} 문제로 남깁니다. 다른 멤버가 바로 풀어볼 수
+                      있습니다.
+                    </span>
+                  ) : (
+                    <>
+                      프로그래머스, 백준, LeetCode, Codeforces, AtCoder,
+                      HackerRank, Codewars의 https 주소만 받습니다. 넣으면 다른
+                      멤버가 같은 문제를 바로 풀어볼 수 있습니다.
+                    </>
+                  )}
                 </p>
               </div>
             )}
@@ -416,8 +435,9 @@ export function ProofForm({
             <button
               type="submit"
               disabled={busy || preparing || (requiresPhoto && !prepared)}
-              className="btn btn-primary"
+              className="btn btn-primary min-h-12 gap-2 rounded-[10px] px-5 text-[16px]"
             >
+              <Seal className="size-6 text-primary-ink" tilt="-6deg" />
               {busy ? "찍는 중…" : "도장 찍기"}
             </button>
           </div>

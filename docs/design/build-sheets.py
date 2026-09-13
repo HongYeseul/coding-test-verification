@@ -19,8 +19,8 @@ BODY_W = W - M - BODY_X
 SANS = "-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"
 MONO = "ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace"
 
-INK, SUB, LINE, FAINT = "#1b2027", "#69737e", "#e3e7ec", "#a8b0b8"
-BRAND, BRAND_SOFT = "#1d5091", "#e9f0fa"
+INK, SUB, LINE, FAINT = "#1a1d22", "#6d6a63", "#e3dfd5", "#aaa79f"
+BRAND, BRAND_SOFT = "#1d5091", "#e6edf7"
 PRIMARY, WARN, DANGER = "#1a4784", "#8d5a15", "#ab3a31"
 
 
@@ -117,7 +117,7 @@ def seal(x, y, size, color=BRAND, tilt=-6, plate="sm"):
 def sheet(title, page, body, defs=""):
     return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">
   <defs>{defs}</defs>
-  <rect width="{W}" height="{H}" fill="#ffffff"/>
+  <rect width="{W}" height="{H}" fill="#f5f3ee"/>
 {head(title, page)}
 {body}
 </svg>
@@ -214,16 +214,17 @@ def wrap(text, width):
 
 # ══ 2 · 색 ═══════════════════════════════════════════════════════
 GROUPS = [
-    ("바탕", ["중성색도 파랑 쪽으로", "치우쳐 있습니다.", "브랜드가 파랑인데", "회색이 초록기를 띠면", "때가 낀 것처럼", "보입니다."], [
-        ("--canvas", "#ffffff", "#14181d"),
-        ("--ink", "#1b2027", "#e9edf2"),
-        ("--sub", "#69737e", "#98a3af"),
-        ("--line", "#e3e7ec", "#2f353d"),
-        ("--soft", "#f4f6fa", "#1c2128"),
+    ("바탕", ["바탕은 종이, 글자는", "잉크입니다. 중성색은", "아주 약하게 따뜻한", "쪽이고, 그 위에서", "파랑이 잉크로", "읽힙니다."], [
+        ("--canvas", "#f5f3ee", "#15171a"),
+        ("--surface", "#fdfcfa", "#1c1f24"),
+        ("--ink", "#1a1d22", "#ebe9e3"),
+        ("--sub", "#6d6a63", "#9a978f"),
+        ("--line", "#e3dfd5", "#2f3238"),
+        ("--soft", "#eeebe3", "#23262c"),
     ]),
     ("브랜드", ["brand는 바탕 위에", "얹는 색, primary는", "채우는 면입니다.", "대비 기준이 달라", "값도 다릅니다."], [
         ("--brand", "#1d5091", "#8fc0f2"),
-        ("--brand-soft", "#e9f0fa", "#1b2e47"),
+        ("--brand-soft", "#e6edf7", "#1b2e47"),
         ("--primary", "#1a4784", "#9ac6f5"),
         ("--primary-hover", "#143866", "#b2d5f8"),
         ("--primary-ink", "#ffffff", "#0f2038"),
@@ -253,12 +254,12 @@ def page_colour():
 
     p.append(label(y, "대비", ["WCAG AA 본문", "기준은 4.5:1", "입니다."]))
     pairs = [
-        ("#1b2027", "#ffffff", "본문 / 바탕"),
-        ("#69737e", "#ffffff", "보조 / 바탕"),
-        ("#1d5091", "#ffffff", "브랜드 / 바탕"),
+        ("#1a1d22", "#f5f3ee", "본문 / 바탕"),
+        ("#6d6a63", "#f5f3ee", "보조 / 바탕"),
+        ("#1d5091", "#f5f3ee", "브랜드 / 바탕"),
         ("#ffffff", "#1a4784", "버튼 글자 / 버튼"),
-        ("#e9edf2", "#14181d", "본문 / 바탕 · 다크"),
-        ("#8fc0f2", "#14181d", "브랜드 / 바탕 · 다크"),
+        ("#ebe9e3", "#15171a", "본문 / 바탕 · 다크"),
+        ("#8fc0f2", "#15171a", "브랜드 / 바탕 · 다크"),
     ]
     x = BODY_X
     for fg, bg, name in pairs:
@@ -289,19 +290,19 @@ def page_colour():
 # ══ 3 · 타이포 ═══════════════════════════════════════════════════
 def page_type():
     p, y = [], 250
-    p.append(label(y, "글꼴", ["기기에 이미 있는", "글꼴만 씁니다.", "웹폰트를 받지", "않으므로 첫 화면이", "늦지 않습니다."]))
-    p.append(t(BODY_X, y + 4, "-apple-system, BlinkMacSystemFont,", 14, INK, 500, MONO))
-    p.append(t(BODY_X, y + 26, "\"Apple SD Gothic Neo\", \"Noto Sans KR\",", 14, INK, 500, MONO))
-    p.append(t(BODY_X, y + 48, "sans-serif", 14, INK, 500, MONO))
-    p.append(t(BODY_X, y + 86, "macOS·iOS는 SF와 Apple SD 산돌고딕 네오, Android와 Windows는", 12, SUB))
-    p.append(t(BODY_X, y + 105, "Noto Sans KR로 떨어집니다.", 12, SUB))
+    p.append(label(y, "글꼴", ["세 벌입니다.", "next/font가 빌드 때", "받아 같은 도메인에서", "내려주므로 방문자는", "Google에 요청하지", "않습니다."]))
+    p.append(t(BODY_X, y + 4, "명조  Noto Serif KR 600·700", 14, INK, 500, MONO))
+    p.append(t(BODY_X, y + 26, "고딕  IBM Plex Sans KR 400–700", 14, INK, 500, MONO))
+    p.append(t(BODY_X, y + 48, "고정폭  IBM Plex Mono 400·500", 14, INK, 500, MONO))
+    p.append(t(BODY_X, y + 86, "명조는 h1·h2와 현황판의 큰 숫자, 고딕은 본문, 고정폭은 날짜·아이디입니다.", 12, SUB))
+    p.append(t(BODY_X, y + 105, "한글 글꼴은 유니코드 범위별로 잘려 있어 화면에 쓰인 조각만 받습니다.", 12, SUB))
 
     y = 430
     p.append(rule(y - 40))
     p.append(label(y, "단계", ["h3가 h2보다 컸던", "계층을 되돌렸습니다.", "요소로 크기를", "고르지 않습니다."]))
     steps = [
-        ("h1", "30 / 700 / -0.033em", "이번 주 도장판", 30, 700, "-0.99px"),
-        ("h2", "22 / 600 / -0.024em", "알고리즘 스터디", 22, 600, "-0.53px"),
+        ("h1", "34 / 700 / -0.03em · 명조", "이번 주 도장판", 34, 700, "-1.02px"),
+        ("h2", "22 / 600 / -0.024em · 명조", "알고리즘 스터디", 22, 600, "-0.53px"),
         ("h3", "17 / 600 / -0.012em", "최근 인증 기록", 17, 600, "-0.2px"),
         ("본문", "15 / 400 / 1.6", "오늘 푼 문제를 남기면 스터디원이 검수합니다.", 15, 400, "0"),
         ("보조", "13 / 400", "멤버 4명 · 이번 주 11번", 13, 400, "0"),
@@ -320,8 +321,8 @@ def page_type():
         "한글은 라틴보다 글자 폭이 고르기 때문에, 큰 제목에서 자간을 붙이지 않으면",
         "성기게 벌어져 보입니다. 크기가 커질수록 더 좁힙니다.",
         "",
-        "px가 아니라 em을 씁니다. h1의 -0.033em은 30px에서 -0.99px로 계산돼",
-        "예전에 박아두었던 -1px과 사실상 같지만, 크기를 바꿔도 비율이 유지됩니다.",
+        "px가 아니라 em을 씁니다. h1의 -0.03em은 34px에서 -1.02px로 계산되며,",
+        "크기를 바꿔도 비율이 유지됩니다.",
     ]):
         p.append(t(BODY_X, y + i * 22, line, 13, SUB))
 

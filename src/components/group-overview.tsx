@@ -47,7 +47,7 @@ function Stat({
   return (
     <span className="grid min-w-max gap-0.5">
       <strong
-        className={`text-[32px] leading-[1.1] font-bold tracking-[-1px] tabular-nums ${tone ?? ""}`}
+        className={`font-serif text-[32px] leading-[1.1] font-semibold tracking-[-0.02em] tabular-nums ${tone ?? ""}`}
       >
         {children}
       </strong>
@@ -100,12 +100,12 @@ function MemberCell({ member, isMe }: { member: OverviewMember; isMe: boolean })
         {member.bio && (
           <span
             role="tooltip"
-            className="pointer-events-none absolute top-1/2 left-full z-30 hidden w-max max-w-[240px] -translate-y-1/2 rounded-surface border border-line bg-canvas px-3 py-2 text-[12px] leading-[1.6] font-normal text-sub group-hover/member:block"
+            className="pointer-events-none absolute top-1/2 left-full z-30 hidden w-max max-w-[240px] -translate-y-1/2 rounded-surface border border-line bg-surface px-3 py-2 text-[12px] leading-[1.6] font-normal text-sub group-hover/member:block"
           >
             {/* 말풍선 꼬리. 테두리 두 변만 남겨 카드에서 이어진 것처럼 보이게 합니다. */}
             <span
               aria-hidden="true"
-              className="absolute top-1/2 -left-[5px] size-2 -translate-y-1/2 rotate-45 border-b border-l border-line bg-canvas"
+              className="absolute top-1/2 -left-[5px] size-2 -translate-y-1/2 rotate-45 border-b border-l border-line bg-surface"
             />
             {member.bio}
           </span>
@@ -153,7 +153,7 @@ export function GroupOverview({
   return (
     <section
       aria-labelledby="group-overview-title"
-      className="mb-7 rounded-surface border border-line"
+      className="mb-7 rounded-surface border border-line bg-surface"
     >
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-t-[calc(var(--r-surface)-1px)] bg-soft px-3 py-4 sm:px-5">
         <h2 id="group-overview-title" className="sr-only">
@@ -223,7 +223,7 @@ export function GroupOverview({
                     <span className="font-normal">· {weekLabel} 승인순</span>
                     <span
                       role="tooltip"
-                      className="pointer-events-none absolute top-full left-0 z-20 hidden w-max max-w-[260px] rounded-control border border-line bg-canvas px-3 py-2 text-[12px] leading-[1.6] font-normal text-sub group-hover/sort:block"
+                      className="pointer-events-none absolute top-full left-0 z-20 hidden w-max max-w-[260px] rounded-control border border-line bg-surface px-3 py-2 text-[12px] leading-[1.6] font-normal text-sub group-hover/sort:block"
                     >
                       {weekLabel} 승인이 많은 순서입니다. 같으면 누적 승인이 많은
                       순서, 그다음 닉네임순입니다.
@@ -268,11 +268,9 @@ export function GroupOverview({
                     const total = approved + waiting + rejected;
                     const isFuture = date > data.today;
                     const isToday = date === data.today;
-                    // 승인만 도장으로 찍고 대기·반려는 네모 테두리로 둡니다.
-                    // 형태가 다르므로 색을 구분 못 해도 찍힌 칸이 드러납니다.
+                    // 승인은 잉크 도장, 검수 대기는 점선 도장, 반려는 네모 테두리입니다.
+                    // 셋 다 형태가 달라 색을 구분 못 해도 갈립니다.
                     const stamped = waiting === 0 && approved > 0;
-                    const marker = waiting > 0 ? "◷" : "×";
-                    const boxTone = waiting > 0 ? "text-warn" : "text-danger";
                     const description = `${member.displayName} ${shortDate(date)} 승인 ${approved}건, 검수 대기 ${waiting}건, 반려 ${rejected}건`;
 
                     return (
@@ -289,17 +287,18 @@ export function GroupOverview({
                             aria-label={`${description}. 인증 기록 보기`}
                             className="relative inline-flex"
                           >
-                            {stamped ? (
+                            {stamped || waiting > 0 ? (
                               <Seal
+                                ghost={!stamped}
                                 className="size-[30px] sm:size-[38px]"
                                 tilt={sealTilt(member.userId + date)}
                               />
                             ) : (
                               <span
                                 aria-hidden="true"
-                                className={`inline-grid size-[30px] place-items-center rounded-control border border-line bg-canvas text-[13px] font-[650] sm:size-[38px] sm:text-[15px] ${boxTone}`}
+                                className="inline-grid size-[30px] place-items-center rounded-control border border-line bg-surface text-[13px] font-[650] text-danger sm:size-[38px] sm:text-[15px]"
                               >
-                                {marker}
+                                ×
                               </span>
                             )}
                             {/* 같은 날 여러 건이면 도장 안에 숫자를 못 넣으니 어깨에 답니다. */}
@@ -345,7 +344,9 @@ export function GroupOverview({
           <span className="flex items-center gap-1">
             <Seal className="size-4" /> 승인
           </span>
-          <span>◷ 검수 대기</span>
+          <span className="flex items-center gap-1">
+            <Seal ghost className="size-4" /> 검수 대기
+          </span>
           <span>× 반려</span>
           <span>· 미등록</span>
         </span>

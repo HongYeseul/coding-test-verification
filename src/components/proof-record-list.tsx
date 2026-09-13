@@ -3,8 +3,14 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-import { deleteProofAction, reviewProofAction } from "@/app/actions/proofs";
+import {
+  deleteProofAction,
+  reviewProofAction,
+  toggleCheerAction,
+} from "@/app/actions/proofs";
 import { CancelProofButton } from "@/components/cancel-proof-button";
+import { CheerButton, HeartIcon } from "@/components/cheer-button";
+import { Seal } from "@/components/seal";
 
 export type ProofRecord = {
   id: string;
@@ -29,6 +35,11 @@ export type ProofRecord = {
   reviewable: boolean;
   cancelable: boolean;
   cancelRetry: boolean;
+  /** 응원한 멤버 이름. 순서는 남긴 순입니다. */
+  cheerNames: string[];
+  cheered: boolean;
+  /** 남의 기록이고 취소 중이 아니면 응원할 수 있습니다. */
+  cheerable: boolean;
 };
 
 const toneClass = {
@@ -40,8 +51,8 @@ const toneClass = {
 /** 썸네일 열이 있고 없고에 따라 행 격자가 달라집니다. Tailwind가 찾을 수 있도록 통째로 적습니다. */
 function rowColumns(withPhoto: boolean) {
   return withPhoto
-    ? "grid-cols-[44px_minmax(0,1fr)_60px_12px] sm:grid-cols-[52px_minmax(0,1fr)_100px_74px_18px]"
-    : "grid-cols-[minmax(0,1fr)_60px_12px] sm:grid-cols-[minmax(0,1fr)_100px_74px_18px]";
+    ? "grid-cols-[44px_minmax(0,1fr)_84px_12px] sm:grid-cols-[52px_minmax(0,1fr)_100px_96px_40px_18px]"
+    : "grid-cols-[minmax(0,1fr)_84px_12px] sm:grid-cols-[minmax(0,1fr)_100px_96px_40px_18px]";
 }
 
 /** 목록을 훑을 때 상태가 먼저 보이도록 행 왼쪽에 색 막대를 둡니다. */
@@ -50,6 +61,40 @@ const toneBar = {
   pending: "border-l-warn",
   rejected: "border-l-danger",
 } as const;
+
+/** 상태 글자 앞의 표시. 도장판과 같은 도형이라 목록과 판이 같은 말을 씁니다. */
+function StatusLabel({
+  tone,
+  label,
+}: {
+  tone: ProofRecord["statusTone"];
+  label: string;
+}) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 text-[13px] whitespace-nowrap ${toneClass[tone]}`}
+    >
+      {tone === "rejected" ? (
+        <span
+          aria-hidden="true"
+          className="grid size-4 place-items-center rounded-[5px] border border-current text-[10px] font-[650]"
+        >
+          ×
+        </span>
+      ) : (
+        <Seal ghost={tone === "pending"} className="size-[18px]" />
+      )}
+      {label}
+    </span>
+  );
+}
+
+/** 응원한 사람을 세 명까지 적고 나머지는 수로 줄입니다. */
+function cheerSummary(names: string[]) {
+  if (names.length === 0) return "";
+  const shown = names.slice(0, 3).join(", ");
+  return names.length > 3 ? `${shown} 외 ${names.length - 3}명` : shown;
+}
 
 export function ProofRecordList({
   records,
@@ -133,13 +178,21 @@ export function ProofRecordList({
               {item.tags.length > 0 && ` · ${item.tags.join(" · ")}`}
             </span>
           </span>
-          <span className="hidden text-[13px] text-sub tabular-nums sm:block">
-            {item.date} · {item.time}
+          <span className="hidden font-mono text-[12px] text-sub tabular-nums sm:block">
+            {item.date} {item.time}
           </span>
+          <StatusLabel tone={item.statusTone} label={item.statusLabel} />
+          {/* 응원 수. 없으면 자리만 지켜 열이 흔들리지 않게 합니다. */}
           <span
-            className={`text-[13px] whitespace-nowrap ${toneClass[item.statusTone]}`}
+            className={`hidden items-center gap-1 text-[12px] tabular-nums sm:inline-flex ${
+              item.cheerNames.length ? "text-sub" : "text-line"
+            }`}
+            aria-label={
+              item.cheerNames.length ? `응원 ${item.cheerNames.length}` : undefined
+            }
           >
-            {item.statusLabel}
+            <HeartIcon filled={item.cheered} className="size-3.5" />
+            {item.cheerNames.length || ""}
           </span>
           <span aria-hidden="true" className="text-[13px] text-sub">
             ›
@@ -155,7 +208,14 @@ export function ProofRecordList({
         onClick={(event) => {
           if (event.target === dialogRef.current) setOpenId(null);
         }}
-        className={`m-auto overflow-hidden rounded-surface border border-line bg-canvas p-0 text-ink backdrop:bg-black/40 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:rounded-none max-sm:border-0 ${
+        onKeyDown={(event) => {
+          const target = event.target as HTMLElement;
+          if (target.closest("textarea, input")) return;
+          if (event.key === "ArrowLeft" && index > 0) open(records[index - 1].id);
+          if (event.key === "ArrowRight" && index < records.length - 1)
+            open(records[index + 1].id);
+        }}
+        className={`m-auto overflow-hidden rounded-surface border border-line bg-surface p-0 text-ink backdrop:bg-black/40 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:rounded-none max-sm:border-0 ${
           record?.hasPhoto || record?.solutionCode
             ? "h-[min(680px,calc(100dvh-48px))] w-[min(960px,calc(100%-48px))]"
             : "max-h-[min(680px,calc(100dvh-48px))] w-[min(560px,calc(100%-48px))]"
@@ -212,7 +272,7 @@ export function ProofRecordList({
                   )}
                   {record.solutionCode && (
                     // 긴 줄은 코드 상자 안에서만 가로로 흐릅니다.
-                    <pre className="min-h-0 flex-1 overflow-auto rounded-control border border-line bg-canvas p-4 text-left font-mono text-[13px] leading-[1.6]">
+                    <pre className="min-h-0 flex-1 overflow-auto rounded-control border border-line bg-surface p-4 text-left font-mono text-[13px] leading-[1.6]">
                       {record.solutionCode}
                     </pre>
                   )}
@@ -226,11 +286,10 @@ export function ProofRecordList({
               >
                 <div className="flex items-center justify-between gap-2">
                   <h3>인증 정보</h3>
-                  <span
-                    className={`text-[13px] whitespace-nowrap ${toneClass[record.statusTone]}`}
-                  >
-                    {record.statusLabel}
-                  </span>
+                  <StatusLabel
+                    tone={record.statusTone}
+                    label={record.statusLabel}
+                  />
                 </div>
                 {record.tags.length > 0 && (
                   <div>
@@ -271,6 +330,32 @@ export function ProofRecordList({
                   <p className="text-[13px] text-sub">출처</p>
                   <p className="text-[15px]">{record.source}</p>
                 </div>
+                {/* 응원. 검수와 무관한 하트 하나라 승인·반려 위쪽에 가볍게 둡니다. */}
+                {(record.cheerable || record.cheerNames.length > 0) && (
+                  <div>
+                    <p className="text-[13px] text-sub">응원</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      {record.cheerable && (
+                        <form key={record.id} action={toggleCheerAction}>
+                          <input type="hidden" name="proofId" value={record.id} />
+                          <input type="hidden" name="groupSlug" value={groupSlug} />
+                          <input
+                            type="hidden"
+                            name="cheered"
+                            value={String(record.cheered)}
+                          />
+                          <CheerButton cheered={record.cheered} />
+                        </form>
+                      )}
+                      {record.cheerNames.length > 0 && (
+                        <p className="text-[13px] text-sub">
+                          {cheerSummary(record.cheerNames)}
+                          {record.cheerNames.length > 1 ? "이" : "이"} 응원했어요
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
                 {record.problemUrl && (
                   <a
                     href={record.problemUrl}
@@ -329,11 +414,15 @@ export function ProofRecordList({
                         type="submit"
                         name="decision"
                         value="APPROVED"
-                        className="btn btn-primary flex-1"
+                        className="btn btn-primary flex-[1.4]"
                       >
-                        승인하기
+                        <Seal className="size-5 text-primary-ink" tilt="-6deg" />
+                        승인
                       </button>
                     </div>
+                    <p className="text-[12px] text-sub">
+                      승인하면 도장판의 점선 도장에 잉크가 채워집니다.
+                    </p>
                   </form>
                 ) : record.reviewLabel ? (
                   <div>
