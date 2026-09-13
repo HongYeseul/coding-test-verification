@@ -1,6 +1,6 @@
 # 배포 인수인계
 
-마지막 확인: 2026-09-08
+마지막 확인: 2026-09-13
 
 ## 운영 연결
 
@@ -46,8 +46,18 @@ SQL Editor 또는 Supabase MCP의 `apply_migration`으로 아래 마이그레이
 - `20260909020000_group_directory_activity.sql`
 - `20260909030000_drop_list_group_directory.sql`
 - `20260910000000_study_day_starts_at_3am.sql`
+- `20260911000000_group_proof_settings.sql`
+- `20260913000000_solution_code.sql`
 
 적용 버전은 `supabase_migrations.schema_migrations`에도 등록합니다. 기존 마이그레이션을 재실행하지 않고 새 마이그레이션부터 적용합니다.
+
+### 배포 대기 중인 마이그레이션
+
+`20260913010000_drop_legacy_create_group.sql`은 **아직 적용하지 않았습니다.** 코딩 테스트 여부를 받는 3인자 `create_group`을 쓰는 화면이 Production에 올라간 뒤에 실행합니다.
+
+원격에는 현재 `create_group(text, text)`와 `create_group(text, text, boolean)` 두 개가 함께 있습니다. 기본값 없는 3인자라 인자 수로 구분되어 모호하지 않고, 덕분에 구버전 화면과 신버전 화면이 같은 DB에서 모두 동작합니다. 배포가 끝나면 구버전을 지웁니다. `20260909030000_drop_list_group_directory.sql`과 같은 순서 규칙입니다.
+
+`20260911000000`의 백필은 기존 그룹을 모두 코딩 테스트 스터디로 옮깁니다. 적용 시점에 그룹 1개·활성 멤버 7명·인증 17건이 있었고 기록은 그대로 유지됐습니다.
 
 MCP의 `apply_migration`은 버전을 실행 시각으로 기록하므로 저장소 파일명과 어긋납니다. 적용 후 `schema_migrations`의 해당 행을 파일명의 버전으로 고쳐야 나중에 같은 파일을 다시 적용하지 않습니다.
 
@@ -220,3 +230,9 @@ Node.js 24에서 `pnpm test`, `pnpm check`를 실행합니다. 로컬 `.env.loca
 - 초대코드는 본문과 병렬 조회하고 플랫폼 계정은 표시할 풀이에서 참조한 계정만 조회합니다. ACTIVE 멤버십 검사와 RLS는 유지합니다.
 - 유료 이미지 변환·관측 도구·추가 DB를 사용하지 않습니다. Vercel Hobby는 비상업적 개인 용도이며 무료 사용량 초과 시 제한될 수 있습니다.
 - Supabase Free의 주요 한도는 DB 500MB, 파일 1GB, egress 5GB와 cached egress 5GB입니다. 한도와 사용량은 운영 대시보드에서 확인하며 자동 유료 전환은 신청하지 않습니다.
+
+## 확장 프로그램
+
+`extension/`의 크롬 확장은 웹앱과 같은 GitHub OAuth를 씁니다. 확장을 배포하려면 Supabase의 Authentication > URL Configuration에 `https://<확장-ID>.chromiumapp.org/*`를 추가해야 합니다. 아직 등록하지 않았습니다.
+
+확장의 `config.js`에는 `appUrl`, `supabaseUrl`, publishable key만 넣습니다. 관리자 키는 넣지 않습니다.

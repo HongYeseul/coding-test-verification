@@ -106,9 +106,10 @@ create unique index proofs_photoless_key_unique
   on public.proofs (group_id, user_id, problem_key)
   where evidence_path is null and platform_account_id is null;
 
--- 기본값 있는 인자를 덧붙이면 기존 2인자 호출이 모호해지므로 먼저 지웁니다.
-drop function public.create_group(text, text);
-
+-- 2인자 함수는 남겨 둡니다. 아직 배포되지 않은 화면이 그걸 부르고 있어,
+-- 여기서 지우면 새 코드가 뜨기 전까지 그룹 생성이 막힙니다.
+-- 기본값 없는 3인자라 인자 수로 구분되어 모호하지 않습니다.
+-- 배포가 끝나면 20260913010000_drop_legacy_create_group.sql로 지웁니다.
 create function public.create_group(
   group_name text,
   group_slug text,
