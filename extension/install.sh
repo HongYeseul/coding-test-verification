@@ -33,9 +33,34 @@ ask() { # ask 변수명 "질문" "기본값"
 
 echo "도장 확장 설치를 준비합니다."
 echo
-ask APP_URL "도장 서비스 주소" "https://coding-test-verification.vercel.app"
-ask SUPABASE_URL "Supabase 프로젝트 주소" "https://dzibporiiexvsndungkx.supabase.co"
-ask SUPABASE_KEY "Supabase publishable key (sb_publishable_… 또는 anon key)" ""
+
+# 저장소 안에서 실행하면 .env.local의 값을 기본값으로 씁니다.
+# 여기 들어 있는 것은 브라우저에 이미 노출되는 publishable key뿐입니다.
+ENV_FILE="$SOURCE_DIR/../.env.local"
+env_value() {
+  [ -f "$ENV_FILE" ] || return 0
+  sed -n "s/^$1=//p" "$ENV_FILE" | tail -1 | tr -d '"'"'"' \r'
+}
+DEFAULT_APP_URL="$(env_value NEXT_PUBLIC_SITE_URL)"
+DEFAULT_SUPABASE_URL="$(env_value NEXT_PUBLIC_SUPABASE_URL)"
+DEFAULT_KEY="$(env_value NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)"
+
+# 로컬 개발용 주소가 잡히면 운영 주소를 기본값으로 둡니다.
+case "$DEFAULT_APP_URL" in ""|*localhost*|*127.0.0.1*)
+  DEFAULT_APP_URL="https://coding-test-verification.vercel.app" ;;
+esac
+case "$DEFAULT_SUPABASE_URL" in ""|*localhost*|*127.0.0.1*)
+  DEFAULT_SUPABASE_URL="https://dzibporiiexvsndungkx.supabase.co" ;;
+esac
+
+ask APP_URL "도장 서비스 주소" "$DEFAULT_APP_URL"
+ask SUPABASE_URL "Supabase 프로젝트 주소" "$DEFAULT_SUPABASE_URL"
+if [ -n "$DEFAULT_KEY" ]; then
+  echo "· publishable key는 .env.local에서 읽었습니다."
+  SUPABASE_KEY="${SUPABASE_KEY:-$DEFAULT_KEY}"
+else
+  ask SUPABASE_KEY "Supabase publishable key (sb_publishable_… 또는 anon key)" ""
+fi
 
 APP_URL="${APP_URL%/}"
 SUPABASE_URL="${SUPABASE_URL%/}"
@@ -76,8 +101,11 @@ import json, os
 path = os.path.join(os.environ["TARGET_DIR"], "manifest.json")
 with open(path, encoding="utf-8") as f:
     manifest = json.load(f)
-# 콘텐츠 스크립트가 붙는 코딩 플랫폼은 그대로 두고, 서비스 주소만 바꿔 끼웁니다.
-platforms = [h for h in manifest["host_permissions"] if "localhost" not in h and "127.0.0.1" not in h]
+# 콘텐츠 스크립트가 붙는 곳은 그대로 두고 서비스 주소만 갈아끼웁니다.
+# '로컬이 아닌 것'으로 거르면 다시 실행할 때마다 옛 주소가 쌓입니다.
+platforms = sorted({
+    match for script in manifest.get("content_scripts", []) for match in script["matches"]
+})
 manifest["host_permissions"] = [
     f"{os.environ['APP_URL']}/*",
     f"{os.environ['SUPABASE_URL']}/*",
@@ -89,6 +117,8 @@ with open(path, "w", encoding="utf-8") as f:
 print("· 접근 권한:", ", ".join(manifest["host_permissions"]))
 PY
 
+# 대시보드 주소는 실제 Supabase 프로젝트일 때만 안내합니다.
+PROJECT_REF="$(printf '%s' "$SUPABASE_URL" | sed -nE 's#^https://([a-z0-9]{16,})\.supabase\.co/?$#\1#p')"
 echo "· 설정 완료"
 echo
 open -a "$CHROME" "chrome://extensions" 2>/dev/null || true
@@ -108,6 +138,10 @@ Authentication > URL Configuration > Redirect URLs에 아래를 추가합니다.
 GitHub 로그인이 확장으로 돌아오는 주소이며, 한 번만 등록하면 됩니다.
 
        https://<확장-ID>.chromiumapp.org/*
+${PROJECT_REF:+
+설정 화면 주소입니다.
 
+       https://supabase.com/dashboard/project/$PROJECT_REF/auth/url-configuration
+}
 설치가 끝나면 도장 아이콘을 눌러 GitHub로 연결하고 스터디를 고르세요.
 GUIDE

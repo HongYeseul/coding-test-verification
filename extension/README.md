@@ -35,39 +35,52 @@ DOM에 두기 때문에 거기서 긁으면 코드가 잘립니다. **잘린 코
 
 검수 방식은 웹과 같습니다. 기록이 남고 사람이 승인합니다.
 
-## 설치 (맥)
+## 받는 법
 
-크롬은 압축해제 확장을 사람이 직접 골라야만 로드합니다. 스크립트가 설정·복사·크롬
-열기까지 해주고, 마지막 두 단계만 직접 하면 됩니다.
+저장소에 들어 있습니다. 따로 배포된 파일은 없습니다.
+
+1. <https://github.com/HongYeseul/coding-test-verification> 에서 **Code → Download ZIP**
+2. 압축을 풀고 크롬 `chrome://extensions`를 엽니다
+3. 오른쪽 위 **개발자 모드**를 켭니다
+4. **압축해제된 확장 프로그램을 로드합니다**로 압축 푼 폴더 안의 `extension` 폴더를 고릅니다
+
+끝입니다. 주소나 키를 입력할 필요가 없습니다 — `config.js`의 기본값이 운영 환경이고,
+거기 들어 있는 publishable key는 배포된 사이트의 자바스크립트에 이미 실려 있는 공개
+값입니다. 관리자 키는 들어 있지 않습니다.
+
+`git clone` 해서 쓰면 `git pull` 할 때마다 확장도 함께 갱신됩니다.
+
+### 확장 아이디가 고정되어 있습니다
+
+`manifest.json`의 `key` 덕분에 누가 설치하든 아이디가 같습니다.
+
+```
+pkpabpnpecgcpakaehojnphgeajoieih
+```
+
+그래서 GitHub 로그인이 돌아올 주소를 Supabase에 **한 번만** 등록하면 모든 사용자에게
+적용됩니다. 이 값이 없으면 사람마다 아이디가 달라 각자 등록해야 했습니다.
+
+```
+https://pkpabpnpecgcpakaehojnphgeajoieih.chromiumapp.org/*
+```
+
+(Supabase > Authentication > URL Configuration > Redirect URLs)
+
+`key`를 지우거나 바꾸면 아이디가 달라져 로그인이 막힙니다.
+
+## 로컬 개발
+
+로컬 서버와 로컬 Supabase를 가리키게 하려면 사본을 만들어 씁니다. 저장소의
+`config.js`를 고치면 작업 트리가 더러워지므로 스크립트가 `~/dojang-extension`에
+따로 만들어 줍니다.
 
 ```bash
 bash extension/install.sh
 ```
 
-주소 세 개를 물어보고(기본값 그대로 엔터 가능), `~/dojang-extension`에 설정된 사본을
-만든 뒤 크롬 확장 페이지와 그 폴더를 열어줍니다. 그다음:
-
-1. 크롬 오른쪽 위 **개발자 모드**를 켭니다.
-2. **압축해제된 확장 프로그램을 로드합니다**로 `~/dojang-extension`을 고릅니다.
-3. 목록에 나온 **확장 프로그램 ID**를 복사해, Supabase의
-   Authentication > URL Configuration > Redirect URLs에
-   `https://<확장-ID>.chromiumapp.org/*`를 추가합니다. 한 번만 하면 됩니다.
-
-묻지 않고 돌리려면 값을 미리 넘깁니다.
-
-```bash
-APP_URL=https://example.com SUPABASE_URL=https://xxx.supabase.co SUPABASE_KEY=sb_publishable_... bash extension/install.sh
-```
-
-관리자 키(`sb_secret_…`, `service_role`)를 넣으면 스크립트가 거부합니다. 브라우저에
-노출되는 자리라 publishable key만 받습니다.
-
-### 로컬 개발
-
-저장소의 `extension/` 폴더를 그대로 로드하면 `config.js`의 로컬 기본값
-(`localhost:3000`, `127.0.0.1:54321`)을 씁니다. 로컬 Supabase는
-`supabase/config.toml`에 `https://*.chromiumapp.org/*`가 이미 열려 있어 3번을
-건너뛰어도 됩니다.
+`.env.local`이 있으면 거기서 주소와 키를 읽어 기본값으로 씁니다. 로컬 Supabase는
+`supabase/config.toml`에 `https://*.chromiumapp.org/*`가 이미 열려 있습니다.
 
 ## 쓰는 법
 
