@@ -125,7 +125,7 @@ export async function createProofAction(formData: FormData) {
       withStatus(
         "/dashboard",
         "error",
-        "활성 멤버만 풀이를 등록할 수 있습니다.",
+        "활성 멤버만 도장을 찍을 수 있습니다.",
       ),
     );
   }
@@ -157,7 +157,7 @@ export async function createProofAction(formData: FormData) {
     const message =
       error.code === "23505"
         ? "이미 등록한 문제입니다."
-        : "풀이를 등록하지 못했습니다.";
+        : "도장을 찍지 못했습니다.";
     redirect(withStatus(groupPath, "error", message));
   }
 

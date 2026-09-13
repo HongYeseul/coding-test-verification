@@ -771,9 +771,7 @@ export default async function GroupPage({
           emptyDescription={
             hasProofFilters
               ? "멤버 또는 기간을 바꿔보세요."
-              : group.is_coding_study
-                ? "풀이 인증하기로 첫 기록을 남겨보세요."
-                : "인증하기로 첫 기록을 남겨보세요."
+              : "도장 찍기로 첫 기록을 남겨보세요."
           }
         />
         <p className="mt-4 text-[12px] text-sub">

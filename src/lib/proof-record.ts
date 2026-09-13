@@ -84,7 +84,7 @@ export async function createProofRecord(
   if (memberError || groupError)
     return { error: "그룹 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요." };
   if (member?.status !== "ACTIVE" || !group)
-    return { error: "활성 멤버만 인증을 등록할 수 있습니다." };
+    return { error: "활성 멤버만 도장을 찍을 수 있습니다." };
   // 코드를 남기면 사진을 생략할 수 있습니다.
   if (!evidencePath && !solutionCode && group.requires_photo)
     return { error: "이 그룹은 사진이나 풀이 코드가 필요합니다." };

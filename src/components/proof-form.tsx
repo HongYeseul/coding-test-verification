@@ -161,7 +161,7 @@ export function ProofForm({
     submitting.current = true;
     setStamped(false);
     setBusy(true);
-    setMessage(hasFile ? "사진을 등록하고 있습니다." : "인증을 등록하고 있습니다.");
+    setMessage(hasFile ? "사진을 올리고 있습니다." : "도장을 찍고 있습니다.");
     try {
       if (hasFile && compressed && (!upload.current || upload.current.file !== file)) {
         const previousPath = upload.current?.path;
@@ -214,7 +214,7 @@ export function ProofForm({
           ? ` (${displaySize(file.size)} → ${displaySize(storedSize)})`
           : "";
       setMessage(
-        `인증을 등록했습니다${stored}. ${
+        `도장을 찍었습니다${stored}. ${
           result.autoApproved
             ? "바로 인정됐습니다."
             : "검수를 기다려주세요."
@@ -231,8 +231,8 @@ export function ProofForm({
     }
   }
 
-  const openLabel = isCodingStudy ? "풀이 인증하기" : "인증하기";
-  const dialogTitle = isCodingStudy ? "풀이 인증 등록" : "인증 등록";
+  const openLabel = "도장 찍기";
+  const dialogTitle = "도장 찍기";
 
   const photoField = (
     <>
@@ -418,7 +418,7 @@ export function ProofForm({
               disabled={busy || preparing || (requiresPhoto && !prepared)}
               className="btn btn-primary"
             >
-              {busy ? "등록 중…" : autoApprove ? "인증 등록하기" : "검수 요청하기"}
+              {busy ? "찍는 중…" : "도장 찍기"}
             </button>
           </div>
           <p role="status" aria-live="polite" className="mt-3 text-[15px]">
