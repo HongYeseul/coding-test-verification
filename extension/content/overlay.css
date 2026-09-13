@@ -1,0 +1,58 @@
+.dojang-float {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #315d2b;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22);
+  color: #ffffff;
+  font: 550 14px/1.4 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Noto Sans KR", sans-serif;
+  cursor: pointer;
+}
+
+.dojang-float:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* 팝업의 로고와 같은 도장 자국입니다. */
+.dojang-float .dojang-seal {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  outline: 1px solid rgba(255, 255, 255, 0.45);
+  outline-offset: -3px;
+  font-size: 11px;
+  transform: rotate(-6deg);
+}
+
+.dojang-float.dojang-done {
+  background: #ffffff;
+  color: #202923;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dojang-float {
+    animation: dojang-in 260ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+  }
+}
+
+@keyframes dojang-in {
+  from {
+    transform: translateY(-8px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
