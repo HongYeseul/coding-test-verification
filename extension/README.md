@@ -35,16 +35,39 @@ DOM에 두기 때문에 거기서 긁으면 코드가 잘립니다. **잘린 코
 
 검수 방식은 웹과 같습니다. 기록이 남고 사람이 승인합니다.
 
-## 설치 (개발용)
+## 설치 (맥)
 
-1. `config.js`의 `appUrl`, `supabaseUrl`, `supabasePublishableKey`를 환경에 맞게 고칩니다.
-   `manifest.json`의 `host_permissions`도 같은 주소로 맞춥니다.
-2. 크롬에서 `chrome://extensions`를 열고 **개발자 모드**를 켭니다.
-3. **압축해제된 확장 프로그램을 로드합니다**로 이 `extension/` 폴더를 고릅니다.
-4. 목록에 나온 **확장 프로그램 ID**를 복사합니다.
-5. Supabase의 Redirect URLs에 `https://<확장-ID>.chromiumapp.org/*`를 등록합니다.
-   로컬은 `supabase/config.toml`에 와일드카드로 이미 열려 있어 건너뛰어도 됩니다.
-   운영 프로젝트는 Authentication > URL Configuration에서 직접 추가합니다.
+크롬은 압축해제 확장을 사람이 직접 골라야만 로드합니다. 스크립트가 설정·복사·크롬
+열기까지 해주고, 마지막 두 단계만 직접 하면 됩니다.
+
+```bash
+bash extension/install.sh
+```
+
+주소 세 개를 물어보고(기본값 그대로 엔터 가능), `~/dojang-extension`에 설정된 사본을
+만든 뒤 크롬 확장 페이지와 그 폴더를 열어줍니다. 그다음:
+
+1. 크롬 오른쪽 위 **개발자 모드**를 켭니다.
+2. **압축해제된 확장 프로그램을 로드합니다**로 `~/dojang-extension`을 고릅니다.
+3. 목록에 나온 **확장 프로그램 ID**를 복사해, Supabase의
+   Authentication > URL Configuration > Redirect URLs에
+   `https://<확장-ID>.chromiumapp.org/*`를 추가합니다. 한 번만 하면 됩니다.
+
+묻지 않고 돌리려면 값을 미리 넘깁니다.
+
+```bash
+APP_URL=https://example.com SUPABASE_URL=https://xxx.supabase.co SUPABASE_KEY=sb_publishable_... bash extension/install.sh
+```
+
+관리자 키(`sb_secret_…`, `service_role`)를 넣으면 스크립트가 거부합니다. 브라우저에
+노출되는 자리라 publishable key만 받습니다.
+
+### 로컬 개발
+
+저장소의 `extension/` 폴더를 그대로 로드하면 `config.js`의 로컬 기본값
+(`localhost:3000`, `127.0.0.1:54321`)을 씁니다. 로컬 Supabase는
+`supabase/config.toml`에 `https://*.chromiumapp.org/*`가 이미 열려 있어 3번을
+건너뛰어도 됩니다.
 
 ## 쓰는 법
 
