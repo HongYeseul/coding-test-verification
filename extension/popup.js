@@ -125,7 +125,7 @@ async function submit() {
     say(
       result.autoApproved
         ? "도장을 찍었습니다. 바로 인정됐습니다."
-        : "도장을 찍었습니다. 검수 승인을 기다려주세요.",
+        : "도장을 찍었습니다. 검수를 기다려주세요.",
     );
   } catch (error) {
     say(error instanceof Error ? error.message : "등록하지 못했습니다.", true);

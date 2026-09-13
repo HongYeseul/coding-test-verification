@@ -57,7 +57,7 @@ async function compress(bitmap) {
 
   if (!smallest || smallest.size > MAX_BYTES)
     throw new Error(
-      "압축 후에도 300KB를 넘습니다. 창을 줄이거나 필요한 부분만 보이게 하고 다시 눌러주세요.",
+      "줄여도 300KB를 넘습니다. 창을 줄이거나 필요한 부분만 보이게 하고 다시 눌러주세요.",
     );
   return smallest;
 }

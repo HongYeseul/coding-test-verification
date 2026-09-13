@@ -7,6 +7,7 @@ src/app/globals.css의 토큰과 같은 값이라 한쪽만 고치면 어긋납�
 """
 
 import pathlib
+import re
 
 OUT = pathlib.Path(__file__).resolve().parent
 W, H = 1080, 1440
@@ -61,10 +62,24 @@ def label(y, name, note=None):
     return "\n".join(out)
 
 
-# ─── 도장 도형. seal.tsx와 같은 좌표입니다 ────────────────────────
-THUMB = ("M 51 86 L 76 86 Q 84 86 85 78 L 87.5 63 Q 88.5 56 81 56 L 68 56 "
-         "Q 64.5 56 65.5 52.5 L 68.5 41 Q 70.5 33 63 33 Q 59 33 57.5 37.5 "
-         "L 52 53 Q 51 56 51 59 Z")
+# ─── 도장 도형 ───────────────────────────────────────────────────
+# 좌표를 베껴 두면 한쪽만 바뀌어도 모릅니다. 실제로 손목(rect)을 빠뜨려
+# 시트 네 장이 손목 없는 도장을 그린 적이 있어, seal.tsx에서 읽어 옵니다.
+def thumb_shapes():
+    src = (pathlib.Path(__file__).resolve().parent.parent.parent
+           / "src" / "components" / "seal.tsx").read_text()
+    block = re.search(r'<g id="dojang-thumb">(.*?)</g>', src, re.S)
+    if not block:
+        raise SystemExit("seal.tsx에서 dojang-thumb 그룹을 못 찾았습니다.")
+    path = re.search(r'd="([^"]+)"', block.group(1))
+    rect = re.search(r"<rect[^>]*?/>", block.group(1))
+    if not path or not rect:
+        raise SystemExit("seal.tsx의 엄지가 path 하나와 rect 하나가 아닙니다.")
+    return (f'<path d="{path.group(1)}" fill="#000"/>\n    '
+            + rect.group(0).replace("/>", 'fill="#000"/>'))
+
+
+THUMB = thumb_shapes()
 
 SEAL_DEFS = f"""
   <filter id="rim" x="-14%" y="-14%" width="128%" height="128%" color-interpolation-filters="sRGB">
@@ -83,7 +98,7 @@ SEAL_DEFS = f"""
     <rect width="120" height="120" fill="#000"/>
     <circle cx="60" cy="60" r="55" fill="#fff"/>
     <circle cx="60" cy="60" r="46.5" fill="none" stroke="#000" stroke-width="2.2"/>
-    <path d="{THUMB}" fill="#000" transform="translate(60 60) scale(1.1) translate(-60 -60)"/>
+    <g transform="translate(60 60) scale(1.1) translate(-60 -60)">{THUMB}</g>
   </mask>
   <symbol id="seal-sm" viewBox="0 0 120 120">
     <g filter="url(#rim)"><rect width="120" height="120" fill="currentColor" mask="url(#face)"/></g>

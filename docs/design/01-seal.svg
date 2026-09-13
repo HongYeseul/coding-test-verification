@@ -16,7 +16,10 @@
     <rect width="120" height="120" fill="#000"/>
     <circle cx="60" cy="60" r="55" fill="#fff"/>
     <circle cx="60" cy="60" r="46.5" fill="none" stroke="#000" stroke-width="2.2"/>
-    <path d="M 51 86 L 76 86 Q 84 86 85 78 L 87.5 63 Q 88.5 56 81 56 L 68 56 Q 64.5 56 65.5 52.5 L 68.5 41 Q 70.5 33 63 33 Q 59 33 57.5 37.5 L 52 53 Q 51 56 51 59 Z" fill="#000" transform="translate(60 60) scale(1.1) translate(-60 -60)"/>
+    <g transform="translate(60 60) scale(1.1) translate(-60 -60)"><path d="M 51 86 L 76 86 Q 84 86 85 78 L 87.5 63 Q 88.5 56 81 56 L 68 56
+               Q 64.5 56 65.5 52.5 L 68.5 41 Q 70.5 33 63 33 Q 59 33 57.5 37.5
+               L 52 53 Q 51 56 51 59 Z" fill="#000"/>
+    <rect x="33" y="58" width="14" height="28" rx="3" fill="#000"/></g>
   </mask>
   <symbol id="seal-sm" viewBox="0 0 120 120">
     <g filter="url(#rim)"><rect width="120" height="120" fill="currentColor" mask="url(#face)"/></g>

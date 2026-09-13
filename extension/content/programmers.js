@@ -117,7 +117,7 @@
 
     const stamp = el("button", "dojang-stamp", "도장 찍기");
     stamp.type = "button";
-    const note = el("p", "dojang-note", "스터디 기록으로 남깁니다.");
+    const note = el("p", "dojang-note", "스터디에 기록으로 남깁니다.");
     body.append(stamp, note);
     card.append(head, body);
     (visibleModal() ?? document.body).append(card);
