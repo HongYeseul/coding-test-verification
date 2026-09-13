@@ -37,18 +37,31 @@ DOM에 두기 때문에 거기서 긁으면 코드가 잘립니다. **잘린 코
 
 ## 받는 법
 
-저장소에 들어 있습니다. 따로 배포된 파일은 없습니다.
+1. [릴리스 페이지](https://github.com/HongYeseul/coding-test-verification/releases/latest)에서 `dojang-extension-v*.zip` 을 받아 압축을 풉니다.
+2. 크롬에서 `chrome://extensions` 를 엽니다.
+3. 오른쪽 위 **개발자 모드** 를 켭니다.
+4. **압축해제된 확장 프로그램을 로드합니다** 로 압축을 푼 `dojang-extension` 폴더를 고릅니다.
 
-1. <https://github.com/HongYeseul/coding-test-verification> 에서 **Code → Download ZIP**
-2. 압축을 풀고 크롬 `chrome://extensions`를 엽니다
-3. 오른쪽 위 **개발자 모드**를 켭니다
-4. **압축해제된 확장 프로그램을 로드합니다**로 압축 푼 폴더 안의 `extension` 폴더를 고릅니다
+주소나 키를 입력할 게 없습니다. `config.js`의 기본값이 운영 환경이고, 거기 들어 있는
+publishable key는 배포된 사이트의 자바스크립트에 이미 실려 있는 공개 값입니다. 관리자 키는
+들어 있지 않습니다.
 
-끝입니다. 주소나 키를 입력할 필요가 없습니다 — `config.js`의 기본값이 운영 환경이고,
-거기 들어 있는 publishable key는 배포된 사이트의 자바스크립트에 이미 실려 있는 공개
-값입니다. 관리자 키는 들어 있지 않습니다.
+크롬 웹스토어 등록 전이라 자동 갱신이 되지 않습니다. 새 버전은 다시 받아 같은 폴더를
+교체하고 `chrome://extensions`에서 새로고침을 누르면 됩니다.
 
-`git clone` 해서 쓰면 `git pull` 할 때마다 확장도 함께 갱신됩니다.
+저장소를 `git clone` 해서 `extension/` 폴더를 그대로 로드해도 됩니다. 그러면 `git pull`
+할 때마다 확장도 함께 갱신됩니다.
+
+### 새 버전 내기
+
+`manifest.json`의 `version`을 올리고 실행합니다. `RELEASE_NOTES.md`가 릴리스 설명이 됩니다.
+
+```bash
+bash extension/release.sh            # zip만 만들어 확인
+bash extension/release.sh --publish  # 태그와 공개 릴리스까지
+```
+
+확장 아이디를 고정하는 `key`가 빠졌거나 설정이 아직 로컬을 가리키면 스크립트가 멈춥니다.
 
 ### 확장 아이디가 고정되어 있습니다
 

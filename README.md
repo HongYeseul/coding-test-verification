@@ -133,7 +133,7 @@ GitHub 아이디는 로그인 계정의 `auth.identities`에서만 채우며 사
 
 신원은 웹과 같은 GitHub OAuth를 `chrome.identity`로 태워 확보합니다. 별도 키 체계나 테이블이 없고 서버는 지금처럼 토큰을 확인합니다. 등록은 `POST /api/proofs`로 받으며, 화면이 쓰는 서버 액션과 같은 규칙(`src/lib/proof-record.ts`)을 공유합니다.
 
-저장소의 `extension` 폴더를 크롬의 ‘압축해제된 확장 프로그램을 로드합니다’로 고르면 끝입니다. 기본값이 운영 환경이라 주소나 키를 입력할 필요가 없습니다.
+[릴리스 페이지](https://github.com/HongYeseul/coding-test-verification/releases/latest)에서 zip을 받아 압축을 풀고, 크롬의 ‘압축해제된 확장 프로그램을 로드합니다’로 그 폴더를 고르면 끝입니다. 기본값이 운영 환경이라 주소나 키를 입력할 필요가 없습니다.
 
 `manifest.json`의 `key`로 확장 아이디를 `pkpabpnpecgcpakaehojnphgeajoieih`에 고정했습니다. 누가 설치하든 같은 아이디라 로그인 복귀 주소 `https://pkpabpnpecgcpakaehojnphgeajoieih.chromiumapp.org/*`를 Supabase에 한 번만 등록하면 됩니다.
 
