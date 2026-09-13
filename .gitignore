@@ -47,3 +47,6 @@ next-env.d.ts
 
 # 로컬 미리보기 설정 (기기마다 node 경로가 다름)
 .claude/launch.json
+
+# 확장 릴리스 빌드 산출물
+dojang-extension-v*.zip
