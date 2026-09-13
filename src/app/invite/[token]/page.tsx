@@ -30,7 +30,7 @@ export default async function InvitationPage({
         </p>
       </header>
 
-      <section className="grid max-w-lg gap-4 rounded-xl border border-line bg-soft p-5">
+      <section className="grid max-w-lg gap-4 rounded-surface border border-line bg-soft p-5">
         <StatusMessage error={firstQueryValue(query.error)} />
 
         {!configured && (

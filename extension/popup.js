@@ -17,6 +17,9 @@ const view = {
 let groups = [];
 let tabUrl = "";
 
+// 머리말 도장. 도형은 seal.js 한 벌에서 오고 색은 popup.css의 .seal이 정합니다.
+document.getElementById("seal").append(window.dojangSeal({ size: 26 }));
+
 function say(message, isError = false) {
   view.status.textContent = message;
   view.status.classList.toggle("error", isError);

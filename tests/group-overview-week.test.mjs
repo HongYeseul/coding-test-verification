@@ -16,6 +16,8 @@ const compiled = ts.transpileModule(
   const LinkPendingDot = () => null;
   const Link = (props) => React.createElement("a", props);
   const RefreshOverviewButton = () => null;
+  const Seal = ({ className }) =>
+    React.createElement("svg", { className, "aria-hidden": "true" });
   ${source}
   export { GroupOverview };
 `,

@@ -28,7 +28,7 @@ window.dojangConfetti = function dojangConfetti() {
   document.body.append(canvas);
 
   // 서비스 색을 중심으로 두고 금색과 흰색을 조금 섞습니다.
-  const colors = ["#386e2d", "#5a9b48", "#b6db9c", "#e9bd79", "#ffffff"];
+  const colors = ["#1d5091", "#3f7bc4", "#9ac6f5", "#e5bc78", "#ffffff"];
   const originX = width - 64;
   const originY = 44;
   const pieces = Array.from({ length: 90 }, () => {

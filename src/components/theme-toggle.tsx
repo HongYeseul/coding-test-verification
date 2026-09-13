@@ -103,7 +103,7 @@ export function ThemeToggle() {
       onClick={() => choose(next)}
       title={description}
       aria-label={description}
-      className="grid size-9 place-items-center rounded-md text-sub hover:bg-soft"
+      className="grid size-9 place-items-center rounded-control text-sub hover:bg-soft"
     >
       <ThemeIcon theme={theme} />
     </button>

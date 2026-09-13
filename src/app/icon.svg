@@ -1,5 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <circle cx="16" cy="16" r="15" fill="#386e2d"/>
-  <circle cx="16" cy="16" r="11.5" fill="none" stroke="#ffffff" stroke-opacity=".45" stroke-width="1.5"/>
-  <path d="M10 16.4l4.1 4.1 8-8.8" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- 파비콘은 필터 없이 단단하게 찍습니다. 16px에서 얼룩은 질감이 아니라
+       색이 바랜 것처럼 보이고, 렌더러에 따라 필터를 건너뛰기도 합니다.
+       도형 좌표는 src/components/seal.tsx와 같습니다. -->
+  <defs>
+    <mask id="face">
+      <rect width="120" height="120" fill="#000"/>
+      <circle cx="60" cy="60" r="55" fill="#fff"/>
+      <circle cx="60" cy="60" r="46.5" fill="none" stroke="#000" stroke-width="2.2"/>
+      <path d="M 51 86 L 76 86 Q 84 86 85 78 L 87.5 63 Q 88.5 56 81 56 L 68 56
+               Q 64.5 56 65.5 52.5 L 68.5 41 Q 70.5 33 63 33 Q 59 33 57.5 37.5
+               L 52 53 Q 51 56 51 59 Z" fill="#000"/>
+      <rect x="33" y="58" width="14" height="28" rx="3" fill="#000"/>
+    </mask>
+  </defs>
+  <!-- 파낸 자리에 종이 대신 흰 원반을 깝니다. 탭 배경이 어두워도 엄지가 읽힙니다.
+       도장의 마스크는 seal.tsx와 완전히 같습니다. -->
+  <g transform="rotate(-6 60 60)">
+    <circle cx="60" cy="60" r="55" fill="#ffffff"/>
+    <rect width="120" height="120" fill="#1d5091" mask="url(#face)"/>
+  </g>
 </svg>

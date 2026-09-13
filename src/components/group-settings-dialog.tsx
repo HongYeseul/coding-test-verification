@@ -38,7 +38,7 @@ export function GroupSettingsDialog({
         aria-label="그룹 설정"
         title="그룹 설정"
         onClick={() => setOpen(true)}
-        className="grid size-9 shrink-0 place-items-center rounded-lg text-sub hover:bg-soft hover:text-ink"
+        className="grid size-9 shrink-0 place-items-center rounded-control text-sub hover:bg-soft hover:text-ink"
       >
         <svg
           width="18"
@@ -63,7 +63,7 @@ export function GroupSettingsDialog({
         onClick={(event) => {
           if (event.target === dialogRef.current) setOpen(false);
         }}
-        className="m-auto max-h-[calc(100dvh-40px)] w-[min(520px,calc(100%-32px))] overflow-y-auto rounded-[14px] border border-line bg-canvas p-6 text-ink backdrop:bg-black/40"
+        className="m-auto max-h-[calc(100dvh-40px)] w-[min(520px,calc(100%-32px))] overflow-y-auto rounded-surface border border-line bg-canvas p-6 text-ink backdrop:bg-black/40"
       >
         {/* 취소하고 다시 열면 저장된 값으로 돌아오도록 폼을 다시 그립니다. */}
         <form
@@ -72,7 +72,7 @@ export function GroupSettingsDialog({
           onSubmit={() => setOpen(false)}
         >
           <div className="flex items-center justify-between gap-3">
-            <h3>그룹 설정</h3>
+            <h2>그룹 설정</h2>
             <button
               type="button"
               className="btn btn-ghost"

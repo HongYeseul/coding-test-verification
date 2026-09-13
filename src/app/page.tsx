@@ -66,7 +66,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       </header>
 
       <section className="grid gap-5 sm:grid-cols-2">
-        <div className="grid content-start gap-3 rounded-xl border border-line bg-soft p-5">
+        <div className="grid content-start gap-3 rounded-surface border border-line bg-soft p-5">
           <h2>GitHub로 로그인</h2>
           <p className="text-[13px] text-sub">
             초대 대상 확인에는 GitHub 계정을 사용합니다.
@@ -89,7 +89,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
         <div>
           <h2 className="mb-3">그룹이 열리기까지</h2>
-          <ol className="rounded-xl border border-line">
+          <ol className="rounded-surface border border-line">
             {steps.map((step) => (
               <li
                 key={step.number}
@@ -128,7 +128,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         </div>
 
         {groups.length ? (
-          <ul className="rounded-xl border border-line">
+          <ul className="rounded-surface border border-line">
             {groups.map((group) => {
               const row = (
                 <>
@@ -194,7 +194,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             })}
           </ul>
         ) : (
-          <p className="rounded-xl border border-line px-5 py-10 text-center text-[13px] text-sub">
+          <p className="rounded-surface border border-line px-5 py-10 text-center text-[13px] text-sub">
             아직 열린 스터디가 없습니다. 로그인하면 새 스터디를 만들 수 있어요.
           </p>
         )}

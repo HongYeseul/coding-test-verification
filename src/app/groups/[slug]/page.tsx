@@ -598,7 +598,7 @@ export default async function GroupPage({
                 <input type="hidden" name="groupId" value={group.id} />
                 <input type="hidden" name="groupSlug" value={group.slug} />
                 {invitation ? (
-                  <div className="rounded-lg bg-soft p-4">
+                  <div className="rounded-control bg-soft p-4">
                     <p className="font-mono text-2xl font-bold tracking-widest select-all">
                       {invitation.code}
                     </p>
@@ -607,7 +607,7 @@ export default async function GroupPage({
                     </p>
                   </div>
                 ) : (
-                  <p className="rounded-lg bg-soft p-4 text-[13px] text-sub">
+                  <p className="rounded-control bg-soft p-4 text-[13px] text-sub">
                     사용 가능한 초대코드가 없습니다.
                   </p>
                 )}
@@ -661,7 +661,7 @@ export default async function GroupPage({
       ) : (
         <p
           role="alert"
-          className="mb-7 rounded-xl border border-line bg-soft p-5 text-[15px] text-warn"
+          className="mb-7 rounded-surface border border-line bg-soft p-5 text-[15px] text-warn"
         >
           인증 현황을 불러오지 못했습니다. 잠시 후 페이지를 새로고침해주세요.
         </p>
@@ -806,7 +806,7 @@ export default async function GroupPage({
               <p className="mt-3 text-[13px] text-sub">
                 가입 승인 대기 {pendingMemberships.length}명
               </p>
-              <ul className="mt-2 rounded-xl border border-line">
+              <ul className="mt-2 rounded-surface border border-line">
                 {pendingMemberships.map((membership) => (
                   <li
                     key={membership.user_id}
@@ -837,7 +837,7 @@ export default async function GroupPage({
           {manageableMembers.length > 0 && (
             <>
               <p className="mt-4 text-[13px] text-sub">검수자 지정</p>
-              <ul className="mt-2 rounded-xl border border-line">
+              <ul className="mt-2 rounded-surface border border-line">
                 {manageableMembers.map((membership) => (
                   <li
                     key={membership.user_id}

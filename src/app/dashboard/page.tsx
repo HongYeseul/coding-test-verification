@@ -96,7 +96,7 @@ export default async function DashboardPage({
 
       <section aria-label="참여 중인 그룹" className="mb-7">
         {groups.length ? (
-          <ul className="rounded-xl border border-line">
+          <ul className="rounded-surface border border-line">
             {groups.map((group) => {
               const membership = membershipByGroupId.get(group.id);
               return (
@@ -123,7 +123,7 @@ export default async function DashboardPage({
             })}
           </ul>
         ) : (
-          <div className="flex min-h-[180px] flex-col justify-center rounded-xl border border-line px-4 py-8 text-center text-sub">
+          <div className="flex min-h-[180px] flex-col justify-center rounded-surface border border-line px-4 py-8 text-center text-sub">
             <strong className="mb-1 block text-[17px] font-semibold text-ink">
               아직 참여 중인 그룹이 없어요
             </strong>
@@ -138,7 +138,7 @@ export default async function DashboardPage({
       <section className="grid items-start gap-5 sm:grid-cols-2">
         <form
           action={joinByCodeAction}
-          className="grid gap-2 rounded-xl border border-line bg-soft p-5"
+          className="grid gap-2 rounded-surface border border-line bg-soft p-5"
         >
           <h2>초대코드로 가입</h2>
           <p className="text-[13px] text-sub">
@@ -166,7 +166,7 @@ export default async function DashboardPage({
 
         <form
           action={createGroupAction}
-          className="grid gap-2 rounded-xl border border-line bg-soft p-5"
+          className="grid gap-2 rounded-surface border border-line bg-soft p-5"
         >
           <h2>스터디 그룹 만들기</h2>
           <p className="text-[13px] text-sub">

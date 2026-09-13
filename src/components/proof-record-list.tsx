@@ -105,7 +105,7 @@ export function ProofRecordList({
           className={`grid w-full items-center gap-3 border-b border-l-[3px] border-line py-3 pr-0.5 pl-2 text-left hover:bg-soft sm:gap-4 sm:pl-3 ${rowColumns(showPhotos)} ${toneBar[item.statusTone]}`}
         >
           {showPhotos && (
-            <span className="relative grid size-[44px] place-items-center overflow-hidden rounded-[9px] bg-soft text-sub sm:size-[52px]">
+            <span className="relative grid size-[44px] place-items-center overflow-hidden rounded-control bg-soft text-sub sm:size-[52px]">
               {item.hasPhoto ? (
                 <Image
                   src={`/proofs/${item.id}/evidence`}
@@ -155,7 +155,7 @@ export function ProofRecordList({
         onClick={(event) => {
           if (event.target === dialogRef.current) setOpenId(null);
         }}
-        className={`m-auto overflow-hidden rounded-[14px] border border-line bg-canvas p-0 text-ink backdrop:bg-black/40 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:rounded-none max-sm:border-0 ${
+        className={`m-auto overflow-hidden rounded-surface border border-line bg-canvas p-0 text-ink backdrop:bg-black/40 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:rounded-none max-sm:border-0 ${
           record?.hasPhoto || record?.solutionCode
             ? "h-[min(680px,calc(100dvh-48px))] w-[min(960px,calc(100%-48px))]"
             : "max-h-[min(680px,calc(100dvh-48px))] w-[min(560px,calc(100%-48px))]"
@@ -169,7 +169,7 @@ export function ProofRecordList({
           >
             <header className="flex min-w-0 items-center justify-between gap-4 border-b border-line px-4 py-3 sm:px-6 sm:py-4">
               <div className="min-w-0">
-                <h3 className="truncate">{record.title}</h3>
+                <h2 className="truncate">{record.title}</h2>
                 <p className="text-[13px] text-sub">
                   {record.memberName} · {record.date} {record.time}
                 </p>
@@ -212,7 +212,7 @@ export function ProofRecordList({
                   )}
                   {record.solutionCode && (
                     // 긴 줄은 코드 상자 안에서만 가로로 흐릅니다.
-                    <pre className="min-h-0 flex-1 overflow-auto rounded-lg border border-line bg-canvas p-4 text-left font-mono text-[13px] leading-[1.6]">
+                    <pre className="min-h-0 flex-1 overflow-auto rounded-control border border-line bg-canvas p-4 text-left font-mono text-[13px] leading-[1.6]">
                       {record.solutionCode}
                     </pre>
                   )}
@@ -225,7 +225,7 @@ export function ProofRecordList({
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <h2>인증 정보</h2>
+                  <h3>인증 정보</h3>
                   <span
                     className={`text-[13px] whitespace-nowrap ${toneClass[record.statusTone]}`}
                   >

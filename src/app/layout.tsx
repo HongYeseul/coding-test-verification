@@ -2,6 +2,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import "./globals.css";
 
+import { SealDefs } from "@/components/seal";
 import { themeBootstrapScript } from "@/lib/theme";
 
 export const metadata: Metadata = {
@@ -17,6 +18,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
       </head>
       <body className="flex min-h-full flex-col">
+        {/* 도장 도형은 문서에 한 벌만 두고 화면 곳곳에서 참조합니다. */}
+        <SealDefs />
         {children}
         {/* 실제 방문자 브라우저에서 잰 TTFB·LCP를 Vercel로 보냅니다. */}
         <SpeedInsights />

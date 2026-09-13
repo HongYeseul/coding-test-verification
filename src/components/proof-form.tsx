@@ -10,6 +10,7 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createProofRecordAction } from "@/app/actions/proofs";
+import { Seal } from "@/components/seal";
 import { createClient } from "@/lib/supabase/client";
 import {
   MAX_PROBLEM_URL_LENGTH,
@@ -235,7 +236,7 @@ export function ProofForm({
 
   const photoField = (
     <>
-      <div className="grid justify-items-center gap-2 rounded-lg border border-dashed border-line px-4 py-6 text-center text-sub">
+      <div className="grid justify-items-center gap-2 rounded-control border border-dashed border-line px-4 py-6 text-center text-sub">
         <label htmlFor="proof-photo" className="text-[15px]">
           {isCodingStudy ? "풀이 결과가 보이는 사진 한 장" : "인증 사진 한 장"}
           {!requiresPhoto && <span className="ml-1 text-[13px]">선택 사항</span>}
@@ -277,7 +278,7 @@ export function ProofForm({
               width={640}
               height={480}
               unoptimized
-              className="max-h-72 w-full rounded-lg bg-soft object-contain"
+              className="max-h-72 w-full rounded-control bg-soft object-contain"
             />
             <span className="mt-1 block text-[13px] text-sub underline">
               크게 열어 글자 확인
@@ -336,16 +337,9 @@ export function ProofForm({
         <p
           role="status"
           aria-live="polite"
-          className="fixed bottom-5 left-1/2 z-10 flex w-max max-w-[calc(100%-32px)] -translate-x-1/2 items-center gap-3 rounded-[10px] border border-line bg-canvas px-4 py-3 text-[15px] shadow-[0_4px_20px_rgba(0,0,0,0.13)]"
+          className="fixed bottom-5 left-1/2 z-10 flex w-max max-w-[calc(100%-32px)] -translate-x-1/2 items-center gap-3 rounded-control border border-line bg-canvas px-4 py-3 text-[15px] shadow-[0_4px_20px_rgba(0,0,0,0.13)]"
         >
-          {stamped && (
-            <span
-              aria-hidden="true"
-              className="stamp stamp-press grid size-7 shrink-0 -rotate-6 place-items-center bg-primary text-[15px] font-[650] text-primary-ink"
-            >
-              ✓
-            </span>
-          )}
+          {stamped && <Seal className="size-8 shrink-0" press />}
           {message}
         </p>
       )}
@@ -357,13 +351,13 @@ export function ProofForm({
         onClick={(event) => {
           if (event.target === dialogRef.current && !busy) setOpen(false);
         }}
-        className="m-auto max-h-[calc(100dvh-40px)] w-[min(620px,calc(100%-32px))] overflow-y-auto rounded-[14px] border border-line bg-canvas p-6 text-ink backdrop:bg-black/40"
+        className="m-auto max-h-[calc(100dvh-40px)] w-[min(620px,calc(100%-32px))] overflow-y-auto rounded-surface border border-line bg-canvas p-6 text-ink backdrop:bg-black/40"
       >
         <form onSubmit={submit} onPaste={pastePhoto}>
           <div className="flex items-center justify-between gap-3">
-            <h3>
+            <h2>
               {isCodingStudy ? "오늘 푼 문제를 공유해요" : "오늘의 인증"}
-            </h3>
+            </h2>
             <button
               type="button"
               className="btn btn-ghost"

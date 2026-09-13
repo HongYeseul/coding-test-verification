@@ -2,18 +2,27 @@
 
 :root {
   color-scheme: light dark;
-  --canvas: light-dark(#ffffff, #191d1b);
-  --ink: light-dark(#202923, #edf2ed);
-  --sub: light-dark(#737c75, #a5afa7);
-  --line: light-dark(#e7ebe6, #363d37);
-  --soft: light-dark(#f6f8f4, #222923);
-  --brand: light-dark(#386e2d, #b6db9c);
-  --brand-soft: light-dark(#edf5e6, #2c3d26);
-  --warn: light-dark(#97611d, #e9bd79);
-  --danger: light-dark(#a94c46, #e7a19c);
-  --primary: light-dark(#315d2b, #b7d89b);
-  --primary-hover: light-dark(#284e23, #c6e5ad);
-  --primary-ink: light-dark(#ffffff, #1b2a14);
+  /* 중성색도 파랑 쪽으로 돌립니다. 브랜드가 파랑인데 회색이 초록기를 띠면
+     때가 낀 것처럼 보입니다. 밝기는 그대로 두고 색상만 옮겼습니다. */
+  --canvas: light-dark(#ffffff, #14181d);
+  --ink: light-dark(#1b2027, #e9edf2);
+  --sub: light-dark(#69737e, #98a3af);
+  --line: light-dark(#e3e7ec, #2f353d);
+  --soft: light-dark(#f4f6fa, #1c2128);
+  /* brand는 바탕 위에 얹는 색(글자·도장·선), primary는 채우는 면(버튼 배경)입니다.
+     대비 기준이 달라 값도 다릅니다. */
+  --brand: light-dark(#1d5091, #8fc0f2);
+  --brand-soft: light-dark(#e9f0fa, #1b2e47);
+  --warn: light-dark(#8d5a15, #e5bc78);
+  --danger: light-dark(#ab3a31, #efa19a);
+  --primary: light-dark(#1a4784, #9ac6f5);
+  --primary-hover: light-dark(#143866, #b2d5f8);
+  --primary-ink: light-dark(#ffffff, #0f2038);
+
+  /* 모서리는 셋뿐입니다. control은 홀로 서는 조작 요소(버튼·입력·칸),
+     surface는 다른 것을 담는 면(카드·목록 묶음·다이얼로그), 나머지는 도장의 원형입니다. */
+  --r-control: 8px;
+  --r-surface: 12px;
   --font-app-sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
     "Noto Sans KR", sans-serif;
 }
@@ -41,6 +50,8 @@
   --color-primary: var(--primary);
   --color-primary-ink: var(--primary-ink);
   --font-sans: var(--font-app-sans);
+  --radius-control: var(--r-control);
+  --radius-surface: var(--r-surface);
 }
 
 /* 기본 스타일은 base 레이어에 둬야 Tailwind 유틸리티로 덮을 수 있습니다. */
@@ -63,20 +74,24 @@
     margin: 0;
   }
 
+  /* 한글은 글자 폭이 고르기 때문에 큰 제목에서 자간을 안 붙이면 성기게 벌어집니다.
+     px가 아니라 em이라 크기를 바꿔도 비율이 유지됩니다. */
   h1 {
     font-size: 30px;
     font-weight: 700;
-    letter-spacing: -1px;
+    letter-spacing: -0.033em;
   }
 
   h2 {
-    font-size: 19px;
-    font-weight: 650;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.024em;
   }
 
   h3 {
-    font-size: 21px;
-    font-weight: 650;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.012em;
   }
 
   button,
@@ -114,7 +129,7 @@
     width: 100%;
     padding: 10px 12px;
     border: 1px solid var(--line);
-    border-radius: 7px;
+    border-radius: var(--r-control);
     background: var(--canvas);
     color: var(--ink);
   }
@@ -123,7 +138,7 @@
     min-height: 38px;
     padding: 8px 11px;
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: var(--r-control);
     background: var(--canvas);
     color: var(--ink);
     font-size: 13px;
@@ -152,7 +167,7 @@
     min-height: 40px;
     padding: 9px 14px;
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: var(--r-control);
     background: var(--canvas);
     color: var(--ink);
     font-weight: 550;
@@ -181,33 +196,37 @@
     color: var(--sub);
   }
 
-  /* 도장 자국. 원형 안쪽에 테두리를 하나 더 둬 인장처럼 보이게 합니다.
-     테두리 색은 글자색을 따라가므로 채운 칸과 옅은 칸 모두에서 맞습니다. */
-  .stamp {
-    border-radius: 9999px;
-    outline: 1px solid color-mix(in srgb, currentColor 38%, transparent);
-    outline-offset: -4px;
+  /* 도장. 도형은 components/seal.tsx가 그리고 여기서는 색과 기울기만 정합니다.
+     기울기를 변수로 둔 이유는 누르는 동안에도 각도가 고정이어야 하기 때문입니다. */
+  .seal {
+    color: var(--brand);
+    transform: rotate(var(--seal-tilt, -6deg));
   }
 
-  /* 눌러 찍는 순간. 크게 들어와 살짝 기운 채로 자리를 잡습니다. */
   @media (prefers-reduced-motion: no-preference) {
-    .stamp-press {
-      animation: stamp-press 420ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+    .seal-press {
+      animation: seal-press 340ms cubic-bezier(0.5, 0, 0.2, 1) both;
     }
   }
 }
 
-@keyframes stamp-press {
+/* 눌러 찍는 순간. 손목이 정한 각도는 누르는 중에 변하지 않으므로
+   회전은 고정하고 크기만 움직입니다. 접촉에서 한 번 눌렸다가 압력이 빠집니다. */
+@keyframes seal-press {
   0% {
-    transform: scale(1.6) rotate(-16deg);
+    transform: rotate(var(--seal-tilt, -6deg)) scale(1.85);
     opacity: 0;
   }
-  55% {
-    transform: scale(0.95) rotate(-4deg);
+  34% {
+    transform: rotate(var(--seal-tilt, -6deg)) scale(1.05);
+    opacity: 1;
+  }
+  52% {
+    transform: rotate(var(--seal-tilt, -6deg)) scale(0.982);
     opacity: 1;
   }
   100% {
-    transform: scale(1) rotate(-6deg);
+    transform: rotate(var(--seal-tilt, -6deg)) scale(1);
     opacity: 1;
   }
 }

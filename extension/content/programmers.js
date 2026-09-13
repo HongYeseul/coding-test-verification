@@ -94,8 +94,9 @@
     if (document.querySelector(".dojang-card")) return;
     const card = el("div", "dojang-card");
     const head = el("div", "dojang-head");
-    const seal = el("span", "dojang-seal", "✓");
+    const seal = el("span", "dojang-seal");
     seal.setAttribute("aria-hidden", "true");
+    seal.append(window.dojangSeal({ size: 22 }));
     const close = el("button", "dojang-close", "×");
     close.type = "button";
     close.setAttribute("aria-label", "닫기");
@@ -190,8 +191,9 @@
     document.body.append(card);
     card.replaceChildren();
     const head = el("div", "dojang-head");
-    const seal = el("span", "dojang-seal", "✓");
+    const seal = el("span", "dojang-seal");
     seal.setAttribute("aria-hidden", "true");
+    seal.append(window.dojangSeal({ size: 22 }));
     const close = el("button", "dojang-close", "×");
     close.type = "button";
     close.setAttribute("aria-label", "닫기");

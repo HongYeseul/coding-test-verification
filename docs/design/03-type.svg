@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1440" width="1080" height="1440">
+  <defs></defs>
+  <rect width="1080" height="1440" fill="#ffffff"/>
+<text x="64" y="52" font-size="11.5" fill="#69737e" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="500" letter-spacing="0.12em">도장 디자인 시스템</text>
+<text x="1016" y="52" font-size="11.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="500" letter-spacing="0.12em" text-anchor="end">3 / 4</text>
+<line x1="64" y1="72" x2="1016" y2="72" stroke="#e3e7ec" stroke-width="1"/>
+<text x="64" y="152" font-size="52" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="700" letter-spacing="-0.03em">타이포</text>
+<line x1="64" y1="190" x2="1016" y2="190" stroke="#e3e7ec" stroke-width="1"/>
+<text x="64" y="250" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">글꼴</text>
+<text x="64" y="272" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">기기에 이미 있는</text>
+<text x="64" y="289" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">글꼴만 씁니다.</text>
+<text x="64" y="306" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">웹폰트를 받지</text>
+<text x="64" y="323" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">않으므로 첫 화면이</text>
+<text x="64" y="340" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">늦지 않습니다.</text>
+<text x="236" y="254" font-size="14" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="500">-apple-system, BlinkMacSystemFont,</text>
+<text x="236" y="276" font-size="14" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="500">"Apple SD Gothic Neo", "Noto Sans KR",</text>
+<text x="236" y="298" font-size="14" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="500">sans-serif</text>
+<text x="236" y="336" font-size="12" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">macOS·iOS는 SF와 Apple SD 산돌고딕 네오, Android와 Windows는</text>
+<text x="236" y="355" font-size="12" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">Noto Sans KR로 떨어집니다.</text>
+<line x1="64" y1="390" x2="1016" y2="390" stroke="#e3e7ec" stroke-width="1"/>
+<text x="64" y="430" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">단계</text>
+<text x="64" y="452" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">h3가 h2보다 컸던</text>
+<text x="64" y="469" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">계층을 되돌렸습니다.</text>
+<text x="64" y="486" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">요소로 크기를</text>
+<text x="64" y="503" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">고르지 않습니다.</text>
+<text x="236" y="430" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">h1</text>
+<text x="236" y="447" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">30 / 700 / -0.033em</text>
+<text x="386" y="434" font-size="30" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="700" letter-spacing="-0.99px">이번 주 도장판</text>
+<text x="236" y="490" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">h2</text>
+<text x="236" y="507" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">22 / 600 / -0.024em</text>
+<text x="386" y="494" font-size="22" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="600" letter-spacing="-0.53px">알고리즘 스터디</text>
+<text x="236" y="548" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">h3</text>
+<text x="236" y="565" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">17 / 600 / -0.012em</text>
+<text x="386" y="552" font-size="17" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="600" letter-spacing="-0.2px">최근 인증 기록</text>
+<text x="236" y="606" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">본문</text>
+<text x="236" y="623" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">15 / 400 / 1.6</text>
+<text x="386" y="610" font-size="15" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" letter-spacing="0">오늘 푼 문제를 남기면 스터디원이 검수합니다.</text>
+<text x="236" y="664" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">보조</text>
+<text x="236" y="681" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">13 / 400</text>
+<text x="386" y="668" font-size="13" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" letter-spacing="0">멤버 4명 · 이번 주 11번</text>
+<text x="236" y="722" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">메타</text>
+<text x="236" y="739" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">12 / 500 / .1em</text>
+<text x="386" y="726" font-size="12" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="500" letter-spacing="1.2px">검수 대기</text>
+<line x1="64" y1="754" x2="1016" y2="754" stroke="#e3e7ec" stroke-width="1"/>
+<text x="64" y="784" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">자간</text>
+<text x="236" y="784" font-size="13" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">한글은 라틴보다 글자 폭이 고르기 때문에, 큰 제목에서 자간을 붙이지 않으면</text>
+<text x="236" y="806" font-size="13" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">성기게 벌어져 보입니다. 크기가 커질수록 더 좁힙니다.</text>
+<text x="236" y="828" font-size="13" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"></text>
+<text x="236" y="850" font-size="13" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">px가 아니라 em을 씁니다. h1의 -0.033em은 30px에서 -0.99px로 계산돼</text>
+<text x="236" y="872" font-size="13" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">예전에 박아두었던 -1px과 사실상 같지만, 크기를 바꿔도 비율이 유지됩니다.</text>
+<line x1="64" y1="894" x2="1016" y2="894" stroke="#e3e7ec" stroke-width="1"/>
+<text x="64" y="924" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">숫자</text>
+<text x="236" y="928" font-size="22" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="650">13번</text>
+<text x="326" y="928" font-size="22" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="650">9.7 — 9.13</text>
+<text x="236" y="958" font-size="12" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">자리를 맞춰 세로로 읽히게 tabular-nums를 씁니다. 집계와 날짜가 해당합니다.</text>
+</svg>

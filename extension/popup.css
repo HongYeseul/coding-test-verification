@@ -1,14 +1,16 @@
 /* 웹앱과 같은 색·간격 규칙을 씁니다. */
 :root {
   color-scheme: light dark;
-  --canvas: light-dark(#ffffff, #191d1b);
-  --ink: light-dark(#202923, #edf2ed);
-  --sub: light-dark(#737c75, #a5afa7);
-  --line: light-dark(#e7ebe6, #363d37);
-  --brand: light-dark(#386e2d, #b6db9c);
-  --brand-soft: light-dark(#edf5e6, #2c3d26);
-  --primary: light-dark(#315d2b, #b7d89b);
-  --primary-ink: light-dark(#ffffff, #1b2a14);
+  --canvas: light-dark(#ffffff, #14181d);
+  --ink: light-dark(#1b2027, #e9edf2);
+  --sub: light-dark(#69737e, #98a3af);
+  --line: light-dark(#e3e7ec, #2f353d);
+  --brand: light-dark(#1d5091, #8fc0f2);
+  --brand-soft: light-dark(#e9f0fa, #1b2e47);
+  --primary: light-dark(#1a4784, #9ac6f5);
+  --primary-ink: light-dark(#ffffff, #0f2038);
+  /* 웹앱과 같은 모서리 규칙입니다. */
+  --r-control: 8px;
 }
 
 body {
@@ -30,20 +32,12 @@ header {
   border-bottom: 1px solid var(--line);
 }
 
-/* 상단바 로고와 같은 도장 자국입니다. */
+/* 도장이 들어갈 자리입니다. 도형은 seal.js가 그리고 여기서는 잉크색만 정합니다. */
 .seal {
   display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 9999px;
-  outline: 1px solid color-mix(in srgb, var(--brand) 40%, transparent);
-  outline-offset: -4px;
-  background: var(--brand-soft);
+  flex: none;
+  line-height: 0;
   color: var(--brand);
-  font-size: 12px;
-  font-weight: 650;
-  transform: rotate(-6deg);
 }
 
 label {
@@ -58,7 +52,7 @@ input {
   margin-bottom: 12px;
   padding: 8px 10px;
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: var(--r-control);
   background: var(--canvas);
   color: var(--ink);
   font: inherit;
@@ -68,7 +62,7 @@ button {
   width: 100%;
   min-height: 40px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-control);
   background: var(--canvas);
   color: var(--ink);
   font: inherit;
@@ -109,5 +103,5 @@ button:disabled {
 }
 
 #status.error {
-  color: light-dark(#a94c46, #e7a19c);
+  color: light-dark(#ab3a31, #efa19a);
 }

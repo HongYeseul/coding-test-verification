@@ -21,6 +21,7 @@ cp -R "$SOURCE_DIR"/* "$WORK/dojang-extension"/
 # 개발용 파일은 확장에 필요 없습니다.
 rm -f "$WORK/dojang-extension/install.sh" \
       "$WORK/dojang-extension/release.sh" \
+      "$WORK/dojang-extension/build-icons.py" \
       "$WORK/dojang-extension/README.md" \
       "$WORK/dojang-extension/RELEASE_NOTES.md"
 

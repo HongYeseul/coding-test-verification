@@ -27,7 +27,7 @@ export default async function JoinPage({
         </p>
       </header>
 
-      <section className="grid max-w-lg gap-4 rounded-xl border border-line bg-soft p-5">
+      <section className="grid max-w-lg gap-4 rounded-surface border border-line bg-soft p-5">
         <div>
           <p className="text-[13px] text-sub">초대코드</p>
           <p className="mt-1 font-mono text-3xl font-bold tracking-widest">

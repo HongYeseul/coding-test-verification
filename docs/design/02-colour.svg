@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1440" width="1080" height="1440">
+  <defs></defs>
+  <rect width="1080" height="1440" fill="#ffffff"/>
+<text x="64" y="52" font-size="11.5" fill="#69737e" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="500" letter-spacing="0.12em">도장 디자인 시스템</text>
+<text x="1016" y="52" font-size="11.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="500" letter-spacing="0.12em" text-anchor="end">2 / 4</text>
+<line x1="64" y1="72" x2="1016" y2="72" stroke="#e3e7ec" stroke-width="1"/>
+<text x="64" y="152" font-size="52" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="700" letter-spacing="-0.03em">색</text>
+<line x1="64" y1="190" x2="1016" y2="190" stroke="#e3e7ec" stroke-width="1"/>
+<text x="64" y="250" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">바탕</text>
+<text x="64" y="272" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">중성색도 파랑 쪽으로</text>
+<text x="64" y="289" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">치우쳐 있습니다.</text>
+<text x="64" y="306" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">브랜드가 파랑인데</text>
+<text x="64" y="323" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">회색이 초록기를 띠면</text>
+<text x="64" y="340" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">때가 낀 것처럼</text>
+<text x="64" y="357" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">보입니다.</text>
+<rect x="236" y="232" width="70" height="76" fill="#ffffff"/>
+<rect x="306" y="232" width="70" height="76" fill="#14181d"/>
+<rect x="236" y="232" width="140" height="76" fill="none" stroke="#e3e7ec"/>
+<text x="236" y="326" font-size="11.5" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">--canvas</text>
+<text x="236" y="344" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#ffffff</text>
+<text x="236" y="359" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#14181d</text>
+<rect x="397" y="232" width="70" height="76" fill="#1b2027"/>
+<rect x="467" y="232" width="70" height="76" fill="#e9edf2"/>
+<rect x="397" y="232" width="140" height="76" fill="none" stroke="#e3e7ec"/>
+<text x="397" y="326" font-size="11.5" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">--ink</text>
+<text x="397" y="344" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#1b2027</text>
+<text x="397" y="359" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#e9edf2</text>
+<rect x="558" y="232" width="70" height="76" fill="#69737e"/>
+<rect x="628" y="232" width="70" height="76" fill="#98a3af"/>
+<rect x="558" y="232" width="140" height="76" fill="none" stroke="#e3e7ec"/>
+<text x="558" y="326" font-size="11.5" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">--sub</text>
+<text x="558" y="344" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#69737e</text>
+<text x="558" y="359" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#98a3af</text>
+<rect x="719" y="232" width="70" height="76" fill="#e3e7ec"/>
+<rect x="789" y="232" width="70" height="76" fill="#2f353d"/>
+<rect x="719" y="232" width="140" height="76" fill="none" stroke="#e3e7ec"/>
+<text x="719" y="326" font-size="11.5" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">--line</text>
+<text x="719" y="344" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#e3e7ec</text>
+<text x="719" y="359" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#2f353d</text>
+<rect x="880" y="232" width="70" height="76" fill="#f4f6fa"/>
+<rect x="950" y="232" width="70" height="76" fill="#1c2128"/>
+<rect x="880" y="232" width="140" height="76" fill="none" stroke="#e3e7ec"/>
+<text x="880" y="326" font-size="11.5" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">--soft</text>
+<text x="880" y="344" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#f4f6fa</text>
+<text x="880" y="359" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#1c2128</text>
+<line x1="64" y1="394" x2="1016" y2="394" stroke="#e3e7ec" stroke-width="1"/>
+<text x="64" y="440" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">브랜드</text>
+<text x="64" y="462" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">brand는 바탕 위에</text>
+<text x="64" y="479" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">얹는 색, primary는</text>
+<text x="64" y="496" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">채우는 면입니다.</text>
+<text x="64" y="513" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">대비 기준이 달라</text>
+<text x="64" y="530" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">값도 다릅니다.</text>
+<rect x="236" y="422" width="70" height="76" fill="#1d5091"/>
+<rect x="306" y="422" width="70" height="76" fill="#8fc0f2"/>
+<rect x="236" y="422" width="140" height="76" fill="none" stroke="#e3e7ec"/>
+<text x="236" y="516" font-size="11.5" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">--brand</text>
+<text x="236" y="534" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#1d5091</text>
+<text x="236" y="549" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#8fc0f2</text>
+<rect x="397" y="422" width="70" height="76" fill="#e9f0fa"/>
+<rect x="467" y="422" width="70" height="76" fill="#1b2e47"/>
+<rect x="397" y="422" width="140" height="76" fill="none" stroke="#e3e7ec"/>
+<text x="397" y="516" font-size="11.5" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">--brand-soft</text>
+<text x="397" y="534" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#e9f0fa</text>
+<text x="397" y="549" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#1b2e47</text>
+<rect x="558" y="422" width="70" height="76" fill="#1a4784"/>
+<rect x="628" y="422" width="70" height="76" fill="#9ac6f5"/>
+<rect x="558" y="422" width="140" height="76" fill="none" stroke="#e3e7ec"/>
+<text x="558" y="516" font-size="11.5" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">--primary</text>
+<text x="558" y="534" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#1a4784</text>
+<text x="558" y="549" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#9ac6f5</text>
+<rect x="719" y="422" width="70" height="76" fill="#143866"/>
+<rect x="789" y="422" width="70" height="76" fill="#b2d5f8"/>
+<rect x="719" y="422" width="140" height="76" fill="none" stroke="#e3e7ec"/>
+<text x="719" y="516" font-size="11.5" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">--primary-hover</text>
+<text x="719" y="534" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#143866</text>
+<text x="719" y="549" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#b2d5f8</text>
+<rect x="880" y="422" width="70" height="76" fill="#ffffff"/>
+<rect x="950" y="422" width="70" height="76" fill="#0f2038"/>
+<rect x="880" y="422" width="140" height="76" fill="none" stroke="#e3e7ec"/>
+<text x="880" y="516" font-size="11.5" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">--primary-ink</text>
+<text x="880" y="534" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#ffffff</text>
+<text x="880" y="549" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#0f2038</text>
+<line x1="64" y1="584" x2="1016" y2="584" stroke="#e3e7ec" stroke-width="1"/>
+<text x="64" y="630" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">상태</text>
+<text x="64" y="652" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">승인은 색이 아니라</text>
+<text x="64" y="669" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">도장의 형태가</text>
+<text x="64" y="686" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">집니다. 그래서</text>
+<text x="64" y="703" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">‘성공 초록’이</text>
+<text x="64" y="720" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">따로 없습니다.</text>
+<rect x="236" y="612" width="70" height="76" fill="#8d5a15"/>
+<rect x="306" y="612" width="70" height="76" fill="#e5bc78"/>
+<rect x="236" y="612" width="140" height="76" fill="none" stroke="#e3e7ec"/>
+<text x="236" y="706" font-size="11.5" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">--warn</text>
+<text x="236" y="724" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#8d5a15</text>
+<text x="236" y="739" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#e5bc78</text>
+<rect x="397" y="612" width="70" height="76" fill="#ab3a31"/>
+<rect x="467" y="612" width="70" height="76" fill="#efa19a"/>
+<rect x="397" y="612" width="140" height="76" fill="none" stroke="#e3e7ec"/>
+<text x="397" y="706" font-size="11.5" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">--danger</text>
+<text x="397" y="724" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#ab3a31</text>
+<text x="397" y="739" font-size="10.5" fill="#a8b0b8" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">#efa19a</text>
+<line x1="64" y1="774" x2="1016" y2="774" stroke="#e3e7ec" stroke-width="1"/>
+<text x="64" y="820" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">대비</text>
+<text x="64" y="842" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">WCAG AA 본문</text>
+<text x="64" y="859" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">기준은 4.5:1</text>
+<text x="64" y="876" font-size="11.5" fill="#a8b0b8" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">입니다.</text>
+<rect x="236" y="802" width="118" height="56" fill="#ffffff" stroke="#e3e7ec"/>
+<text x="295" y="836" font-size="17" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="700" text-anchor="middle">16.4:1</text>
+<text x="236" y="876" font-size="10.5" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">본문 / 바탕</text>
+<rect x="368" y="802" width="118" height="56" fill="#ffffff" stroke="#e3e7ec"/>
+<text x="427" y="836" font-size="17" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="700" text-anchor="middle">4.8:1</text>
+<text x="368" y="876" font-size="10.5" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">보조 / 바탕</text>
+<rect x="500" y="802" width="118" height="56" fill="#ffffff" stroke="#e3e7ec"/>
+<text x="559" y="836" font-size="17" fill="#1d5091" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="700" text-anchor="middle">8.1:1</text>
+<text x="500" y="876" font-size="10.5" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">브랜드 / 바탕</text>
+<rect x="632" y="802" width="118" height="56" fill="#1a4784" stroke="#e3e7ec"/>
+<text x="691" y="836" font-size="17" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="700" text-anchor="middle">9.2:1</text>
+<text x="632" y="876" font-size="10.5" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">버튼 글자 / 버튼</text>
+<rect x="764" y="802" width="118" height="56" fill="#14181d" stroke="#e3e7ec"/>
+<text x="823" y="836" font-size="17" fill="#e9edf2" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="700" text-anchor="middle">15.2:1</text>
+<text x="764" y="876" font-size="10.5" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">본문 / 바탕 · 다크</text>
+<rect x="896" y="802" width="118" height="56" fill="#14181d" stroke="#e3e7ec"/>
+<text x="955" y="836" font-size="17" fill="#8fc0f2" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="700" text-anchor="middle">9.3:1</text>
+<text x="896" y="876" font-size="10.5" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">브랜드 / 바탕 · 다크</text>
+<line x1="64" y1="924" x2="1016" y2="924" stroke="#e3e7ec" stroke-width="1"/>
+<text x="64" y="970" font-size="12" fill="#1b2027" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">규칙</text>
+<text x="236" y="970" font-size="13.5" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="600">색 하나가 두 일을 겸하지 않습니다</text>
+<text x="236" y="992" font-size="12" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">예전에는 초록이 브랜드이면서 ‘승인’이었습니다. 도장판이 초록으로 차면 우리 색이라 그런 건지 다들 잘해서</text>
+<text x="236" y="1010" font-size="12" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">그런 건지 구분되지 않았습니다.</text>
+<text x="236" y="1048" font-size="13.5" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="600">brand와 primary는 다릅니다</text>
+<text x="236" y="1070" font-size="12" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">brand는 바탕 위에 얹는 색이라 바탕과의 대비를 봅니다. primary는 채우는 면이라 그 위에 올라갈</text>
+<text x="236" y="1088" font-size="12" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">글자와의 대비를 봅니다.</text>
+<text x="236" y="1126" font-size="13.5" fill="#1b2027" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="600">테마는 토큰 한 벌로 끝냅니다</text>
+<text x="236" y="1148" font-size="12" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">light-dark()로 정의하므로 다크 모드용 재정의가 따로 없습니다. 사용자가 고른 테마는</text>
+<text x="236" y="1166" font-size="12" fill="#69737e" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">color-scheme만 바꿉니다.</text>
+</svg>

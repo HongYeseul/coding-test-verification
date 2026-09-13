@@ -86,9 +86,9 @@ export function InvitePopover({
       <div
         id={panelId}
         hidden={!open}
-        className="absolute top-full right-0 z-20 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-line bg-canvas p-5 shadow-[0_4px_20px_rgba(0,0,0,0.12)]"
+        className="absolute top-full right-0 z-20 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-surface border border-line bg-canvas p-5 shadow-[0_4px_20px_rgba(0,0,0,0.12)]"
       >
-        <h3>멤버 초대</h3>
+        <h2>멤버 초대</h2>
         <p className="mt-1 text-[13px] text-sub">
           링크나 코드를 공유하세요. 가입 신청 후 승인이 필요합니다.
         </p>

@@ -77,7 +77,7 @@ export default async function PublicGroupBoardPage({
       </header>
 
       {members.length ? (
-        <ol className="rounded-xl border border-line">
+        <ol className="rounded-surface border border-line">
           {members.map((member) => (
             <li
               key={`${member.rank}-${member.displayName}`}
@@ -123,7 +123,7 @@ export default async function PublicGroupBoardPage({
           ))}
         </ol>
       ) : (
-        <p className="rounded-xl border border-line px-5 py-10 text-center text-[13px] text-sub">
+        <p className="rounded-surface border border-line px-5 py-10 text-center text-[13px] text-sub">
           아직 멤버가 없습니다.
         </p>
       )}

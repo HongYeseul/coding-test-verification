@@ -11,9 +11,9 @@ export function PageLoading() {
         aria-hidden="true"
         className="mt-5 space-y-6 motion-safe:animate-pulse"
       >
-        <div className="h-16 rounded-xl bg-soft" />
-        <div className="h-56 rounded-xl bg-soft" />
-        <div className="h-64 rounded-xl bg-soft" />
+        <div className="h-16 rounded-surface bg-soft" />
+        <div className="h-56 rounded-surface bg-soft" />
+        <div className="h-64 rounded-surface bg-soft" />
       </div>
     </main>
   );

@@ -55,7 +55,7 @@ export default async function ProfileSettingsPage({
 
       <form
         action={updateProfileAction}
-        className="grid gap-2 rounded-xl border border-line p-5 sm:max-w-[520px]"
+        className="grid gap-2 rounded-surface border border-line p-5 sm:max-w-[520px]"
       >
         <label htmlFor="displayName" className="text-[15px]">
           닉네임
@@ -95,7 +95,7 @@ export default async function ProfileSettingsPage({
 
       <section aria-label="연결된 계정" className="mt-5 sm:max-w-[520px]">
         <h2>연결된 계정</h2>
-        <p className="mt-2 rounded-xl border border-line bg-soft px-4 py-3 text-[15px]">
+        <p className="mt-2 rounded-surface border border-line bg-soft px-4 py-3 text-[15px]">
           GitHub{" "}
           {handle ? (
             <span className="font-mono">@{handle}</span>

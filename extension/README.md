@@ -134,11 +134,30 @@ bash extension/install.sh
 | `background.js` | 콘텐츠 스크립트 대신 서버에 등록 요청 (페이지 오리진에서는 못 보냄) |
 | `content/programmers.js` | 채점 결과 감시와 떠 있는 버튼. 선택자가 여기 모여 있습니다 |
 | `config.js` | 환경별 주소와 publishable key |
+| `seal.js` | 도장 SVG 한 벌. 팝업과 콘텐츠 스크립트가 같이 씁니다 |
 
 의존성과 빌드 단계가 없습니다. 폴더를 그대로 로드하면 동작합니다.
 
 압축 한도(긴 변 1440·1200·1024px, 목표 120KB, 상한 300KB)는 웹앱의
 `src/lib/compress-photo.ts`와 같은 값입니다. 한쪽을 바꾸면 다른 쪽도 바꿔야 합니다.
+
+도장도 마찬가지입니다. `seal.js`의 도형 좌표는 웹앱의 `src/components/seal.tsx`와
+같습니다. 번들러가 없어 웹앱 컴포넌트를 가져다 쓸 수 없어서 한 벌 더 두었습니다.
+색 토큰도 `popup.css`와 `content/overlay.css`에 값을 직접 박아 씁니다 — 페이지의
+CSS 변수가 여기까지 닿지 않기 때문입니다. 팔레트를 바꿀 때 세 곳을 같이 봐야 합니다.
+
+## 아이콘 다시 굽기
+
+`icons/*.png`는 웹앱 파비콘 `src/app/icon.svg`에서 굽습니다. 도장 도형이나 색을
+고쳤으면 다시 실행합니다.
+
+```bash
+python3 extension/build-icons.py
+```
+
+macOS 내장 Quick Look을 쓰므로 macOS에서만 동작하고, 외부 패키지는 필요 없습니다.
+Quick Look이 SVG를 흰 배경에 눌러 내놓기 때문에 스크립트가 도장 바깥을 다시
+투명하게 만듭니다 — 그대로 쓰면 툴바에 흰 네모가 생깁니다.
 
 관리자 키(`SUPABASE_SECRET_KEY`)는 확장에 넣지 않습니다. publishable key만 씁니다.
 

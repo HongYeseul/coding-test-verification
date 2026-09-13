@@ -7,13 +7,14 @@ import {
   type OverviewMember,
 } from "@/lib/group-overview";
 import { LinkPendingDot } from "@/components/link-pending-dot";
+import { Seal } from "@/components/seal";
 
 /** 손으로 찍은 것처럼 칸마다 조금씩 기울입니다. 같은 칸은 다시 그려도 같은 각도입니다. */
-const stampTilts = ["-rotate-3", "-rotate-1", "rotate-1", "rotate-3"] as const;
-function stampTilt(seed: string) {
+const sealTilts = ["-7deg", "-3deg", "2deg", "5deg"] as const;
+function sealTilt(seed: string) {
   let sum = 0;
   for (const character of seed) sum = (sum + character.charCodeAt(0)) % 997;
-  return stampTilts[sum % stampTilts.length];
+  return sealTilts[sum % sealTilts.length];
 }
 import { githubHandle } from "@/lib/profile";
 import { RefreshOverviewButton } from "@/components/refresh-overview-button";
@@ -99,7 +100,7 @@ function MemberCell({ member, isMe }: { member: OverviewMember; isMe: boolean })
         {member.bio && (
           <span
             role="tooltip"
-            className="pointer-events-none absolute top-1/2 left-full z-30 hidden w-max max-w-[240px] -translate-y-1/2 rounded-xl border border-line bg-canvas px-3 py-2 text-[12px] leading-[1.6] font-normal text-sub group-hover/member:block"
+            className="pointer-events-none absolute top-1/2 left-full z-30 hidden w-max max-w-[240px] -translate-y-1/2 rounded-surface border border-line bg-canvas px-3 py-2 text-[12px] leading-[1.6] font-normal text-sub group-hover/member:block"
           >
             {/* 말풍선 꼬리. 테두리 두 변만 남겨 카드에서 이어진 것처럼 보이게 합니다. */}
             <span
@@ -152,9 +153,9 @@ export function GroupOverview({
   return (
     <section
       aria-labelledby="group-overview-title"
-      className="mb-7 rounded-xl border border-line"
+      className="mb-7 rounded-surface border border-line"
     >
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-t-[11px] bg-soft px-3 py-4 sm:px-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-t-[calc(var(--r-surface)-1px)] bg-soft px-3 py-4 sm:px-5">
         <h2 id="group-overview-title" className="sr-only">
           {weekLabel} 인증 현황
         </h2>
@@ -222,7 +223,7 @@ export function GroupOverview({
                     <span className="font-normal">· {weekLabel} 승인순</span>
                     <span
                       role="tooltip"
-                      className="pointer-events-none absolute top-full left-0 z-20 hidden w-max max-w-[260px] rounded-lg border border-line bg-canvas px-3 py-2 text-[12px] leading-[1.6] font-normal text-sub group-hover/sort:block"
+                      className="pointer-events-none absolute top-full left-0 z-20 hidden w-max max-w-[260px] rounded-control border border-line bg-canvas px-3 py-2 text-[12px] leading-[1.6] font-normal text-sub group-hover/sort:block"
                     >
                       {weekLabel} 승인이 많은 순서입니다. 같으면 누적 승인이 많은
                       순서, 그다음 닉네임순입니다.
@@ -236,7 +237,7 @@ export function GroupOverview({
                       scope="col"
                       key={date}
                       className={`py-2 text-center text-[12px] font-medium text-sub ${
-                        isToday ? "rounded-t-lg bg-brand-soft/50" : ""
+                        isToday ? "rounded-t-control bg-brand-soft/50" : ""
                       }`}
                     >
                       <span className={isToday ? "font-[650] text-brand" : ""}>
@@ -267,16 +268,11 @@ export function GroupOverview({
                     const total = approved + waiting + rejected;
                     const isFuture = date > data.today;
                     const isToday = date === data.today;
-                    const marker =
-                      waiting > 0 ? "◷" : approved > 0 ? "✓" : "×";
                     // 승인만 도장으로 찍고 대기·반려는 네모 테두리로 둡니다.
-                    // 모양이 다르므로 찍힌 칸이 한눈에 그 주의 성과로 읽힙니다.
-                    const cellTone =
-                      waiting > 0
-                        ? "rounded-lg border border-line bg-canvas text-warn"
-                        : approved > 0
-                          ? `stamp bg-primary text-primary-ink ${stampTilt(member.userId + date)}`
-                          : "rounded-lg border border-line bg-canvas text-danger";
+                    // 형태가 다르므로 색을 구분 못 해도 찍힌 칸이 드러납니다.
+                    const stamped = waiting === 0 && approved > 0;
+                    const marker = waiting > 0 ? "◷" : "×";
+                    const boxTone = waiting > 0 ? "text-warn" : "text-danger";
                     const description = `${member.displayName} ${shortDate(date)} 승인 ${approved}건, 검수 대기 ${waiting}건, 반려 ${rejected}건`;
 
                     return (
@@ -291,17 +287,35 @@ export function GroupOverview({
                             href={`/groups/${groupSlug}?proofMember=${member.userId}&proofDate=${date}${weekParam}#proof-records`}
                             title={description}
                             aria-label={`${description}. 인증 기록 보기`}
-                            className={`inline-grid size-[26px] place-items-center text-[13px] font-[650] sm:size-[34px] sm:text-[15px] ${cellTone}`}
+                            className="relative inline-flex"
                           >
-                            <span aria-hidden="true">
-                              {marker}
-                              {total > 1 ? total : ""}
-                            </span>
+                            {stamped ? (
+                              <Seal
+                                className="size-[30px] sm:size-[38px]"
+                                tilt={sealTilt(member.userId + date)}
+                              />
+                            ) : (
+                              <span
+                                aria-hidden="true"
+                                className={`inline-grid size-[30px] place-items-center rounded-control border border-line bg-canvas text-[13px] font-[650] sm:size-[38px] sm:text-[15px] ${boxTone}`}
+                              >
+                                {marker}
+                              </span>
+                            )}
+                            {/* 같은 날 여러 건이면 도장 안에 숫자를 못 넣으니 어깨에 답니다. */}
+                            {total > 1 && (
+                              <span
+                                aria-hidden="true"
+                                className="absolute -top-1 -right-1.5 text-[10px] font-[650] text-sub tabular-nums"
+                              >
+                                {total}
+                              </span>
+                            )}
                           </Link>
                         ) : (
                           <span
                             title={isFuture ? "예정" : "미등록"}
-                            className={`inline-grid size-[26px] place-items-center text-sub sm:size-[34px] ${
+                            className={`inline-grid size-[30px] place-items-center text-sub sm:size-[38px] ${
                               isFuture ? "opacity-25" : "opacity-45"
                             }`}
                           >

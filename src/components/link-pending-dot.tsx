@@ -12,7 +12,7 @@ export function LinkPendingDot() {
   return (
     <span
       aria-hidden="true"
-      className="absolute inset-0 grid place-items-center rounded-md bg-soft motion-safe:animate-pulse"
+      className="absolute inset-0 grid place-items-center rounded-control bg-soft motion-safe:animate-pulse"
     />
   );
 }
