@@ -45,6 +45,19 @@
   transform: rotate(-6deg);
 }
 
+/* 스터디가 여럿일 때 버튼 안에서 고르는 목록입니다. */
+.dojang-float .dojang-pick {
+  max-width: 160px;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #202923;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
 .dojang-float.dojang-done {
   background: #ffffff;
   color: #202923;

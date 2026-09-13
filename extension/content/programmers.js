@@ -79,15 +79,37 @@
     label.textContent = "도장 찍기";
     button.append(seal, label);
 
-    button.addEventListener("click", async () => {
+    /** 스터디가 여럿이면 버튼 옆에서 고르게 합니다. 팝업을 찾아갈 필요가 없습니다. */
+    function askGroup(groups) {
+      if (button.querySelector(".dojang-pick")) return;
+      const picker = document.createElement("select");
+      picker.className = "dojang-pick";
+      picker.append(new Option("스터디 고르기", ""));
+      for (const group of groups) picker.append(new Option(group.name, group.id));
+      // 버튼 안에 있으므로 선택을 누르는 것이 등록으로 번지지 않게 막습니다.
+      picker.addEventListener("click", (event) => event.stopPropagation());
+      picker.addEventListener("change", (event) => {
+        event.stopPropagation();
+        if (picker.value) void send(picker.value);
+      });
+      label.textContent = "어느 스터디에";
+      button.append(picker);
+      button.disabled = false;
+    }
+
+    async function send(groupId) {
       button.disabled = true;
-      label.textContent = "남기는 중…";
+      button.querySelector(".dojang-pick")?.remove();
+      // 처음 누르면 GitHub 창이 열리므로 무엇을 기다리는지 알려줍니다.
+      label.textContent = groupId ? "남기는 중…" : "연결하고 남기는 중…";
       const result = await chrome.runtime.sendMessage({
         type: "submit-code",
         solutionCode: code,
         problemUrl: problemUrl(),
         title: problemTitle(),
+        groupId,
       });
+      if (result?.chooseGroup) return askGroup(result.chooseGroup);
       if (result?.error) {
         button.disabled = false;
         label.textContent = result.error;
@@ -100,6 +122,11 @@
         ? "도장을 찍었습니다"
         : "검수 대기로 남겼습니다";
       setTimeout(removeButton, 4000);
+    }
+
+    button.addEventListener("click", () => {
+      if (button.disabled) return;
+      void send();
     });
 
     document.body.append(button);
