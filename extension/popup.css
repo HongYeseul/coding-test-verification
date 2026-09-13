@@ -1,0 +1,113 @@
+/* 웹앱과 같은 색·간격 규칙을 씁니다. */
+:root {
+  color-scheme: light dark;
+  --canvas: light-dark(#ffffff, #191d1b);
+  --ink: light-dark(#202923, #edf2ed);
+  --sub: light-dark(#737c75, #a5afa7);
+  --line: light-dark(#e7ebe6, #363d37);
+  --brand: light-dark(#386e2d, #b6db9c);
+  --brand-soft: light-dark(#edf5e6, #2c3d26);
+  --primary: light-dark(#315d2b, #b7d89b);
+  --primary-ink: light-dark(#ffffff, #1b2a14);
+}
+
+body {
+  width: 300px;
+  margin: 0;
+  padding: 16px;
+  background: var(--canvas);
+  color: var(--ink);
+  font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Noto Sans KR", sans-serif;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* 상단바 로고와 같은 도장 자국입니다. */
+.seal {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  outline: 1px solid color-mix(in srgb, var(--brand) 40%, transparent);
+  outline-offset: -4px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 650;
+  transform: rotate(-6deg);
+}
+
+label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+select,
+input {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--canvas);
+  color: var(--ink);
+  font: inherit;
+}
+
+button {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--canvas);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 550;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.primary {
+  border-color: transparent;
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+
+.ghost {
+  margin-top: 8px;
+  border: 0;
+  background: none;
+  color: var(--sub);
+  font-size: 13px;
+  min-height: 0;
+}
+
+.hint {
+  margin: 0 0 12px;
+  color: var(--sub);
+  font-size: 13px;
+}
+
+#status {
+  margin: 12px 0 0;
+  font-size: 13px;
+  min-height: 1.6em;
+}
+
+#status.error {
+  color: light-dark(#a94c46, #e7a19c);
+}

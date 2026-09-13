@@ -22,7 +22,13 @@ enabled = false
 [auth]
 enabled = true
 site_url = "http://127.0.0.1:3000"
-additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+# chromiumapp.org는 크롬 확장이 OAuth 결과를 돌려받는 주소입니다.
+# 로컬에서는 확장 아이디가 바뀔 수 있어 와일드카드를 쓰고,
+# 운영 Supabase에는 실제 확장 아이디를 그대로 등록합니다.
+additional_redirect_urls = [
+  "http://localhost:3000/auth/callback",
+  "https://*.chromiumapp.org/*",
+]
 
 [storage]
 enabled = true

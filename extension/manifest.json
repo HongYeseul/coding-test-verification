@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "도장",
+  "version": "0.1.0",
+  "description": "지금 보고 있는 화면을 한 번에 스터디 인증으로 남깁니다.",
+  "permissions": ["activeTab", "identity", "storage"],
+  "host_permissions": ["http://localhost:3000/*", "http://127.0.0.1:54321/*"],
+  "action": {
+    "default_title": "도장 찍기",
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
