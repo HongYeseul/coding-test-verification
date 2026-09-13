@@ -20,6 +20,7 @@ export type ProofRecord = {
   statusTone: "approved" | "pending" | "rejected";
   source: string;
   hasPhoto: boolean;
+  solutionCode: string | null;
   problemUrl: string | null;
   problemPlatform: string | null;
   reviewLabel: string | null;
@@ -144,7 +145,7 @@ export function ProofRecordList({
         </button>
       ))}
 
-      {/* 사진이 없으면 채울 것이 정보뿐이라 좁게 엽니다. */}
+      {/* 사진도 코드도 없으면 채울 것이 정보뿐이라 좁게 엽니다. */}
       <dialog
         ref={dialogRef}
         aria-label="인증 상세 및 검수"
@@ -153,7 +154,7 @@ export function ProofRecordList({
           if (event.target === dialogRef.current) setOpenId(null);
         }}
         className={`m-auto overflow-hidden rounded-[14px] border border-line bg-canvas p-0 text-ink backdrop:bg-black/40 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:rounded-none max-sm:border-0 ${
-          record?.hasPhoto
+          record?.hasPhoto || record?.solutionCode
             ? "h-[min(680px,calc(100dvh-48px))] w-[min(960px,calc(100%-48px))]"
             : "max-h-[min(680px,calc(100dvh-48px))] w-[min(560px,calc(100%-48px))]"
         }`}
@@ -161,7 +162,7 @@ export function ProofRecordList({
         {record && (
           <div
             className={`grid grid-rows-[auto_minmax(0,1fr)_auto] ${
-              record.hasPhoto ? "h-full" : "max-sm:h-full"
+              record.hasPhoto || record.solutionCode ? "h-full" : "max-sm:h-full"
             }`}
           >
             <header className="flex min-w-0 items-center justify-between gap-4 border-b border-line px-4 py-3 sm:px-6 sm:py-4">
@@ -182,32 +183,43 @@ export function ProofRecordList({
 
             <div
               className={`grid min-h-0 overflow-hidden max-sm:flex max-sm:flex-col max-sm:overflow-y-auto ${
-                record.hasPhoto ? "sm:grid-cols-[minmax(0,1fr)_256px]" : "sm:grid-cols-1"
+                record.hasPhoto || record.solutionCode
+                  ? "sm:grid-cols-[minmax(0,1fr)_256px]"
+                  : "sm:grid-cols-1"
               }`}
             >
-              {record.hasPhoto && (
-                <div className="relative flex min-h-0 flex-col items-center justify-center gap-3 bg-soft p-6 text-center max-sm:h-60 max-sm:shrink-0">
-                  <a
-                    href={`/proofs/${record.id}/evidence`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="relative size-full"
-                  >
-                    <Image
-                      src={`/proofs/${record.id}/evidence`}
-                      alt="인증 사진"
-                      fill
-                      sizes="(max-width: 640px) 100vw, 700px"
-                      unoptimized
-                      className="object-contain"
-                    />
-                  </a>
+              {(record.hasPhoto || record.solutionCode) && (
+                <div className="flex min-h-0 flex-col gap-3 overflow-hidden bg-soft p-4 max-sm:h-80 max-sm:shrink-0 sm:p-5">
+                  {/* 코드와 함께 있으면 사진은 위쪽 일부만 차지합니다. */}
+                  {record.hasPhoto && (
+                    <a
+                      href={`/proofs/${record.id}/evidence`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={`relative ${record.solutionCode ? "h-2/5 shrink-0" : "size-full flex-1"}`}
+                    >
+                      <Image
+                        src={`/proofs/${record.id}/evidence`}
+                        alt="인증 사진"
+                        fill
+                        sizes="(max-width: 640px) 100vw, 700px"
+                        unoptimized
+                        className="object-contain"
+                      />
+                    </a>
+                  )}
+                  {record.solutionCode && (
+                    // 긴 줄은 코드 상자 안에서만 가로로 흐릅니다.
+                    <pre className="min-h-0 flex-1 overflow-auto rounded-lg border border-line bg-canvas p-4 text-left font-mono text-[13px] leading-[1.6]">
+                      {record.solutionCode}
+                    </pre>
+                  )}
                 </div>
               )}
 
               <aside
                 className={`flex min-h-0 flex-col gap-5 overflow-y-auto border-line p-5 max-sm:border-t sm:p-6 ${
-                  record.hasPhoto ? "sm:border-l" : ""
+                  record.hasPhoto || record.solutionCode ? "sm:border-l" : ""
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">

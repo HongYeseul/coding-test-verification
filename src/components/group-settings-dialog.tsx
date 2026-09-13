@@ -129,8 +129,9 @@ export function GroupSettingsDialog({
               <span>
                 사진 필수
                 <span className="mt-1 block text-[13px] text-sub">
-                  끄면 사진 없이 한 줄 메모만으로도 인증을 남길 수 있습니다.
-                  이미 등록된 기록은 그대로 둡니다.
+                  끄면 사진 없이 한 줄 메모만으로도 인증을 남길 수 있습니다. 켜
+                  두어도 풀이 코드를 남기면 사진 없이 등록됩니다. 이미 등록된
+                  기록은 그대로 둡니다.
                 </span>
               </span>
             </label>

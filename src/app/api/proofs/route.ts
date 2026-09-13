@@ -77,6 +77,7 @@ export async function POST(request: Request) {
     recordKey: text(body.recordKey),
     title: text(body.title),
     problemUrl: text(body.problemUrl),
+    solutionCode: text(body.solutionCode),
   });
   if (result.error) return json({ error: result.error }, 400);
   return json({ autoApproved: Boolean(result.autoApproved) }, 201);

@@ -59,6 +59,7 @@ type ProofRow = {
   problem_title: string | null;
   accepted_at: string;
   verification_status: string;
+  solution_code: string | null;
 };
 
 type ReviewRow = {
@@ -313,7 +314,7 @@ export default async function GroupPage({
     let proofRequest = supabase
       .from("proofs")
       .select(
-        "id, user_id, platform_account_id, problem_key, problem_url, problem_title, accepted_at, verification_status, evidence_path",
+        "id, user_id, platform_account_id, problem_key, problem_url, problem_title, accepted_at, verification_status, evidence_path, solution_code",
       )
       .eq("group_id", group.id);
     if (memberFilter) proofRequest = proofRequest.eq("user_id", memberFilter);
@@ -428,14 +429,12 @@ export default async function GroupPage({
   const recordsTitle = group.is_coding_study ? "풀이 기록" : "인증 기록";
   // tabHref의 groupSlug처럼, 안쪽 함수에서는 좁혀진 group 대신 값을 꺼내 씁니다.
   const isCodingStudy = group.is_coding_study;
-  const untitledRecordTitle = (proof: ProofRow) =>
-    proof.evidence_path
-      ? isCodingStudy
-        ? "사진 풀이 기록"
-        : "사진 인증 기록"
-      : proof.platform_account_id
-        ? proof.problem_key
-        : "인증 기록";
+  const untitledRecordTitle = (proof: ProofRow) => {
+    if (proof.evidence_path)
+      return isCodingStudy ? "사진 풀이 기록" : "사진 인증 기록";
+    if (proof.solution_code) return "풀이 코드";
+    return proof.platform_account_id ? proof.problem_key : "인증 기록";
+  };
   const pendingMemberships = memberships.filter(
     (membership) => membership.status === "PENDING",
   );
@@ -522,8 +521,11 @@ export default async function GroupPage({
         ? `${platformLabels[account.platform]} ${account.handle}`
         : proof.evidence_path
           ? "사진 인증"
-          : "메모 인증",
+          : proof.solution_code
+            ? "코드 인증"
+            : "메모 인증",
       hasPhoto: Boolean(proof.evidence_path) && active,
+      solutionCode: active ? (proof.solution_code ?? null) : null,
       problemUrl: link?.url ?? null,
       problemPlatform: link?.platform ?? null,
       reviewLabel: review

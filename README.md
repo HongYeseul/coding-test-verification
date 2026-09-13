@@ -46,6 +46,8 @@
 
 그룹을 만들 때는 코딩 테스트 여부만 고르고, 사진 필수는 만든 뒤 설정에서 바꿉니다. 기존 그룹은 마이그레이션에서 모두 코딩 테스트 스터디로 옮겨 화면이 그대로 유지됩니다.
 
+코딩 스터디에서는 사진 대신 풀이 코드를 남길 수 있습니다. 코드는 사진의 100분의 1 크기이면서 읽고 비교할 수 있어, 통과 화면 이미지보다 서로에게 남는 것이 많습니다. `proofs.solution_code`에 2만 자까지 보관하며, 코드가 있으면 ‘사진 필수’를 켠 그룹에서도 사진 없이 등록됩니다. 코드는 활성 멤버만 보고 공개 리더보드로는 나가지 않습니다. 코딩 스터디가 아닌 그룹은 코드를 받지 않습니다.
+
 사진 필수를 끈 그룹의 기록에는 사진 경로가 없어 `proofs_evidence_path_unique`가 재시도 중복을 막아주지 못합니다. 대신 브라우저가 만든 열쇠를 `problem_key`에 넣고 `(group_id, user_id, problem_key)`에 부분 유일 인덱스를 걸어 같은 자리를 맡깁니다. 이 열쇠는 화면에 보여주지 않습니다.
 
 설정을 바꿔도 이미 등록된 기록은 그대로입니다. 사진 필수 확인은 등록할 때만 하므로, 사진 없이 등록한 뒤 사진 필수를 다시 켜도 그 기록의 검수는 막히지 않습니다. 코딩 테스트를 꺼도 남긴 링크는 지워지지 않고 다시 켜면 목록에 돌아옵니다.
@@ -206,7 +208,7 @@ DB 권한 회귀 테스트는 SQL Editor에서 `supabase/tests/invite_codes_and_
 
 현황판 전체 집계·한국시간 주간 경계·주간 이동 범위·접근 권한은 `supabase/tests/group_overview.sql`로 검증합니다. 이 테스트도 데이터를 모두 롤백합니다.
 
-문제 링크의 DB 제약은 `supabase/tests/problem_links.sql`로 검증합니다. 그룹 문제 제목의 역할별 저장·삭제 권한과 링크 형식은 `supabase/tests/group_problem_titles.sql`로 검증합니다. 사진 필수 차단·사진 없는 등록·재시도 멱등성은 `supabase/tests/group_proof_settings.sql`로, 자동 인정 등록·반려 권한과 본인 취소는 `supabase/tests/auto_approve_proofs.sql`로, 비공개 그룹 차단과 공개 범위는 `supabase/tests/public_group_board.sql`로, 새벽 3시 경계는 `supabase/tests/study_day.sql`로 검증합니다.
+문제 링크의 DB 제약은 `supabase/tests/problem_links.sql`로 검증합니다. 그룹 문제 제목의 역할별 저장·삭제 권한과 링크 형식은 `supabase/tests/group_problem_titles.sql`로 검증합니다. 사진 필수 차단·사진 없는 등록·재시도 멱등성은 `supabase/tests/group_proof_settings.sql`로, 코드가 사진을 대신하는 규칙과 길이 제한은 `supabase/tests/solution_code.sql`로, 자동 인정 등록·반려 권한과 본인 취소는 `supabase/tests/auto_approve_proofs.sql`로, 비공개 그룹 차단과 공개 범위는 `supabase/tests/public_group_board.sql`로, 새벽 3시 경계는 `supabase/tests/study_day.sql`로 검증합니다.
 
 실제 브라우저 압축 검증은 `node tests/photo-compression-server.mjs` 실행 후 `http://127.0.0.1:3913`에서 진행합니다. 생성한 이미지로 압축 크기·해상도·손상 파일 처리를 확인하며 운영 DB와 Storage는 사용하지 않습니다.
 
