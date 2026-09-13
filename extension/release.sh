@@ -6,10 +6,13 @@
 set -euo pipefail
 
 SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# 어느 폴더에서 실행해도 같게 동작하도록 저장소 안에서 움직입니다.
+REPO_DIR="$(cd "$SOURCE_DIR/.." && pwd)"
+cd "$REPO_DIR"
 VERSION="$(python3 -c "import json;print(json.load(open('$SOURCE_DIR/manifest.json'))['version'])")"
 TAG="extension-v$VERSION"
 WORK="$(mktemp -d)"
-ZIP="$PWD/dojang-extension-v$VERSION.zip"
+ZIP="$REPO_DIR/dojang-extension-v$VERSION.zip"
 trap 'rm -rf "$WORK"' EXIT
 
 # 압축을 풀면 폴더 하나가 나오게 담습니다. 크롬에서 그 폴더를 고르면 됩니다.
