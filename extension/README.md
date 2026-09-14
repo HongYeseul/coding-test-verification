@@ -101,6 +101,11 @@ publishable key는 배포된 사이트의 자바스크립트에 이미 실려 �
 
 `manifest.json`의 `version`을 올리고 실행합니다. `RELEASE_NOTES.md`가 릴리스 설명이 됩니다.
 
+`RELEASE_NOTES.md`에는 **이번 버전 것만** 둡니다. 지난 버전을 위에 쌓으면 새 릴리스
+설명에 옛 내용이 통째로 다시 실려 읽을 것이 계속 늘어납니다. 지난 버전은 각자
+자기 릴리스 페이지에 이미 남아 있습니다. 대시보드 카드에 나가는 문구는
+`src/lib/extension-release.ts`에 있으니 함께 고칩니다.
+
 ```bash
 bash extension/release.sh            # zip만 만들어 확인
 bash extension/release.sh --publish  # 태그와 공개 릴리스까지
