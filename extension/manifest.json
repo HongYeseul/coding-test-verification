@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "도장",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "지금 보고 있는 화면을 한 번에 스터디 인증으로 남깁니다.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApkMkywQICRmAxc65ef9rIcm0IWMe3c903Sj3y0AdppYeaxBt8ygxSuZOooDX7lqDTHWLywdZa6C9rBk8sLQRhFZRb6gaXd7kRtUJ3CXADxFSFMIuRYzs6JVxegaCtEA06gSGy8OW+DmtSnhF6JZrwcoNArlkDwnfFYhjVaQx4EDYQtcYODKqrbjvUA50lFyz7VfTO/brRbh2VnhdvJD6m6e94CMZm72FBLrSxiuO5U2sasmueZQiIOD25cROgUpwIYsOETMtC0zHHSdtJA8su6/1cKUU5tJQVYiDETtUy0hsaJj+I2fLcNaagXNA9UVFz5Q+aj5V1shnrfNpMP8ItQIDAQAB",
   "permissions": [
