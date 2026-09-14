@@ -5,6 +5,7 @@ import ts from "typescript";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { githubHandle } from "../src/lib/profile.ts";
+import { compareGoal, formatRecord } from "../src/lib/record-goal.ts";
 
 const source = readFileSync(
   new URL("../src/components/group-overview.tsx", import.meta.url),
@@ -12,12 +13,15 @@ const source = readFileSync(
 ).replace(/import[\s\S]*?from\s+["'][^"']+["'];/g, "");
 const compiled = ts.transpileModule(
   `
-  const { React, shiftWeek, githubHandle } = globalThis.__overviewImports;
+  const { React, shiftWeek, githubHandle, formatRecord, compareGoal } =
+    globalThis.__overviewImports;
   const LinkPendingDot = () => null;
   const Link = (props) => React.createElement("a", props);
   const RefreshOverviewButton = () => null;
   const Seal = ({ className }) =>
     React.createElement("svg", { className, "aria-hidden": "true" });
+  const MemberGoalDialog = () => null;
+  const RecordRhythm = () => null;
   ${source}
   export { GroupOverview };
 `,
@@ -31,7 +35,13 @@ const compiled = ts.transpileModule(
 ).outputText;
 
 const { shiftWeek } = await import("../src/lib/group-overview.ts");
-globalThis.__overviewImports = { React, shiftWeek, githubHandle };
+globalThis.__overviewImports = {
+  React,
+  shiftWeek,
+  githubHandle,
+  formatRecord,
+  compareGoal,
+};
 const { GroupOverview } = await import(
   `data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`
 );
@@ -44,6 +54,7 @@ function render({
   githubLogin = "member",
   bio = null,
   members = null,
+  recordKind = "NONE",
 } = {}) {
   const days = Array.from({ length: 7 }, (_, index) => {
     const date = new Date(`${weekStart}T00:00:00Z`);
@@ -58,6 +69,7 @@ function render({
         weekEnd: days[6],
         currentWeekStart,
         firstWeekStart,
+        recordKind,
         days,
         members: members ?? [
           {
@@ -70,14 +82,22 @@ function render({
             weekApproved: 1,
             totalApproved: 3,
             pending: 0,
+            goalMinutes: null,
             featuredProofId: null,
             featuredDate: null,
             days: [
-              { date: days[1], approved: 1, pending: 0, rejected: 0 },
+              {
+                date: days[1],
+                approved: 1,
+                pending: 0,
+                rejected: 0,
+                recordMinutes: null,
+              },
             ],
           },
         ],
       },
+      groupId: "00000000-0000-4000-8000-000000000001",
       currentUserId: "member",
       groupSlug: "study",
       proofFilterQuery,

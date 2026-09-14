@@ -23,6 +23,14 @@ import {
   problemLink,
 } from "@/lib/proof-input";
 import { compressPhoto } from "@/lib/compress-photo";
+import {
+  compareGoal,
+  formatClock,
+  formatDuration,
+  MAX_RECORD_MINUTES,
+  nowClockMinutes,
+  type RecordKind,
+} from "@/lib/record-goal";
 
 function displaySize(bytes: number) {
   return bytes >= 1024 * 1024
@@ -37,6 +45,8 @@ export function ProofForm({
   autoApprove,
   requiresPhoto,
   isCodingStudy,
+  recordKind,
+  goalMinutes,
 }: {
   groupId: string;
   groupSlug: string;
@@ -44,14 +54,23 @@ export function ProofForm({
   autoApprove: boolean;
   requiresPhoto: boolean;
   isCodingStudy: boolean;
+  recordKind: RecordKind;
+  goalMinutes: number | null;
 }) {
   const router = useRouter();
+  // 시각·시간은 그 자체가 근거라, 기록을 남기는 그룹은 사진이 없어도 도장이 찍힙니다.
+  const photoRequired = requiresPhoto && recordKind === "NONE";
+  const goalHours =
+    goalMinutes === null ? "" : String(Math.floor(goalMinutes / 60));
+  const goalRestMinutes = goalMinutes === null ? "" : String(goalMinutes % 60);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [stamped, setStamped] = useState(false);
   const [linkPlatform, setLinkPlatform] = useState("");
   const [preparing, setPreparing] = useState(false);
+  // 서버에서 그린 시각과 어긋나지 않도록 모달을 열 때 채웁니다.
+  const [clockMinutes, setClockMinutes] = useState(nowClockMinutes);
   const [prepared, setPrepared] = useState<{
     file: File;
     blob: Blob;
@@ -78,6 +97,13 @@ export function ProofForm({
     if (open && !dialog.open) dialog.showModal();
     if (!open && dialog.open) dialog.close();
   }, [open]);
+  // 도장을 찍는 순간이 곧 기록이라, 열려 있는 동안 1분마다 시각을 다시 읽습니다.
+  useEffect(() => {
+    if (!open || recordKind !== "CLOCK") return;
+    // 여는 순간의 시각은 버튼이 이미 맞춰 두었고, 여기서는 1분마다 따라가기만 합니다.
+    const timer = setInterval(() => setClockMinutes(nowClockMinutes()), 60_000);
+    return () => clearInterval(timer);
+  }, [open, recordKind]);
   // 등록을 마치면 모달이 닫히므로 결과는 잠깐 뜨는 알림으로 알립니다.
   useEffect(() => {
     if (open || !message) return;
@@ -138,7 +164,7 @@ export function ProofForm({
     const fileInput = form.elements.namedItem("photo") as HTMLInputElement;
     const file = fileInput.files?.[0];
     const hasFile = file instanceof File;
-    if (!hasFile && requiresPhoto) return;
+    if (!hasFile && photoRequired) return;
     let compressed: Blob | null = null;
     if (hasFile) {
       if (preparing || !prepared || prepared.file !== file) {
@@ -158,6 +184,36 @@ export function ProofForm({
     if (problemUrl && !problemLink(problemUrl)) {
       setMessage(PROBLEM_URL_ERROR);
       return;
+    }
+    // 시각은 도장을 찍는 순간이 곧 기록이고, 시간은 적은 두 칸을 분으로 합칩니다.
+    let recordMinutes: number | null = null;
+    if (recordKind === "CLOCK")
+      recordMinutes = clockMinutes;
+    if (recordKind === "DURATION") {
+      const hours = Number(String(data.get("durationHours") ?? "").trim() || 0);
+      const rest = Number(String(data.get("durationMinutes") ?? "").trim() || 0);
+      if (
+        !Number.isInteger(hours) ||
+        !Number.isInteger(rest) ||
+        hours < 0 ||
+        hours > 24 ||
+        rest < 0 ||
+        rest > 59
+      ) {
+        setMessage("시간은 0~24, 분은 0~59로 적어주세요.");
+        return;
+      }
+      recordMinutes = hours * 60 + rest;
+      if (!recordMinutes) {
+        setMessage("얼마나 했는지 적어야 도장을 찍을 수 있습니다.");
+        return;
+      }
+      if (recordMinutes > MAX_RECORD_MINUTES) {
+        setMessage(
+          `기록은 ${formatDuration(MAX_RECORD_MINUTES)}까지 적을 수 있습니다.`,
+        );
+        return;
+      }
     }
     submitting.current = true;
     setStamped(false);
@@ -198,6 +254,7 @@ export function ProofForm({
         title: String(data.get("title") ?? ""),
         tags: String(data.get("tags") ?? ""),
         problemUrl,
+        recordMinutes,
       });
       if (result.error) {
         setMessage(result.error);
@@ -241,14 +298,16 @@ export function ProofForm({
       <div className="grid justify-items-center gap-2 rounded-control border border-dashed border-line px-4 py-6 text-center text-sub">
         <label htmlFor="proof-photo" className="text-[15px]">
           {isCodingStudy ? "풀이 결과가 보이는 사진 한 장" : "인증 사진 한 장"}
-          {!requiresPhoto && <span className="ml-1 text-[13px]">선택 사항</span>}
+          {!photoRequired && (
+            <span className="ml-1 text-[13px]">선택 사항</span>
+          )}
         </label>
         <input
           id="proof-photo"
           name="photo"
           type="file"
           accept="image/jpeg,image/png,image/webp"
-          required={requiresPhoto}
+          required={photoRequired}
           disabled={busy}
           ref={photoInput}
           onChange={(event) => prepare(event.target.files?.[0])}
@@ -257,7 +316,7 @@ export function ProofForm({
         />
         <p id="photo-help" className="text-[13px]">
           복사한 캡처를 붙여넣어도 됩니다 · 20MB까지
-          {!requiresPhoto && " · 사진 없이 등록해도 됩니다"}
+          {!photoRequired && " · 사진 없이 등록해도 됩니다"}
         </p>
       </div>
 
@@ -289,6 +348,74 @@ export function ProofForm({
         </div>
       )}
     </>
+  );
+
+  // 기상 스터디는 도장을 찍는 순간이 곧 기록이라 입력 칸 대신 지금 시각을 보여줍니다.
+  const clockGoal = compareGoal("CLOCK", clockMinutes, goalMinutes);
+
+  const clockField = (
+    <div className="grid gap-2">
+      <p className="text-[15px]">
+        지금 시각
+        {goalMinutes !== null && (
+          <span className="ml-1 text-[13px] text-sub">
+            목표 {formatClock(goalMinutes)}
+          </span>
+        )}
+      </p>
+      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-control bg-brand-soft px-4 py-3">
+        <span className="font-mono text-[32px] leading-tight tabular-nums">
+          {formatClock(clockMinutes)}
+        </span>
+        {clockGoal && (
+          <span className="text-[13px] text-sub">{clockGoal.description}</span>
+        )}
+      </div>
+      <p className="text-[13px] text-sub">
+        도장을 찍으면 이 시각이 기록으로 남습니다.
+      </p>
+    </div>
+  );
+
+  const durationField = (
+    <div className="grid gap-2">
+      <label htmlFor="proof-duration-hours" className="text-[15px]">
+        오늘 기록한 시간
+        {goalMinutes !== null && (
+          <span className="ml-1 text-[13px] text-sub">
+            목표 {formatDuration(goalMinutes)}
+          </span>
+        )}
+      </label>
+      <div className="flex items-center gap-2">
+        <input
+          id="proof-duration-hours"
+          name="durationHours"
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={24}
+          step={1}
+          defaultValue={goalHours}
+          disabled={busy}
+          className="w-20"
+        />
+        <span className="text-[15px]">시간</span>
+        <input
+          id="proof-duration-minutes"
+          name="durationMinutes"
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={59}
+          step={1}
+          defaultValue={goalRestMinutes}
+          disabled={busy}
+          className="w-20"
+        />
+        <span className="text-[15px]">분</span>
+      </div>
+    </div>
   );
 
   const titleField = (
@@ -331,7 +458,11 @@ export function ProofForm({
       <button
         type="button"
         className="btn btn-primary"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          // 닫아 둔 사이 흐른 시간을 여는 순간 따라잡습니다.
+          setClockMinutes(nowClockMinutes());
+          setOpen(true);
+        }}
       >
         <Seal className="size-5 text-primary-ink" tilt="-6deg" />
         {openLabel}
@@ -372,8 +503,11 @@ export function ProofForm({
           </div>
 
           <div className="my-4 grid gap-5">
+            {/* 기록이 이 그룹 인증의 알맹이라 맨 앞에 둡니다. */}
+            {recordKind === "CLOCK" && clockField}
+            {recordKind === "DURATION" && durationField}
             {/* 사진이 선택이면 먼저 쓰는 것은 메모라, 사진 영역을 뒤로 보냅니다. */}
-            {requiresPhoto ? (
+            {photoRequired ? (
               <>
                 {photoField}
                 {titleField}
@@ -432,14 +566,23 @@ export function ProofForm({
                 ? "등록 시각이 기록되고 바로 인정됩니다."
                 : "등록 시각이 기록되고 검수 대기 상태가 됩니다."}
             </span>
-            <button
-              type="submit"
-              disabled={busy || preparing || (requiresPhoto && !prepared)}
-              className="btn btn-primary min-h-12 gap-2 rounded-[10px] px-5 text-[16px]"
-            >
-              <Seal className="size-6 text-primary-ink" tilt="-6deg" />
-              {busy ? "찍는 중…" : "도장 찍기"}
-            </button>
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              {/* 버튼이 왜 눌리지 않는지 그 자리에서 알려줍니다. */}
+              {photoRequired && !prepared && !preparing && !busy && (
+                <span className="max-w-[280px] text-[13px] text-sub">
+                  사진을 고르면 도장을 찍을 수 있습니다. 사진 필수는 스터디 이름
+                  옆 설정에서 끌 수 있습니다.
+                </span>
+              )}
+              <button
+                type="submit"
+                disabled={busy || preparing || (photoRequired && !prepared)}
+                className="btn btn-primary min-h-12 gap-2 rounded-[10px] px-5 text-[16px]"
+              >
+                <Seal className="size-6 text-primary-ink" tilt="-6deg" />
+                {busy ? "찍는 중…" : "도장 찍기"}
+              </button>
+            </div>
           </div>
           <p role="status" aria-live="polite" className="mt-3 text-[15px]">
             {message}

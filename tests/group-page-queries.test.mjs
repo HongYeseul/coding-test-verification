@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
 import { githubHandle } from "../src/lib/profile.ts";
+import { isRecordKind } from "../src/lib/record-goal.ts";
 
 async function renderGroup(
   t,
@@ -103,6 +104,7 @@ async function renderGroup(
   };
   globalThis.__groupPageImports = {
     githubHandle,
+    isRecordKind,
     requireUser: async () => ({ supabase, user: { id: "user" } }),
     redirect(path) {
       throw Error(`redirect:${path}`);
@@ -120,7 +122,7 @@ async function renderGroup(
   ).replace(/import[\s\S]*?from\s+["'][^"']+["'];/g, "");
   const compiled = ts.transpileModule(
     `
-    const { requireUser, redirect, notFound, githubHandle } = globalThis.__groupPageImports;
+    const { requireUser, redirect, notFound, githubHandle, isRecordKind } = globalThis.__groupPageImports;
     const React = { createElement: (type, props, ...children) => ({ type, props, children }) };
     const Link='a', ProofForm='form', StatusMessage='div', GroupOverview='section', TodayStrip='div', InvitePopover='div', GroupProblems='section', GroupSettingsDialog='div', AppShell='main', ProofRecordList='div', ProofFilterForm='form';
     const problemLink=(value)=>value ? { url: value, platform: '플랫폼' } : null;

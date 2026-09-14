@@ -20,8 +20,16 @@ export async function createProofRecordAction(input: {
   problemUrl: string;
   solutionCode?: string;
   tags?: string;
+  /** 기상·착석 스터디의 기록값입니다. 쓰지 않는 그룹은 null입니다. */
+  recordMinutes?: number | null;
 }): Promise<ProofRecordResult> {
-  const { groupSlug, solutionCode = "", tags = "", ...record } = input;
+  const {
+    groupSlug,
+    solutionCode = "",
+    tags = "",
+    recordMinutes = null,
+    ...record
+  } = input;
   if (!SLUG_PATTERN.test(groupSlug))
     return { error: "인증 내용을 확인해주세요." };
   const { supabase, user } = await requireUser();
@@ -29,6 +37,7 @@ export async function createProofRecordAction(input: {
     ...record,
     solutionCode,
     tags,
+    recordMinutes,
   });
   if (result.error) return result;
   revalidatePath(`/groups/${groupSlug}`);
@@ -178,22 +187,28 @@ export async function toggleCheerAction(formData: FormData) {
   if (!UUID_PATTERN.test(proofId) || !SLUG_PATTERN.test(groupSlug)) return;
 
   const { supabase, user } = await requireUser();
-  if (cheered) {
-    await supabase
-      .from("proof_cheers")
-      .delete()
-      .eq("proof_id", proofId)
-      .eq("user_id", user.id);
-  } else {
-    // 이미 있으면 그대로 둡니다. 두 번 눌러도 응원은 하나입니다.
-    await supabase
-      .from("proof_cheers")
-      .upsert(
-        { proof_id: proofId, user_id: user.id },
-        { onConflict: "proof_id,user_id", ignoreDuplicates: true },
-      );
+  const { error } = cheered
+    ? await supabase
+        .from("proof_cheers")
+        .delete()
+        .eq("proof_id", proofId)
+        .eq("user_id", user.id)
+    : // 이미 있으면 그대로 둡니다. 두 번 눌러도 응원은 하나입니다.
+      await supabase
+        .from("proof_cheers")
+        .upsert(
+          { proof_id: proofId, user_id: user.id },
+          { onConflict: "proof_id,user_id", ignoreDuplicates: true },
+        );
+  const groupPath = `/groups/${groupSlug}`;
+  // 모달을 열어 둔 사이 기록이 취소되면 정책이 거절합니다. 조용히 되돌아가면
+  // 사용자는 버튼이 고장 난 줄 압니다.
+  if (error) {
+    redirect(
+      withStatus(groupPath, "error", "응원을 남기지 못했습니다. 기록 상태를 확인해주세요."),
+    );
   }
-  revalidatePath(`/groups/${groupSlug}`);
+  revalidatePath(groupPath);
 }
 
 export async function reviewProofAction(formData: FormData) {

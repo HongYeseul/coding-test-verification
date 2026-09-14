@@ -9,6 +9,12 @@ import {
   PROBLEM_URL_ERROR,
   TAG_ERROR,
 } from "@/lib/proof-input";
+import {
+  isRecordKind,
+  MAX_RECORD_MINUTES,
+  nowClockMinutes,
+  recordKindLabels,
+} from "@/lib/record-goal";
 
 /** DB의 solution_code CHECK와 함께 바꿉니다. */
 export const MAX_SOLUTION_CODE_LENGTH = 20000;
@@ -28,6 +34,8 @@ export type ProofRecordInput = {
   solutionCode: string;
   /** 쉼표로 나눠 적는 주제입니다. 예: "해시, 정렬" */
   tags: string;
+  /** 기상·착석 스터디가 남기는 기록값입니다. 시각이든 시간이든 분 하나입니다. */
+  recordMinutes: number | null;
 };
 
 export type ProofRecordResult = { error?: string; autoApproved?: boolean };
@@ -51,6 +59,7 @@ export async function createProofRecord(
   const solutionCode = input.solutionCode.trim();
   const tags = parseTags(input.tags);
   const link = problemUrl ? problemLink(problemUrl) : null;
+  const recordMinutes = input.recordMinutes;
 
   if (
     !UUID_PATTERN.test(groupId) ||
@@ -75,7 +84,7 @@ export async function createProofRecord(
       .maybeSingle(),
     supabase
       .from("groups")
-      .select("auto_approve, requires_photo, is_coding_study")
+      .select("auto_approve, requires_photo, is_coding_study, record_kind")
       .eq("id", groupId)
       .maybeSingle(),
   ]);
@@ -85,8 +94,33 @@ export async function createProofRecord(
     return { error: "그룹 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요." };
   if (member?.status !== "ACTIVE" || !group)
     return { error: "활성 멤버만 도장을 찍을 수 있습니다." };
-  // 코드를 남기면 사진을 생략할 수 있습니다.
-  if (!evidencePath && !solutionCode && group.requires_photo)
+  const recordKind = isRecordKind(group.record_kind) ? group.record_kind : "NONE";
+  if (
+    recordMinutes !== null &&
+    (!Number.isInteger(recordMinutes) ||
+      recordMinutes < 0 ||
+      recordMinutes > MAX_RECORD_MINUTES)
+  )
+    return { error: "기록한 시각이나 시간을 확인해주세요." };
+  if (recordKind === "NONE" && recordMinutes !== null)
+    return { error: "이 그룹은 시각이나 시간을 기록하지 않습니다." };
+  // 시각은 서버가 정합니다. 화면이 보여준 값은 안내일 뿐이고, 남는 것은 등록 시각입니다.
+  // 브라우저 값을 믿으면 시계를 돌려 이른 기상으로 꾸밀 수 있고,
+  // 시각을 보내지 않는 확장 프로그램도 같은 규칙으로 통과합니다.
+  const storedMinutes =
+    recordKind === "CLOCK" ? nowClockMinutes() : recordMinutes;
+  // 앉아 있던 시간은 사람만 아는 값이라 이때만 비워둘 수 없습니다.
+  if (recordKind === "DURATION" && !storedMinutes)
+    return {
+      error: `${recordKindLabels[recordKind]}을 적어야 도장을 찍을 수 있습니다.`,
+    };
+  // 코드나 기록값을 남기면 사진을 생략할 수 있습니다.
+  if (
+    !evidencePath &&
+    !solutionCode &&
+    storedMinutes === null &&
+    group.requires_photo
+  )
     return { error: "이 그룹은 사진이나 풀이 코드가 필요합니다." };
   if ((problemUrl || solutionCode) && !group.is_coding_study)
     return { error: "이 그룹은 문제 링크와 풀이 코드를 사용하지 않습니다." };
@@ -108,6 +142,7 @@ export async function createProofRecord(
     problem_title: title || null,
     problem_url: link?.url ?? null,
     solution_code: solutionCode || null,
+    record_minutes: storedMinutes,
     tags: tags.length ? tags : null,
     verification_status: autoApproved ? "AUTO_APPROVED" : "PENDING",
     accepted_at: new Date().toISOString(),

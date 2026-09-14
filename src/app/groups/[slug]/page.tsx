@@ -21,6 +21,7 @@ import { ProofFilterForm } from "@/components/proof-filter-form";
 import { ProofRecordList } from "@/components/proof-record-list";
 import type { ProofRecord } from "@/components/proof-record-list";
 import { githubHandle } from "@/lib/profile";
+import { isRecordKind } from "@/lib/record-goal";
 import { problemLink } from "@/lib/proof-input";
 import type { GroupOverviewData } from "@/lib/group-overview";
 import type {
@@ -237,7 +238,7 @@ export default async function GroupPage({
   const { data: group } = await supabase
     .from("groups")
     .select(
-      "id, name, slug, owner_id, auto_approve, is_public, requires_photo, is_coding_study",
+      "id, name, slug, owner_id, auto_approve, is_public, requires_photo, is_coding_study, record_kind",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -248,7 +249,7 @@ export default async function GroupPage({
 
   const { data: currentMembership } = await supabase
     .from("group_members")
-    .select("role, status")
+    .select("role, status, goal_minutes")
     .eq("group_id", group.id)
     .eq("user_id", user.id)
     .maybeSingle();
@@ -258,6 +259,8 @@ export default async function GroupPage({
   }
 
   const isOwner = currentMembership.role === "OWNER";
+  // 기록 종류는 그룹 설정이라 현황판과 도장 찍기가 같은 값을 봅니다.
+  const recordKind = isRecordKind(group.record_kind) ? group.record_kind : "NONE";
   const [{ data: membershipData }, overviewResult, { data: invitation }] =
     await Promise.all([
       supabase
@@ -526,6 +529,7 @@ export default async function GroupPage({
     const link = active ? problemLink(proof.problem_url) : null;
     const { date, time } = proofDateTime(proof.accepted_at);
     const proofCheers = cheersByProofId.get(proof.id) ?? [];
+    const cheeredByMe = proofCheers.some((cheer) => cheer.user_id === user.id);
     return {
       id: proof.id,
       // 사진 없는 기록의 problem_key는 재시도를 막는 열쇠일 뿐이라 보여주지 않습니다.
@@ -573,8 +577,9 @@ export default async function GroupPage({
       cheerNames: proofCheers.map(
         (cheer) => profileById.get(cheer.user_id)?.display_name ?? "멤버",
       ),
-      cheered: proofCheers.some((cheer) => cheer.user_id === user.id),
-      cheerable: proof.user_id !== user.id && active,
+      cheered: cheeredByMe,
+      // 취소 처리 중인 기록에는 새로 응원할 수 없지만, 이미 남긴 응원은 거둘 수 있어야 합니다.
+      cheerable: proof.user_id !== user.id && (active || cheeredByMe),
     };
   });
 
@@ -604,6 +609,7 @@ export default async function GroupPage({
                 isPublic={group.is_public}
                 requiresPhoto={group.requires_photo}
                 isCodingStudy={group.is_coding_study}
+                recordKind={recordKind}
               />
             )}
           </div>
@@ -656,6 +662,8 @@ export default async function GroupPage({
             autoApprove={group.auto_approve}
             requiresPhoto={group.requires_photo}
             isCodingStudy={group.is_coding_study}
+            recordKind={recordKind}
+            goalMinutes={currentMembership.goal_minutes ?? null}
           />
         </div>
       </header>
@@ -684,6 +692,7 @@ export default async function GroupPage({
           <TodayStrip data={overview} currentUserId={user.id} />
           <GroupOverview
             data={overview}
+            groupId={group.id}
             currentUserId={user.id}
             groupSlug={group.slug}
             proofFilterQuery={proofFilterQuery}

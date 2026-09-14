@@ -1,5 +1,6 @@
 import type { GroupOverviewData } from "@/lib/group-overview";
 import { Seal } from "@/components/seal";
+import { formatRecord } from "@/lib/record-goal";
 
 /** 오늘 날짜를 ‘9월 10일 목요일’로 적습니다. 스터디 하루 기준 날짜를 그대로 받습니다. */
 function longDate(value: string) {
@@ -38,8 +39,9 @@ export function TodayStrip({
           : rejected > 0
             ? "rejected"
             : "none";
-    return { ...member, state };
+    return { ...member, state, recordMinutes: today?.recordMinutes ?? null };
   });
+  const recordKind = data.recordKind;
   // 찍은 사람이 앞에 옵니다. 같은 무리 안에서는 도장판과 같은 순서입니다.
   const order = { approved: 0, pending: 1, rejected: 2, none: 3 } as const;
   members.sort((left, right) => order[left.state] - order[right.state]);
@@ -104,6 +106,22 @@ export function TodayStrip({
             {member.userId === currentUserId && (
               <span className="text-[11px] font-normal text-sub">나</span>
             )}
+            {/* 기록을 쓰는 그룹에서는 오늘 남긴 값을, 아직이면 목표를 이름 뒤에 답니다. */}
+            {recordKind !== "NONE" && member.recordMinutes !== null && (
+              <span className="font-mono text-[12px] font-normal text-sub tabular-nums">
+                {formatRecord(recordKind, member.recordMinutes, true)}
+              </span>
+            )}
+            {recordKind !== "NONE" &&
+              member.recordMinutes === null &&
+              member.goalMinutes !== null && (
+                <span className="text-[11px] font-normal text-sub">
+                  목표{" "}
+                  <span className="font-mono tabular-nums">
+                    {formatRecord(recordKind, member.goalMinutes)}
+                  </span>
+                </span>
+              )}
           </li>
         ))}
       </ul>

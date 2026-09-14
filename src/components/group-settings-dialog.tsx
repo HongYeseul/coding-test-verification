@@ -3,6 +3,18 @@
 import { useEffect, useRef, useState } from "react";
 
 import { updateGroupSettingsAction } from "@/app/actions/groups";
+import {
+  RECORD_KINDS,
+  recordKindLabels,
+  type RecordKind,
+} from "@/lib/record-goal";
+
+/** 셀렉트에서 값마다 무엇이 달라지는지 한 줄로 알려줍니다. */
+const recordKindNotes: Record<RecordKind, string> = {
+  NONE: "지금처럼 도장만 찍습니다.",
+  CLOCK: "도장을 찍은 시각이 함께 남습니다. 기상 스터디에 씁니다.",
+  DURATION: "그날 얼마나 했는지 직접 적습니다. 착석 스터디에 씁니다.",
+};
 
 /** 자주 여는 화면이 아니라 본문에 두지 않고 헤더에서 모달로 엽니다. */
 export function GroupSettingsDialog({
@@ -12,6 +24,7 @@ export function GroupSettingsDialog({
   isPublic,
   requiresPhoto,
   isCodingStudy,
+  recordKind,
 }: {
   groupId: string;
   groupSlug: string;
@@ -19,6 +32,7 @@ export function GroupSettingsDialog({
   isPublic: boolean;
   requiresPhoto: boolean;
   isCodingStudy: boolean;
+  recordKind: RecordKind;
 }) {
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -150,6 +164,21 @@ export function GroupSettingsDialog({
                   꺼도 이미 남긴 링크는 지워지지 않고, 다시 켜면 그대로
                   돌아옵니다.
                 </span>
+              </span>
+            </label>
+
+            <label className="grid gap-1 text-[15px]">
+              기록 종류
+              <select name="recordKind" defaultValue={recordKind}>
+                {RECORD_KINDS.map((kind) => (
+                  <option key={kind} value={kind}>
+                    {recordKindLabels[kind]} — {recordKindNotes[kind]}
+                  </option>
+                ))}
+              </select>
+              <span className="text-[13px] text-sub">
+                멤버마다 목표를 따로 정할 수 있고, 이미 등록된 기록은 그대로
+                둡니다.
               </span>
             </label>
           </div>

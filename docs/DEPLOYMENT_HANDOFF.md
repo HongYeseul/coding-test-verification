@@ -130,6 +130,15 @@ DB와 함수를 **함께** 서울로 옮겼습니다. 함수만 옮기면 그룹
   같은 목록이 한 벌 더 있으니** 둘을 같이 고쳐야 합니다.
 - **`get_group_overview`가 돌려주는 `featuredProofId`·`featuredDate`는 화면에서 더 쓰지
   않지만 함수는 그대로 둡니다.**
+- **DELETE·UPDATE에는 SELECT 정책도 함께 걸립니다.** 지울 행을 찾을 때 읽기가 필요해서입니다.
+  `proof_cheers`의 DELETE 정책에는 멤버십 조건이 없지만, 제명된 멤버는 SELECT 정책에 막혀
+  자기 응원도 거두지 못합니다. 정책 하나만 보고 "이건 열려 있다"고 판단하면 어긋납니다.
+- **BEFORE 트리거가 RLS의 WITH CHECK보다 먼저 걸립니다.** `private.validate_proof()`가 막는
+  경우는 `42501`이 아니라 `P0001`로 돌아옵니다. `supabase/tests/*.sql`에서 거절을 확인할 때
+  두 오류를 함께 받아야 합니다 — 한쪽만 잡으면 트리거가 먼저 막는 순간 테스트가 깨집니다.
+- **멤버가 자기 `group_members` 행을 고칠 수 없습니다.** UPDATE 정책이 소유자 하나뿐입니다.
+  목표(`goal_minutes`) 같은 자기 값을 열 때는 정책을 넓히거나 컬럼 권한을 새로 열지 말고
+  `set_member_goal()`처럼 `security definer` 함수 하나로 좁히세요.
 
 ### 접근 범위
 
@@ -175,10 +184,22 @@ DB와 함수를 **함께** 서울로 옮겼습니다. 함수만 옮기면 그룹
   `schema_migrations`의 버전은 이번 건과 이전 네 건(`group_proof_settings`·`solution_code`·
   `proof_tags`·`drop_legacy_create_group`) 모두 파일명 버전으로 고쳐 저장소와 맞췄습니다.
 
+- **2026-09-14 · 기록 종류와 목표, 응원 결함 수정** — 기상·착석 스터디용 `groups.record_kind`,
+  `group_members.goal_minutes`, `proofs.record_minutes`와 `set_member_goal()`을 더했습니다.
+  `get_group_overview` 응답이 넓어졌지만(최상위 `recordKind`, 멤버 `goalMinutes`, 날짜
+  `recordMinutes`) 키를 더하기만 해 구버전 화면은 무시합니다. 그래도 응답 모양이 바뀐 변경이라
+  배포보다 **먼저** 적용했습니다. 적용 시점 그룹 2개·활성 멤버 8명·기록 20건이고 기존 그룹은
+  모두 기본값 `NONE`이라 화면이 그대로입니다. `schema_migrations` 버전은 파일명에 맞췄습니다.
+
 ### 남은 확인
 
 - 리전 이전 뒤 Real Experience Score를 다시 재지 않았습니다. 기준값(RES 62)은 대부분 이전 전에
   쌓인 값입니다.
 - 상세 모달 동작을 운영 브라우저에서 확인하지 않았습니다. 로컬에서는 확인했습니다.
-- 2026-09-14 개편 뒤 그룹 화면(오늘 띠·점선 도장·응원 버튼)을 운영 브라우저에서 확인하지
-  않았습니다. 첫 화면과 공개 리더보드는 운영 응답으로 새 토큰과 글꼴이 나가는 것을 확인했습니다.
+- 2026-09-14 개편 뒤 그룹 화면(오늘 띠·점선 도장·응원 버튼·기록 종류)을 브라우저에서 확인하지
+  못했습니다. 로그인이 필요한 화면인데다, **회사 프록시의 self-signed 인증서 때문에 로컬 Node가
+  Supabase에 붙지 못합니다**(`SELF_SIGNED_CERT_IN_CHAIN`). curl은 시스템 CA를 써서 되고 Node만
+  막히므로, 로컬에서 데이터가 있는 화면을 보려면 프록시 인증서를 `NODE_EXTRA_CA_CERTS`로
+  물려야 합니다. 첫 화면과 공개 리더보드는 운영 응답으로 확인했습니다.
+- 기상·착석 스터디의 화면은 실제 데이터로 본 적이 없습니다. 그룹 설정에서 기록 종류를 켠 뒤
+  도장판 칸·목표 다이얼로그·내 리듬 차트를 한 번 훑어야 합니다.

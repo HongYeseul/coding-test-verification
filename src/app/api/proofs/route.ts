@@ -70,6 +70,16 @@ export async function POST(request: Request) {
     return json({ error: "요청 형식을 확인해주세요." }, 400);
   }
   const text = (value: unknown) => (typeof value === "string" ? value : "");
+  // 확장은 기록값을 숫자로도 문자열로도 보낼 수 있습니다. 없으면 null입니다.
+  const minutes = (value: unknown) => {
+    const parsed =
+      typeof value === "number"
+        ? value
+        : typeof value === "string" && value.trim()
+          ? Number(value.trim())
+          : null;
+    return parsed !== null && Number.isFinite(parsed) ? parsed : null;
+  };
 
   const result = await createProofRecord(supabase, data.user.id, {
     groupId: text(body.groupId),
@@ -79,6 +89,7 @@ export async function POST(request: Request) {
     problemUrl: text(body.problemUrl),
     solutionCode: text(body.solutionCode),
     tags: text(body.tags),
+    recordMinutes: minutes(body.recordMinutes),
   });
   if (result.error) return json({ error: result.error }, 400);
   return json({ autoApproved: Boolean(result.autoApproved) }, 201);

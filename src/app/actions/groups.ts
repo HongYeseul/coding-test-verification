@@ -9,6 +9,14 @@ import { getRequiredText, withStatus } from "@/lib/form";
 import { requireUser } from "@/lib/auth";
 import { getSiteUrl } from "@/lib/supabase/config";
 import { INVITE_ALPHABET, normalizeInviteCode } from "@/lib/proof-input";
+import {
+  MAX_RECORD_MINUTES,
+  formatRecord,
+  goalLabels,
+  isRecordKind,
+  parseClock,
+  recordKindLabels,
+} from "@/lib/record-goal";
 
 export async function rotateInviteCodeAction(formData: FormData) {
   const groupId = getRequiredText(formData, "groupId");
@@ -277,10 +285,14 @@ export async function updateGroupSettingsAction(formData: FormData) {
   const isPublic = getRequiredText(formData, "isPublic") === "on";
   const requiresPhoto = getRequiredText(formData, "requiresPhoto") === "on";
   const isCodingStudy = getRequiredText(formData, "isCodingStudy") === "on";
+  const recordKind = getRequiredText(formData, "recordKind");
   if (!UUID_PATTERN.test(groupId) || !SLUG_PATTERN.test(groupSlug)) {
     redirect(withStatus("/dashboard", "error", "그룹을 확인해주세요."));
   }
   const groupPath = `/groups/${groupSlug}`;
+  if (!isRecordKind(recordKind)) {
+    redirect(withStatus(groupPath, "error", "기록 종류를 확인해주세요."));
+  }
   const { supabase, user } = await requireUser(groupPath);
   const { data: membership } = await supabase
     .from("group_members")
@@ -300,6 +312,7 @@ export async function updateGroupSettingsAction(formData: FormData) {
       is_public: isPublic,
       requires_photo: requiresPhoto,
       is_coding_study: isCodingStudy,
+      record_kind: recordKind,
     })
     .eq("id", groupId);
   if (error) {
@@ -312,6 +325,80 @@ export async function updateGroupSettingsAction(formData: FormData) {
     `공개 리더보드 ${isPublic ? "켬" : "끔"}`,
     `사진 필수 ${requiresPhoto ? "켬" : "끔"}`,
     `코딩 테스트 스터디 ${isCodingStudy ? "켬" : "끔"}`,
+    `기록 종류 ${recordKindLabels[recordKind]}`,
   ].join(" · ");
   redirect(withStatus(groupPath, "message", `${summary}으로 저장했습니다.`));
+}
+
+/**
+ * 목표는 그룹이 아니라 멤버가 정합니다. 기상 시각도 착석 시간도 사람마다 다릅니다.
+ * 본인 목표만 바꿀 수 있는지는 set_member_goal 함수가 확인합니다.
+ */
+export async function setMemberGoalAction(formData: FormData) {
+  const groupId = getRequiredText(formData, "groupId");
+  const groupSlug = getRequiredText(formData, "groupSlug");
+  const recordKind = getRequiredText(formData, "recordKind");
+  if (!UUID_PATTERN.test(groupId) || !SLUG_PATTERN.test(groupSlug)) {
+    redirect(withStatus("/dashboard", "error", "그룹을 확인해주세요."));
+  }
+  const groupPath = `/groups/${groupSlug}`;
+  if (!isRecordKind(recordKind) || recordKind === "NONE") {
+    redirect(
+      withStatus(groupPath, "error", "이 그룹은 목표를 쓰지 않습니다."),
+    );
+  }
+
+  // 빈 값은 ‘목표 없음’입니다. 시각은 HH:MM 한 칸, 시간은 시·분 두 칸으로 받습니다.
+  let goalMinutes: number | null = null;
+  if (recordKind === "CLOCK") {
+    const clock = getRequiredText(formData, "goalClock");
+    if (clock) {
+      goalMinutes = parseClock(clock);
+      if (goalMinutes === null) {
+        redirect(
+          withStatus(groupPath, "error", "목표 시각을 06:30처럼 적어주세요."),
+        );
+      }
+    }
+  } else {
+    const hours = getRequiredText(formData, "goalHours");
+    const minutes = getRequiredText(formData, "goalMinutes");
+    if (hours || minutes) {
+      const total = Number(hours || 0) * 60 + Number(minutes || 0);
+      if (!Number.isInteger(total)) {
+        redirect(
+          withStatus(groupPath, "error", "목표 시간을 숫자로 적어주세요."),
+        );
+      }
+      goalMinutes = total;
+    }
+  }
+  if (
+    goalMinutes !== null &&
+    (goalMinutes < 0 || goalMinutes > MAX_RECORD_MINUTES)
+  ) {
+    redirect(
+      withStatus(groupPath, "error", "목표는 24시간을 넘을 수 없습니다."),
+    );
+  }
+
+  const { supabase } = await requireUser(groupPath);
+  const { error } = await supabase.rpc("set_member_goal", {
+    target_group_id: groupId,
+    target_goal_minutes: goalMinutes,
+  });
+  if (error) {
+    redirect(withStatus(groupPath, "error", "목표를 저장하지 못했습니다."));
+  }
+
+  revalidatePath(groupPath);
+  redirect(
+    withStatus(
+      groupPath,
+      "message",
+      goalMinutes === null
+        ? `${goalLabels[recordKind]}을 지웠습니다.`
+        : `이제 ${goalLabels[recordKind]}은 ${formatRecord(recordKind, goalMinutes)}입니다.`,
+    ),
+  );
 }

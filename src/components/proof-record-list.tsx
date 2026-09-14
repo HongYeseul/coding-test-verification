@@ -96,6 +96,15 @@ function cheerSummary(names: string[]) {
   return names.length > 3 ? `${shown} 외 ${names.length - 3}명` : shown;
 }
 
+/** 앞말의 받침에 따라 ‘이’와 ‘가’를 고릅니다. 닉네임이 무엇이든 문장이 자연스러워야 합니다. */
+function subjectParticle(word: string) {
+  const last = word.at(-1) ?? "";
+  const code = last.charCodeAt(0);
+  // 한글 음절이 아니면 조사를 고를 근거가 없어 받침 없는 쪽으로 둡니다.
+  if (code < 0xac00 || code > 0xd7a3) return "가";
+  return (code - 0xac00) % 28 ? "이" : "가";
+}
+
 export function ProofRecordList({
   records,
   groupSlug,
@@ -146,7 +155,9 @@ export function ProofRecordList({
           key={item.id}
           type="button"
           onClick={() => open(item.id)}
-          aria-label={`${item.title} ${item.memberName} ${item.statusLabel} 상세 보기`}
+          aria-label={`${item.title} ${item.memberName} ${item.statusLabel}${
+            item.cheerNames.length ? ` 응원 ${item.cheerNames.length}` : ""
+          } 상세 보기`}
           className={`grid w-full items-center gap-3 border-b border-l-[3px] border-line py-3 pr-0.5 pl-2 text-left hover:bg-soft sm:gap-4 sm:pl-3 ${rowColumns(showPhotos)} ${toneBar[item.statusTone]}`}
         >
           {showPhotos && (
@@ -350,7 +361,8 @@ export function ProofRecordList({
                       {record.cheerNames.length > 0 && (
                         <p className="text-[13px] text-sub">
                           {cheerSummary(record.cheerNames)}
-                          {record.cheerNames.length > 1 ? "이" : "이"} 응원했어요
+                          {subjectParticle(cheerSummary(record.cheerNames))}{" "}
+                          응원했어요
                         </p>
                       )}
                     </div>

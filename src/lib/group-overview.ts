@@ -1,8 +1,12 @@
+import type { RecordKind } from "@/lib/record-goal";
+
 export type OverviewDay = {
   date: string;
   approved: number;
   pending: number;
   rejected: number;
+  /** 기록 종류를 쓰는 그룹에서만 값이 있습니다. 시각은 그날 가장 이른 값, 시간은 합계입니다. */
+  recordMinutes: number | null;
 };
 
 export type OverviewMember = {
@@ -15,6 +19,8 @@ export type OverviewMember = {
   weekApproved: number;
   totalApproved: number;
   pending: number;
+  /** 멤버가 정한 목표입니다. 정하지 않았으면 null입니다. */
+  goalMinutes: number | null;
   featuredProofId: string | null;
   featuredDate: string | null;
   days: OverviewDay[];
@@ -26,6 +32,7 @@ export type GroupOverviewData = {
   weekEnd: string;
   currentWeekStart: string;
   firstWeekStart: string;
+  recordKind: RecordKind;
   days: string[];
   members: OverviewMember[];
 };
