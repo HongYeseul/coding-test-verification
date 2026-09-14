@@ -49,7 +49,8 @@ OAuth App은 콜백을 10개까지 등록할 수 있어 리전을 옮길 때 구
 ## 도구 접근 제약
 
 - **Vercel MCP는 `hongyeseuls-projects` 스코프에 인증돼 있지 않습니다.** `list_teams`가 빈
-  배열이고 운영 프로젝트 `get_project`는 403입니다. 배포 상태는
+  배열이고 운영 프로젝트 `get_project`는 403입니다(2026-09-14에도 같음). 배포는 `main` 푸시로
+  자동이라 MCP가 없어도 막히지 않습니다. 배포 상태는
   `gh api repos/HongYeseul/coding-test-verification/deployments`로 봅니다. MCP로 다루려면
   그 스코프로 다시 인증해야 합니다.
 - **`mcp__supabase__*` 커넥터는 전부 막혀 있습니다.** 쓰기만이 아니라 `select 1`도 거부됩니다.
@@ -171,6 +172,8 @@ DB와 함수를 **함께** 서울로 옮겼습니다. 함수만 옮기면 그룹
   후 SELECT·INSERT·DELETE만 다시 열었습니다. 저장소의 SQL 파일에는 회수 줄이 들어 있습니다.
   응원 접근 범위 회귀 테스트(`supabase/tests/proof_cheers.sql`)는 운영 DB에서 롤백 실행으로
   통과를 확인했습니다.
+  `schema_migrations`의 버전은 이번 건과 이전 네 건(`group_proof_settings`·`solution_code`·
+  `proof_tags`·`drop_legacy_create_group`) 모두 파일명 버전으로 고쳐 저장소와 맞췄습니다.
 
 ### 남은 확인
 
@@ -179,6 +182,3 @@ DB와 함수를 **함께** 서울로 옮겼습니다. 함수만 옮기면 그룹
 - 상세 모달 동작을 운영 브라우저에서 확인하지 않았습니다. 로컬에서는 확인했습니다.
 - 2026-09-14 개편 뒤 그룹 화면(오늘 띠·점선 도장·응원 버튼)을 운영 브라우저에서 확인하지
   않았습니다. 첫 화면과 공개 리더보드는 운영 응답으로 새 토큰과 글꼴이 나가는 것을 확인했습니다.
-- `proof_cheers` 마이그레이션의 `schema_migrations` 버전이 실행 시각(`20260913233437`)으로
-  남아 있습니다. 파일명 버전 `20260914000000`으로 고치는 UPDATE는 도구 권한에 막혀 SQL Editor에서
-  직접 실행해야 합니다. 이전 네 건(`20260913034128`~`20260913040657`)도 같은 상태입니다.
