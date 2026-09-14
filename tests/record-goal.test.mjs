@@ -36,8 +36,12 @@ test("시간은 읽는 자리와 좁은 자리에서 형식만 갈린다", () =>
   assert.equal(formatDuration(260), "4시간 20분");
   assert.equal(formatDuration(240), "4시간");
   assert.equal(formatDuration(20), "20분");
-  assert.equal(formatDurationCompact(260), "4시간20분");
-  assert.equal(formatRecord("DURATION", 260, true), "4시간20분");
+  // 좁은 칸에서는 라틴 단위를 씁니다. 한글 단위는 62px 칸에서 줄이 쪼개집니다.
+  assert.equal(formatDurationCompact(260), "4h 20m");
+  assert.equal(formatDurationCompact(240), "4h");
+  assert.equal(formatDurationCompact(20), "20m");
+  assert.equal(formatDurationCompact(513), "8h 33m");
+  assert.equal(formatRecord("DURATION", 260, true), "4h 20m");
   assert.equal(formatRecord("CLOCK", 260), "04:20");
   assert.equal(formatRecord("NONE", 260), "");
 });
@@ -45,13 +49,14 @@ test("시간은 읽는 자리와 좁은 자리에서 형식만 갈린다", () =>
 test("시각과 시간은 목표를 못 지킨 방향이 서로 반대다", () => {
   // 시각은 목표보다 늦으면 모자란 것입니다.
   assert.equal(compareGoal("CLOCK", 402, 390).missed, true);
-  assert.equal(compareGoal("CLOCK", 402, 390).short, "+12");
   assert.equal(compareGoal("CLOCK", 380, 390).missed, false);
-  assert.equal(compareGoal("CLOCK", 390, 390).short, "정시");
+  assert.equal(compareGoal("CLOCK", 390, 390).description, "목표 시각 정각");
   // 시간은 목표보다 짧으면 모자란 것입니다.
   assert.equal(compareGoal("DURATION", 150, 180).missed, true);
   assert.equal(compareGoal("DURATION", 210, 180).missed, false);
-  assert.equal(compareGoal("DURATION", 180, 180).short, "달성");
+  assert.equal(compareGoal("DURATION", 180, 180).description, "목표 시간 달성");
+  // 차이는 문장으로만 내보냅니다. 칸에 넣는 짧은 숫자 표시는 없습니다.
+  assert.equal(compareGoal("DURATION", 513, 120).description, "목표보다 6시간 33분 더");
 });
 
 test("목표가 없으면 견줄 것도 없다", () => {

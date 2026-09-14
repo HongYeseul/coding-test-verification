@@ -59,9 +59,20 @@ export function formatDuration(minutes: number) {
   return `${hour}시간 ${minute}분`;
 }
 
-/** 260 → "4시간20분". 도장판 칸처럼 좁은 자리에 씁니다. */
+/**
+ * 260 → "4h 20m". 도장판 칸처럼 좁은 자리에 씁니다.
+ *
+ * 한글 단위를 그대로 쓰면 ‘8시간33분’이 62px 칸에서 석 줄로 쪼개집니다.
+ * 라틴 단위는 절반 폭이고, 이미 사진 용량을 MB·KB로 적고 있어 낯설지 않습니다.
+ * 읽는 문장에서는 계속 formatDuration의 한글을 씁니다.
+ */
 export function formatDurationCompact(minutes: number) {
-  return formatDuration(minutes).replace(" ", "");
+  const clamped = Math.max(0, Math.min(MAX_RECORD_MINUTES, Math.round(minutes)));
+  const hour = Math.floor(clamped / 60);
+  const minute = clamped % 60;
+  if (!hour) return `${minute}m`;
+  if (!minute) return `${hour}h`;
+  return `${hour}h ${minute}m`;
 }
 
 /** 종류에 맞는 표시입니다. 칸에서는 compact를 씁니다. */
@@ -77,10 +88,13 @@ export function formatRecord(
 }
 
 /**
- * 목표와 견준 결과입니다. `short`는 칸 옆에 붙는 짧은 표시입니다.
+ * 목표와 견준 결과입니다.
  *
  * 시각은 목표보다 늦으면 모자란 것이고, 시간은 목표보다 짧으면 모자란 것입니다.
  * 방향이 반대라 한곳에서 뒤집어 두고 화면은 `missed`만 봅니다.
+ *
+ * 숫자 차이는 `description`으로만 내보냅니다. 좁은 칸에 넣으면 줄이 쪼개지고,
+ * 시간에서 ‘+393’ 같은 분 단위 차이는 읽어도 뜻이 잡히지 않습니다.
  */
 export function compareGoal(
   kind: RecordKind,
@@ -92,7 +106,6 @@ export function compareGoal(
   if (kind === "CLOCK") {
     return {
       missed: difference > 0,
-      short: difference === 0 ? "정시" : `${difference > 0 ? "+" : ""}${difference}`,
       description:
         difference === 0
           ? "목표 시각 정각"
@@ -103,7 +116,6 @@ export function compareGoal(
   }
   return {
     missed: difference < 0,
-    short: difference === 0 ? "달성" : `${difference > 0 ? "+" : ""}${difference}`,
     description:
       difference === 0
         ? "목표 시간 달성"

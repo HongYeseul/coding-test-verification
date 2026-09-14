@@ -409,21 +409,20 @@ export function GroupOverview({
                               {isFuture ? "–" : "·"}
                             </span>
                           )}
-                          {/* 도장은 찍혔다는 사실만 지고, 값은 그 아래 한 줄로 둡니다. */}
+                          {/* 도장은 찍혔다는 사실만 지고, 값은 그 아래 한 줄로 둡니다.
+                              목표와의 차이는 숫자로 적지 않습니다 — 칸이 좁아 줄이 쪼개지고,
+                              시간에서 ‘+393’ 같은 분 단위 차이는 읽어도 뜻이 잡히지 않습니다.
+                              못 지킨 값만 색이 달라지고, 얼마나 차이 나는지는 설명에 둡니다. */}
                           {minutes !== null && (
                             <span
-                              title={seatRange}
-                              className="mt-0.5 flex items-center justify-center gap-1 font-mono text-[11px] leading-none text-sub tabular-nums sm:text-[12px]"
+                              title={[seatRange, goal?.description]
+                                .filter(Boolean)
+                                .join(" · ")}
+                              className={`mt-0.5 block font-mono text-[11px] leading-none tabular-nums sm:text-[12px] ${
+                                goal?.missed ? "text-warn" : "text-sub"
+                              }`}
                             >
                               {formatRecord(recordKind, minutes, true)}
-                              {goal && (
-                                <span
-                                  title={goal.description}
-                                  className={goal.missed ? "text-warn" : ""}
-                                >
-                                  {goal.short}
-                                </span>
-                              )}
                             </span>
                           )}
                           {/* 아직 퇴근 전이라 목표 대비는 붙이지 않습니다. */}
