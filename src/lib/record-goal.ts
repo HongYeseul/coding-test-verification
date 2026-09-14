@@ -18,7 +18,8 @@ export const MAX_RECORD_MINUTES = 1440;
 
 /** 화면에서 기록을 부르는 말입니다. 행동은 언제나 ‘도장 찍기’ 하나입니다. */
 export const recordKindLabels: Record<RecordKind, string> = {
-  NONE: "기록하지 않음",
+  // 설정 저장 요약에서 ‘기록 종류 없음’으로 읽힙니다. ‘기록 종류 기록하지 않음’은 겹칩니다.
+  NONE: "없음",
   CLOCK: "시각",
   DURATION: "시간",
 };

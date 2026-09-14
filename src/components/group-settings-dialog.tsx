@@ -9,11 +9,21 @@ import {
   type RecordKind,
 } from "@/lib/record-goal";
 
-/** 셀렉트에서 값마다 무엇이 달라지는지 한 줄로 알려줍니다. */
+/**
+ * 고르는 자리에서는 ‘시각’·‘시간’ 두 글자로 가르지 않습니다. 한 글자 차이라 잘못 읽기 쉽고,
+ * 정작 궁금한 것은 무엇이 남느냐입니다. 그래서 제목을 질문으로 두고 짧은 이름은 옆에 답니다.
+ */
+const recordKindTitles: Record<RecordKind, string> = {
+  NONE: "도장만 찍기",
+  CLOCK: "몇 시에 했는지",
+  DURATION: "얼마나 했는지",
+};
+
 const recordKindNotes: Record<RecordKind, string> = {
-  NONE: "지금처럼 도장만 찍습니다.",
-  CLOCK: "도장을 찍은 시각이 함께 남습니다. 기상 스터디에 씁니다.",
-  DURATION: "그날 얼마나 했는지 직접 적습니다. 착석 스터디에 씁니다.",
+  NONE: "지금 그대로입니다. 도장 하나로 끝납니다.",
+  CLOCK: "도장을 찍으면 그 시각이 함께 남습니다. 기상 스터디처럼 몇 시였는지가 중요할 때 씁니다.",
+  DURATION:
+    "시작할 때와 끝낼 때 두 번 찍으면 그사이가 남습니다. 착석 스터디처럼 얼마나 오래 했는지가 중요할 때 씁니다.",
 };
 
 /** 자주 여는 화면이 아니라 본문에 두지 않고 헤더에서 모달로 엽니다. */
@@ -167,20 +177,42 @@ export function GroupSettingsDialog({
               </span>
             </label>
 
-            <label className="grid gap-1 text-[15px]">
-              기록 종류
-              <select name="recordKind" defaultValue={recordKind}>
+            {/* 셋을 나란히 놓고 고르게 합니다. 셀렉트는 가장 긴 항목만큼 넓어지고
+                고르기 전에는 하나밖에 못 읽어, 처음 한 번 정하는 설정에 맞지 않습니다. */}
+            <fieldset className="border-0 p-0">
+              <legend className="p-0 text-[15px]">기록 종류</legend>
+              <div className="mt-2 grid gap-3">
                 {RECORD_KINDS.map((kind) => (
-                  <option key={kind} value={kind}>
-                    {recordKindLabels[kind]} — {recordKindNotes[kind]}
-                  </option>
+                  <label
+                    key={kind}
+                    className="flex items-start gap-2 text-[15px]"
+                  >
+                    <input
+                      type="radio"
+                      name="recordKind"
+                      value={kind}
+                      defaultChecked={recordKind === kind}
+                      className="mt-1"
+                    />
+                    <span>
+                      {recordKindTitles[kind]}
+                      {kind !== "NONE" && (
+                        <span className="ml-1.5 text-[13px] text-sub">
+                          {recordKindLabels[kind]}
+                        </span>
+                      )}
+                      <span className="mt-1 block text-[13px] text-sub">
+                        {recordKindNotes[kind]}
+                      </span>
+                    </span>
+                  </label>
                 ))}
-              </select>
-              <span className="text-[13px] text-sub">
-                멤버마다 목표를 따로 정할 수 있고, 이미 등록된 기록은 그대로
-                둡니다.
-              </span>
-            </label>
+              </div>
+              <p className="mt-2 text-[13px] text-sub">
+                목표는 멤버마다 따로 정합니다. 바꿔도 이미 찍은 도장은
+                그대로입니다.
+              </p>
+            </fieldset>
           </div>
 
           <div className="flex justify-end gap-2">
