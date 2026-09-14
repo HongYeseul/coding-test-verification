@@ -276,7 +276,7 @@ DB 권한 회귀 테스트는 SQL Editor에서 `supabase/tests/invite_codes_and_
 
 현황판 전체 집계·한국시간 주간 경계·주간 이동 범위·접근 권한은 `supabase/tests/group_overview.sql`로 검증합니다. 이 테스트도 데이터를 모두 롤백합니다.
 
-문제 링크의 DB 제약은 `supabase/tests/problem_links.sql`로 검증합니다. 그룹 문제 제목의 역할별 저장·삭제 권한과 링크 형식은 `supabase/tests/group_problem_titles.sql`로 검증합니다. 사진 필수 차단·사진 없는 등록·재시도 멱등성은 `supabase/tests/group_proof_settings.sql`로, 코드가 사진을 대신하는 규칙과 길이 제한은 `supabase/tests/solution_code.sql`로, 자동 인정 등록·반려 권한과 본인 취소는 `supabase/tests/auto_approve_proofs.sql`로, 비공개 그룹 차단과 공개 범위는 `supabase/tests/public_group_board.sql`로, 새벽 3시 경계는 `supabase/tests/study_day.sql`로 검증합니다.
+문제 링크의 DB 제약은 `supabase/tests/problem_links.sql`로 검증합니다. 그룹 문제 제목의 역할별 저장·삭제 권한과 링크 형식은 `supabase/tests/group_problem_titles.sql`로 검증합니다. 사진 필수 차단·사진 없는 등록·재시도 멱등성은 `supabase/tests/group_proof_settings.sql`로, 코드가 사진을 대신하는 규칙과 길이 제한은 `supabase/tests/solution_code.sql`로, 자동 인정 등록·반려 권한과 본인 취소는 `supabase/tests/auto_approve_proofs.sql`로, 비공개 그룹 차단과 공개 범위는 `supabase/tests/public_group_board.sql`로, 새벽 3시 경계는 `supabase/tests/study_day.sql`로, 응원의 접근 범위(본인 기록·취소 중인 기록·외부인·비로그인 차단)는 `supabase/tests/proof_cheers.sql`로 검증합니다.
 
 실제 브라우저 압축 검증은 `node tests/photo-compression-server.mjs` 실행 후 `http://127.0.0.1:3913`에서 진행합니다. 생성한 이미지로 압축 크기·해상도·손상 파일 처리를 확인하며 운영 DB와 Storage는 사용하지 않습니다.
 
