@@ -10,6 +10,7 @@ import {
   createProofRecord,
   type ProofRecordResult,
 } from "@/lib/proof-record";
+import { formatDuration, MAX_RECORD_MINUTES } from "@/lib/record-goal";
 
 export async function createProofRecordAction(input: {
   groupId: string;
@@ -22,12 +23,15 @@ export async function createProofRecordAction(input: {
   tags?: string;
   /** 기상·착석 스터디의 기록값입니다. 쓰지 않는 그룹은 null입니다. */
   recordMinutes?: number | null;
+  /** 착석 도장을 찍은 시각입니다. 착석 스터디가 아니면 null입니다. */
+  startMinutes?: number | null;
 }): Promise<ProofRecordResult> {
   const {
     groupSlug,
     solutionCode = "",
     tags = "",
     recordMinutes = null,
+    startMinutes = null,
     ...record
   } = input;
   if (!SLUG_PATTERN.test(groupSlug))
@@ -38,10 +42,58 @@ export async function createProofRecordAction(input: {
     solutionCode,
     tags,
     recordMinutes,
+    startMinutes,
   });
   if (result.error) return result;
   revalidatePath(`/groups/${groupSlug}`);
   return result;
+}
+
+/** 퇴근 도장의 결과입니다. 성공하면 그날의 착석 시각과 시간이 함께 옵니다. */
+export type SeatFinishResult =
+  | { error: string }
+  | { startMinutes: number; recordMinutes: number };
+
+/**
+ * 퇴근 도장입니다. 오늘 착석만 해 둔 기록에 시간을 채웁니다.
+ * `minutes`를 비우면 지금 시각까지로 재고, 값을 주면 그 시간으로 고칩니다 —
+ * 퇴근 도장을 잊은 날 보정하는 통로입니다.
+ */
+export async function finishSeatRecordAction(input: {
+  groupId: string;
+  groupSlug: string;
+  minutes?: number | null;
+}): Promise<SeatFinishResult> {
+  const { groupId, groupSlug, minutes = null } = input;
+  if (!UUID_PATTERN.test(groupId) || !SLUG_PATTERN.test(groupSlug))
+    return { error: "도장을 찍을 스터디를 확인해주세요." };
+  if (
+    minutes !== null &&
+    (!Number.isInteger(minutes) || minutes < 1 || minutes > MAX_RECORD_MINUTES)
+  )
+    return {
+      error: `시간은 1분에서 ${formatDuration(MAX_RECORD_MINUTES)}까지 적을 수 있습니다.`,
+    };
+
+  const groupPath = `/groups/${groupSlug}`;
+  const { supabase } = await requireUser(groupPath);
+  // 오늘 착석 기록이 없거나 시간을 적는 그룹이 아니면 함수가 거절합니다.
+  // DB 문장을 그대로 보여주지 않고 다음에 할 일을 알려줍니다.
+  const { data, error } = await supabase.rpc("finish_seat_record", {
+    target_group_id: groupId,
+    target_minutes: minutes,
+  });
+  if (error || !data)
+    return {
+      error: "퇴근 도장을 찍지 못했습니다. 오늘 착석 도장이 있는지 확인해주세요.",
+    };
+
+  revalidatePath(groupPath);
+  const finished = data as { startMinutes: number; recordMinutes: number };
+  return {
+    startMinutes: finished.startMinutes,
+    recordMinutes: finished.recordMinutes,
+  };
 }
 
 const UUID_PATTERN =

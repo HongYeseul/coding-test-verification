@@ -118,6 +118,7 @@ pnpm test
 | **응원** | 멤버가 남의 기록에 남기는 하트 하나. 검수가 아니고 집계에도 들어가지 않습니다 |
 | **기록 종류** | 도장과 함께 무엇을 적을지 정하는 그룹 설정 — 기록하지 않음·시각·시간 |
 | **목표** | 멤버가 자기 그룹에서만 쓰는 기준값. 기상 시각이나 하루 착석 시간 |
+| **착석 도장 · 퇴근 도장** | 착석 스터디에서 앉을 때와 일어날 때 찍는 도장. 둘의 차이가 그날의 시간입니다 |
 | **등록** | 장부 표현에만 씁니다 — 등록 시각, 최근 등록순, 플랫폼 계정 등록 |
 
 가르는 기준은 **행동이냐 결과물이냐**입니다. 누르는 것은 언제나 도장 찍기 하나이고,
@@ -151,9 +152,13 @@ pnpm test
 코딩 테스트가 아닌 스터디에서는 ‘했다’보다 ‘몇 시에’와 ‘얼마나’가 알맹이입니다. 그룹 설정 ‘기록 종류’가 그중 무엇을 적을지 정합니다.
 
 - **시각**: 도장을 찍은 시각이 함께 남습니다. 기상 스터디에 씁니다. 모달이 지금 시각을 보여주지만 저장하는 값은 서버가 정합니다 — 브라우저 값을 믿으면 시계를 돌려 이른 기상으로 꾸밀 수 있고, 시각을 보내지 않는 확장 프로그램도 같은 규칙으로 통과합니다.
-- **시간**: 그날 얼마나 했는지 직접 적습니다. 착석 스터디에 씁니다. 앉아 있던 시간은 사람만 아는 값이라 이때만 입력 칸이 앞에 옵니다.
+- **시간**: 앉을 때 한 번, 일어날 때 한 번 도장을 찍으면 그 차이가 그날의 시간입니다. 착석 스터디에 씁니다. 직접 적는 값보다 정확하고, 누르는 것은 여전히 도장 찍기 하나입니다.
 
-값은 둘 다 분 하나로 저장합니다. 시각이면 그날 자정부터 흐른 분이고 시간이면 머문 분입니다. 단위를 하나로 두면 목표와의 차이가 뺄셈 한 번이고, 화면에서 형식만 갈립니다. `proofs.record_minutes`에 0에서 1440까지 담습니다.
+착석 스터디의 하루는 한 구간입니다. 오전·오후로 나눠 앉는 경우는 받지 않습니다 — 구간마다 기록이 생기면 도장판의 승인 건수가 구간 수만큼 늘어 순위 기준이 흔들립니다. 같은 스터디 하루에 두 번째 기록은 DB가 막습니다.
+
+퇴근 도장을 잊은 날은 도장 찍기 창에서 시간을 직접 적어 채웁니다. 잊었다고 그날이 빈칸으로 굳지 않게 하려는 통로입니다. 자정을 넘겨 앉아 있었어도 시간은 음수가 되지 않습니다 — 스터디 하루가 새벽 3시에 끝나므로 자정을 넘긴 퇴근도 같은 날의 기록입니다.
+
+값은 둘 다 분 하나로 저장합니다. 시각이면 그날 자정부터 흐른 분이고 시간이면 머문 분입니다. 단위를 하나로 두면 목표와의 차이가 뺄셈 한 번이고, 화면에서 형식만 갈립니다. `proofs.record_minutes`에 0에서 1440까지 담고, 착석한 시각은 `proofs.start_minutes`에 따로 둡니다. 시각만 있고 시간이 없으면 아직 퇴근 전이며 도장판 칸에 `13:00~`으로 보입니다. 퇴근과 보정은 `finish_seat_record()` 함수로만 합니다 — `proofs`에는 UPDATE 권한이 없습니다.
 
 목표는 그룹이 아니라 멤버가 정합니다. 기상 시각도 착석 시간도 사람마다 다르기 때문입니다. `group_members.goal_minutes`에 두고 도장판의 내 이름 옆에서 바꿉니다. 비워 두면 목표 없이 기록만 남습니다.
 
@@ -297,7 +302,7 @@ DB 권한 회귀 테스트는 SQL Editor에서 `supabase/tests/invite_codes_and_
 
 현황판 전체 집계·한국시간 주간 경계·주간 이동 범위·접근 권한은 `supabase/tests/group_overview.sql`로 검증합니다. 이 테스트도 데이터를 모두 롤백합니다.
 
-문제 링크의 DB 제약은 `supabase/tests/problem_links.sql`로 검증합니다. 그룹 문제 제목의 역할별 저장·삭제 권한과 링크 형식은 `supabase/tests/group_problem_titles.sql`로 검증합니다. 사진 필수 차단·사진 없는 등록·재시도 멱등성은 `supabase/tests/group_proof_settings.sql`로, 코드가 사진을 대신하는 규칙과 길이 제한은 `supabase/tests/solution_code.sql`로, 자동 인정 등록·반려 권한과 본인 취소는 `supabase/tests/auto_approve_proofs.sql`로, 비공개 그룹 차단과 공개 범위는 `supabase/tests/public_group_board.sql`로, 새벽 3시 경계는 `supabase/tests/study_day.sql`로, 응원의 접근 범위(본인 기록·취소 중인 기록·외부인·비로그인 차단)는 `supabase/tests/proof_cheers.sql`로, 기록값이 사진을 대신하는 규칙과 목표 설정 권한은 `supabase/tests/record_goals.sql`로 검증합니다.
+문제 링크의 DB 제약은 `supabase/tests/problem_links.sql`로 검증합니다. 그룹 문제 제목의 역할별 저장·삭제 권한과 링크 형식은 `supabase/tests/group_problem_titles.sql`로 검증합니다. 사진 필수 차단·사진 없는 등록·재시도 멱등성은 `supabase/tests/group_proof_settings.sql`로, 코드가 사진을 대신하는 규칙과 길이 제한은 `supabase/tests/solution_code.sql`로, 자동 인정 등록·반려 권한과 본인 취소는 `supabase/tests/auto_approve_proofs.sql`로, 비공개 그룹 차단과 공개 범위는 `supabase/tests/public_group_board.sql`로, 새벽 3시 경계는 `supabase/tests/study_day.sql`로, 응원의 접근 범위(본인 기록·취소 중인 기록·외부인·비로그인 차단)는 `supabase/tests/proof_cheers.sql`로, 기록값이 사진을 대신하는 규칙과 목표 설정 권한은 `supabase/tests/record_goals.sql`로, 착석·퇴근 도장과 하루 한 구간 규칙은 `supabase/tests/seat_stamps.sql`로, 현황판이 자동 인정을 승인으로 세는지는 `supabase/tests/overview_counts.sql`로 검증합니다.
 
 실제 브라우저 압축 검증은 `node tests/photo-compression-server.mjs` 실행 후 `http://127.0.0.1:3913`에서 진행합니다. 생성한 이미지로 압축 크기·해상도·손상 파일 처리를 확인하며 운영 DB와 Storage는 사용하지 않습니다.
 

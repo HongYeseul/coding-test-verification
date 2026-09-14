@@ -36,6 +36,8 @@ export type ProofRecordInput = {
   tags: string;
   /** 기상·착석 스터디가 남기는 기록값입니다. 시각이든 시간이든 분 하나입니다. */
   recordMinutes: number | null;
+  /** 착석 도장을 찍은 시각입니다. 퇴근 도장을 찍으면 그 차이가 시간이 됩니다. */
+  startMinutes: number | null;
 };
 
 export type ProofRecordResult = { error?: string; autoApproved?: boolean };
@@ -60,6 +62,7 @@ export async function createProofRecord(
   const tags = parseTags(input.tags);
   const link = problemUrl ? problemLink(problemUrl) : null;
   const recordMinutes = input.recordMinutes;
+  const startMinutes = input.startMinutes;
 
   if (
     !UUID_PATTERN.test(groupId) ||
@@ -104,21 +107,39 @@ export async function createProofRecord(
     return { error: "기록한 시각이나 시간을 확인해주세요." };
   if (recordKind === "NONE" && recordMinutes !== null)
     return { error: "이 그룹은 시각이나 시간을 기록하지 않습니다." };
+  if (
+    startMinutes !== null &&
+    (!Number.isInteger(startMinutes) ||
+      startMinutes < 0 ||
+      startMinutes > MAX_RECORD_MINUTES)
+  )
+    return { error: "착석한 시각을 확인해주세요." };
+  if (startMinutes !== null && recordKind !== "DURATION")
+    return { error: "착석 도장은 시간을 기록하는 그룹에서만 찍습니다." };
+  // 착석 도장이거나 직접 적은 시간이거나 하나입니다. 둘을 함께 보내면 어느 쪽이
+  // 그날의 시간인지 정할 수 없습니다.
+  if (startMinutes !== null && recordMinutes !== null)
+    return { error: "착석 도장과 시간을 함께 보낼 수 없습니다." };
   // 시각은 서버가 정합니다. 화면이 보여준 값은 안내일 뿐이고, 남는 것은 등록 시각입니다.
   // 브라우저 값을 믿으면 시계를 돌려 이른 기상으로 꾸밀 수 있고,
   // 시각을 보내지 않는 확장 프로그램도 같은 규칙으로 통과합니다.
   const storedMinutes =
     recordKind === "CLOCK" ? nowClockMinutes() : recordMinutes;
-  // 앉아 있던 시간은 사람만 아는 값이라 이때만 비워둘 수 없습니다.
-  if (recordKind === "DURATION" && !storedMinutes)
+  // 착석 스터디는 도장 두 번으로 시간을 잽니다. 착석 도장도 직접 적은 시간도
+  // 없으면 남길 것이 없습니다.
+  // 착석 시각도 서버가 정합니다. 착석 도장은 언제나 '지금'이라, 화면이 보낸 값을 믿으면
+  // 시계를 돌려 앉아 있던 시간을 늘릴 수 있습니다. 시각(CLOCK)과 같은 규칙입니다.
+  const storedStart = startMinutes === null ? null : nowClockMinutes();
+  if (recordKind === "DURATION" && !storedMinutes && startMinutes === null)
     return {
-      error: `${recordKindLabels[recordKind]}을 적어야 도장을 찍을 수 있습니다.`,
+      error: `착석 도장을 찍거나 ${recordKindLabels[recordKind]}을 적어야 합니다.`,
     };
   // 코드나 기록값을 남기면 사진을 생략할 수 있습니다.
   if (
     !evidencePath &&
     !solutionCode &&
     storedMinutes === null &&
+    startMinutes === null &&
     group.requires_photo
   )
     return { error: "이 그룹은 사진이나 풀이 코드가 필요합니다." };
@@ -143,12 +164,22 @@ export async function createProofRecord(
     problem_url: link?.url ?? null,
     solution_code: solutionCode || null,
     record_minutes: storedMinutes,
+    start_minutes: storedStart,
     tags: tags.length ? tags : null,
     verification_status: autoApproved ? "AUTO_APPROVED" : "PENDING",
     accepted_at: new Date().toISOString(),
   });
 
   if (error) {
+    // 하루는 한 구간이라 트리거가 둘째 기록을 막습니다. DB 문장을 그대로 보이지
+    // 않게 하고 다음에 할 일을 알려줍니다.
+    if (
+      error.code === "P0001" &&
+      error.message.includes("오늘은 이미 기록이 있습니다")
+    )
+      return {
+        error: "오늘은 이미 도장을 찍었습니다. 시간은 퇴근 도장으로 채웁니다.",
+      };
     // 응답 유실 후 같은 내용으로 재시도해도 기록은 한 번만 생성합니다.
     const duplicate = supabase
       .from("proofs")

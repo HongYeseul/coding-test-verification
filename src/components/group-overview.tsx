@@ -9,8 +9,15 @@ import {
 import { LinkPendingDot } from "@/components/link-pending-dot";
 import { MemberGoalDialog } from "@/components/member-goal-dialog";
 import { RecordRhythm } from "@/components/record-rhythm";
+import { SeatChart } from "@/components/seat-chart";
 import { Seal } from "@/components/seal";
-import { compareGoal, formatRecord, type RecordKind } from "@/lib/record-goal";
+import {
+  compareGoal,
+  formatOpenSeat,
+  formatRecord,
+  formatSeatRange,
+  type RecordKind,
+} from "@/lib/record-goal";
 
 /** 손으로 찍은 것처럼 칸마다 조금씩 기울입니다. 같은 칸은 다시 그려도 같은 각도입니다. */
 const sealTilts = ["-7deg", "-3deg", "2deg", "5deg"] as const;
@@ -186,11 +193,18 @@ export function GroupOverview({
     (total, member) => total + member.pending,
     0,
   );
-  // 내 리듬은 시각을 적는 그룹에서, 그것도 이번 주에 남긴 값이 있을 때만 그립니다.
+  // 차트는 기록을 적는 그룹에서, 그것도 이번 주에 내 기록이 있을 때만 그립니다.
+  // 시각이면 선으로 흐름을, 착석이면 막대로 하루치를 봅니다.
   const me = data.members.find((member) => member.userId === currentUserId);
   const showRhythm =
     recordKind === "CLOCK" &&
     !!me?.days.some((day) => day.recordMinutes !== null);
+  const showSeatChart =
+    recordKind === "DURATION" &&
+    !!me?.days.some(
+      (day) => day.recordMinutes !== null || day.startMinutes !== null,
+    );
+  const showChart = showRhythm || showSeatChart;
 
   function weekHref(week: string) {
     const params = new URLSearchParams(proofFilterQuery);
@@ -203,7 +217,7 @@ export function GroupOverview({
     <>
       <section
         aria-labelledby="group-overview-title"
-        className={`${showRhythm ? "mb-3" : "mb-7"} rounded-surface border border-line bg-surface`}
+        className={`${showChart ? "mb-3" : "mb-7"} rounded-surface border border-line bg-surface`}
       >
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-t-[calc(var(--r-surface)-1px)] bg-soft px-3 py-4 sm:px-5">
           <h2 id="group-overview-title" className="sr-only">
@@ -334,6 +348,18 @@ export function GroupOverview({
                         minutes === null
                           ? null
                           : compareGoal(recordKind, minutes, member.goalMinutes);
+                      const start =
+                        recordKind === "DURATION" ? (day?.startMinutes ?? null) : null;
+                      // 앉은 시각만 있으면 아직 퇴근 전이라 결과가 정해지지 않았습니다.
+                      const openSeat =
+                        minutes === null && start !== null
+                          ? formatOpenSeat(start)
+                          : null;
+                      // 끝난 날은 값 옆이 아니라 설명에 언제부터 언제까지였는지 둡니다.
+                      const seatRange =
+                        minutes !== null && start !== null
+                          ? formatSeatRange(start, minutes)
+                          : undefined;
 
                       return (
                         <td
@@ -385,7 +411,10 @@ export function GroupOverview({
                           )}
                           {/* 도장은 찍혔다는 사실만 지고, 값은 그 아래 한 줄로 둡니다. */}
                           {minutes !== null && (
-                            <span className="mt-0.5 flex items-center justify-center gap-1 font-mono text-[11px] leading-none text-sub tabular-nums sm:text-[12px]">
+                            <span
+                              title={seatRange}
+                              className="mt-0.5 flex items-center justify-center gap-1 font-mono text-[11px] leading-none text-sub tabular-nums sm:text-[12px]"
+                            >
                               {formatRecord(recordKind, minutes, true)}
                               {goal && (
                                 <span
@@ -395,6 +424,15 @@ export function GroupOverview({
                                   {goal.short}
                                 </span>
                               )}
+                            </span>
+                          )}
+                          {/* 아직 퇴근 전이라 목표 대비는 붙이지 않습니다. */}
+                          {openSeat && (
+                            <span
+                              title="아직 퇴근 전"
+                              className="mt-0.5 flex items-center justify-center font-mono text-[11px] leading-none text-sub tabular-nums sm:text-[12px]"
+                            >
+                              {openSeat}
                             </span>
                           )}
                         </td>
@@ -429,7 +467,9 @@ export function GroupOverview({
               <span>칸 아래 시각은 도장을 찍은 시각입니다</span>
             )}
             {recordKind === "DURATION" && (
-              <span>칸 아래 시간은 그날 기록한 시간의 합입니다</span>
+              <span>
+                칸 아래 시간은 착석부터 퇴근까지이고, ‘13:00~’은 아직 퇴근 전입니다
+              </span>
             )}
           </span>
           <span>한국시간 · 등록일 기준</span>
@@ -437,6 +477,13 @@ export function GroupOverview({
       </section>
       {showRhythm && me && (
         <RecordRhythm
+          dates={data.days}
+          days={me.days}
+          goalMinutes={me.goalMinutes}
+        />
+      )}
+      {showSeatChart && me && (
+        <SeatChart
           dates={data.days}
           days={me.days}
           goalMinutes={me.goalMinutes}

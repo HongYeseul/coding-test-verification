@@ -6,10 +6,14 @@ import {
   useState,
   type ClipboardEvent,
   type FormEvent,
+  type KeyboardEvent,
 } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { createProofRecordAction } from "@/app/actions/proofs";
+import {
+  createProofRecordAction,
+  finishSeatRecordAction,
+} from "@/app/actions/proofs";
 import { Seal } from "@/components/seal";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -27,6 +31,8 @@ import {
   compareGoal,
   formatClock,
   formatDuration,
+  formatOpenSeat,
+  formatSeatRange,
   MAX_RECORD_MINUTES,
   nowClockMinutes,
   type RecordKind,
@@ -47,6 +53,8 @@ export function ProofForm({
   isCodingStudy,
   recordKind,
   goalMinutes,
+  seatStartMinutes,
+  seatFinished,
 }: {
   groupId: string;
   groupSlug: string;
@@ -56,13 +64,14 @@ export function ProofForm({
   isCodingStudy: boolean;
   recordKind: RecordKind;
   goalMinutes: number | null;
+  /** 오늘 착석해 둔 기록의 시각입니다. 아직 앉지 않았으면 null입니다. */
+  seatStartMinutes: number | null;
+  /** 오늘 기록이 이미 끝났는지입니다. 하루는 한 구간입니다. */
+  seatFinished: boolean;
 }) {
   const router = useRouter();
   // 시각·시간은 그 자체가 근거라, 기록을 남기는 그룹은 사진이 없어도 도장이 찍힙니다.
   const photoRequired = requiresPhoto && recordKind === "NONE";
-  const goalHours =
-    goalMinutes === null ? "" : String(Math.floor(goalMinutes / 60));
-  const goalRestMinutes = goalMinutes === null ? "" : String(goalMinutes % 60);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -76,6 +85,22 @@ export function ProofForm({
     blob: Blob;
     url: string;
   } | null>(null);
+  // 방금 찍은 퇴근 도장의 결과입니다. 화면을 다시 그리기 전에도 보여줍니다.
+  const [finishedSeat, setFinishedSeat] = useState<{
+    startMinutes: number;
+    recordMinutes: number;
+  } | null>(null);
+  // 착석 스터디는 오늘 상태에 따라 도장이 갈립니다. 끝난 날이 가장 먼저입니다.
+  const seatDone =
+    recordKind === "DURATION" && (seatFinished || finishedSeat !== null);
+  const seatOpen =
+    recordKind === "DURATION" && !seatDone && seatStartMinutes !== null;
+  // 자정을 넘겨 앉아 있어도 하루를 넘지 않게 하루 길이로 나눕니다.
+  const seatElapsed =
+    seatStartMinutes === null
+      ? 0
+      : (clockMinutes - seatStartMinutes + MAX_RECORD_MINUTES) %
+        MAX_RECORD_MINUTES;
   const dialogRef = useRef<HTMLDialogElement>(null);
   const photoInput = useRef<HTMLInputElement>(null);
   const selection = useRef(0);
@@ -98,12 +123,13 @@ export function ProofForm({
     if (!open && dialog.open) dialog.close();
   }, [open]);
   // 도장을 찍는 순간이 곧 기록이라, 열려 있는 동안 1분마다 시각을 다시 읽습니다.
+  // 앉아 있는 중에는 흐른 시간이 이 값에서 나옵니다.
   useEffect(() => {
-    if (!open || recordKind !== "CLOCK") return;
+    if (!open || recordKind === "NONE" || seatDone) return;
     // 여는 순간의 시각은 버튼이 이미 맞춰 두었고, 여기서는 1분마다 따라가기만 합니다.
     const timer = setInterval(() => setClockMinutes(nowClockMinutes()), 60_000);
     return () => clearInterval(timer);
-  }, [open, recordKind]);
+  }, [open, recordKind, seatDone]);
   // 등록을 마치면 모달이 닫히므로 결과는 잠깐 뜨는 알림으로 알립니다.
   useEffect(() => {
     if (open || !message) return;
@@ -115,6 +141,8 @@ export function ProofForm({
   );
   // 사진이 없는 기록에는 경로가 없으므로 이 열쇠가 재시도 중복을 막습니다.
   const recordKey = useRef("");
+  const correctionHours = useRef<HTMLInputElement>(null);
+  const correctionMinutes = useRef<HTMLInputElement>(null);
   const submitting = useRef(false);
 
   async function prepare(file: File | undefined) {
@@ -156,9 +184,90 @@ export function ProofForm({
     void prepare(file);
   }
 
+  /**
+   * 퇴근 도장입니다. 저장은 함수 하나가 맡아 착석 시각과의 차이를 시간으로 채웁니다.
+   * `minutes`를 주면 그 시간으로 고칩니다 — 퇴근 도장을 잊은 날의 보정입니다.
+   */
+  async function finishSeat(minutes: number | null) {
+    if (submitting.current) return;
+    submitting.current = true;
+    setStamped(false);
+    setBusy(true);
+    setMessage("도장을 찍고 있습니다.");
+    try {
+      const result = await finishSeatRecordAction({
+        groupId,
+        groupSlug,
+        minutes,
+      });
+      if ("error" in result) {
+        setMessage(result.error);
+        return;
+      }
+      setFinishedSeat(result);
+      setStamped(true);
+      setOpen(false);
+      setMessage(
+        `도장을 찍었습니다. ${formatSeatRange(
+          result.startMinutes,
+          result.recordMinutes,
+        )} · ${formatDuration(result.recordMinutes)}`,
+      );
+      router.refresh();
+    } catch {
+      setMessage(
+        "처리 결과를 확인하지 못했습니다. 같은 내용으로 다시 시도해주세요.",
+      );
+    } finally {
+      submitting.current = false;
+      setBusy(false);
+    }
+  }
+
+  /** 퇴근 시각이 지금이 아닐 때 두 칸에 적은 시간으로 채웁니다. */
+  function correctSeat() {
+    const hours = Number((correctionHours.current?.value ?? "").trim() || 0);
+    const rest = Number((correctionMinutes.current?.value ?? "").trim() || 0);
+    if (
+      !Number.isInteger(hours) ||
+      !Number.isInteger(rest) ||
+      hours < 0 ||
+      hours > 24 ||
+      rest < 0 ||
+      rest > 59
+    ) {
+      setMessage("시간은 0~24, 분은 0~59로 적어주세요.");
+      return;
+    }
+    const minutes = hours * 60 + rest;
+    if (!minutes) {
+      setMessage("얼마나 앉아 있었는지 적어야 도장을 찍을 수 있습니다.");
+      return;
+    }
+    if (minutes > MAX_RECORD_MINUTES) {
+      setMessage(
+        `기록은 ${formatDuration(MAX_RECORD_MINUTES)}까지 적을 수 있습니다.`,
+      );
+      return;
+    }
+    void finishSeat(minutes);
+  }
+
+  /** 보정 칸에서 누른 Enter는 지금 시각이 아니라 적은 시간으로 찍습니다. */
+  function correctOnEnter(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    correctSeat();
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submitting.current) return;
+    // 앉아만 둔 날의 제출은 퇴근 도장입니다. 남길 것이 시간뿐이라 여기서 갈립니다.
+    if (seatOpen) {
+      await finishSeat(null);
+      return;
+    }
     const form = event.currentTarget;
     const data = new FormData(form);
     const fileInput = form.elements.namedItem("photo") as HTMLInputElement;
@@ -185,36 +294,10 @@ export function ProofForm({
       setMessage(PROBLEM_URL_ERROR);
       return;
     }
-    // 시각은 도장을 찍는 순간이 곧 기록이고, 시간은 적은 두 칸을 분으로 합칩니다.
-    let recordMinutes: number | null = null;
-    if (recordKind === "CLOCK")
-      recordMinutes = clockMinutes;
-    if (recordKind === "DURATION") {
-      const hours = Number(String(data.get("durationHours") ?? "").trim() || 0);
-      const rest = Number(String(data.get("durationMinutes") ?? "").trim() || 0);
-      if (
-        !Number.isInteger(hours) ||
-        !Number.isInteger(rest) ||
-        hours < 0 ||
-        hours > 24 ||
-        rest < 0 ||
-        rest > 59
-      ) {
-        setMessage("시간은 0~24, 분은 0~59로 적어주세요.");
-        return;
-      }
-      recordMinutes = hours * 60 + rest;
-      if (!recordMinutes) {
-        setMessage("얼마나 했는지 적어야 도장을 찍을 수 있습니다.");
-        return;
-      }
-      if (recordMinutes > MAX_RECORD_MINUTES) {
-        setMessage(
-          `기록은 ${formatDuration(MAX_RECORD_MINUTES)}까지 적을 수 있습니다.`,
-        );
-        return;
-      }
-    }
+    // 시각은 도장을 찍는 순간이 곧 기록이고, 착석은 지금 시각이 시작점입니다.
+    // 시간은 일어날 때 찍는 퇴근 도장이 채웁니다.
+    const recordMinutes = recordKind === "CLOCK" ? clockMinutes : null;
+    const startMinutes = recordKind === "DURATION" ? clockMinutes : null;
     submitting.current = true;
     setStamped(false);
     setBusy(true);
@@ -255,6 +338,7 @@ export function ProofForm({
         tags: String(data.get("tags") ?? ""),
         problemUrl,
         recordMinutes,
+        startMinutes,
       });
       if (result.error) {
         setMessage(result.error);
@@ -273,11 +357,13 @@ export function ProofForm({
           ? ` (${displaySize(file.size)} → ${displaySize(storedSize)})`
           : "";
       setMessage(
-        `도장을 찍었습니다${stored}. ${
-          result.autoApproved
-            ? "바로 인정됐습니다."
-            : "검수를 기다려주세요."
-        }`,
+        startMinutes === null
+          ? `도장을 찍었습니다${stored}. ${
+              result.autoApproved
+                ? "바로 인정됐습니다."
+                : "검수를 기다려주세요."
+            }`
+          : `${formatClock(startMinutes)}에 착석 도장을 찍었습니다. 일어날 때 퇴근 도장을 찍어주세요.`,
       );
       router.refresh();
     } catch {
@@ -292,6 +378,12 @@ export function ProofForm({
 
   const openLabel = "도장 찍기";
   const dialogTitle = "도장 찍기";
+  // 착석 스터디는 앉을 때와 일어날 때 찍는 도장의 이름이 다릅니다.
+  const submitLabel = seatOpen
+    ? "퇴근 도장 찍기"
+    : recordKind === "DURATION" && !seatDone
+      ? "착석 도장 찍기"
+      : "도장 찍기";
 
   const photoField = (
     <>
@@ -377,44 +469,131 @@ export function ProofForm({
     </div>
   );
 
-  const durationField = (
+  // 착석 스터디는 앉을 때 한 번, 일어날 때 한 번 찍습니다. 그 차이가 그날의 시간입니다.
+  const goalNote = goalMinutes !== null && (
+    <span className="ml-1 text-[13px] text-sub">
+      목표 {formatDuration(goalMinutes)}
+    </span>
+  );
+
+  const seatStartField = (
     <div className="grid gap-2">
-      <label htmlFor="proof-duration-hours" className="text-[15px]">
-        오늘 기록한 시간
-        {goalMinutes !== null && (
-          <span className="ml-1 text-[13px] text-sub">
-            목표 {formatDuration(goalMinutes)}
+      <p className="text-[15px]">
+        착석 시각
+        {goalNote}
+      </p>
+      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-control bg-brand-soft px-4 py-3">
+        <span className="font-mono text-[32px] leading-tight tabular-nums">
+          {formatClock(clockMinutes)}
+        </span>
+      </div>
+      <p className="text-[13px] text-sub">
+        지금부터 앉습니다. 일어날 때 퇴근 도장을 찍으면 시간이 계산됩니다.
+      </p>
+    </div>
+  );
+
+  const openSeatGoal = compareGoal("DURATION", seatElapsed, goalMinutes);
+
+  const seatOpenField = seatStartMinutes === null ? null : (
+    <div className="grid gap-2">
+      <p className="text-[15px]">
+        앉아 있는 중
+        {goalNote}
+      </p>
+      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-control bg-brand-soft px-4 py-3">
+        <span className="font-mono text-[32px] leading-tight tabular-nums">
+          {formatOpenSeat(seatStartMinutes)}
+        </span>
+        <span className="text-[15px]">{formatDuration(seatElapsed)}</span>
+        {openSeatGoal && (
+          <span className="text-[13px] text-sub">
+            {openSeatGoal.description}
           </span>
         )}
-      </label>
-      <div className="flex items-center gap-2">
-        <input
-          id="proof-duration-hours"
-          name="durationHours"
-          type="number"
-          inputMode="numeric"
-          min={0}
-          max={24}
-          step={1}
-          defaultValue={goalHours}
-          disabled={busy}
-          className="w-20"
-        />
-        <span className="text-[15px]">시간</span>
-        <input
-          id="proof-duration-minutes"
-          name="durationMinutes"
-          type="number"
-          inputMode="numeric"
-          min={0}
-          max={59}
-          step={1}
-          defaultValue={goalRestMinutes}
-          disabled={busy}
-          className="w-20"
-        />
-        <span className="text-[15px]">분</span>
       </div>
+      <p className="text-[13px] text-sub">
+        퇴근 도장을 찍으면 지금까지의 시간이 기록으로 남습니다.
+      </p>
+      {/* 퇴근 시각이 지금이 아닐 때 쓰는 통로라 접어 둡니다. */}
+      <details className="rounded-control border border-line px-4 py-3">
+        <summary className="text-[13px] text-sub">
+          퇴근 시각이 지금이 아닌가요?
+        </summary>
+        <div className="mt-3 grid gap-2">
+          <label htmlFor="proof-duration-hours" className="text-[13px] text-sub">
+            앉아 있던 시간을 직접 적습니다.
+          </label>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              id="proof-duration-hours"
+              name="durationHours"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={24}
+              step={1}
+              disabled={busy}
+              ref={correctionHours}
+              onKeyDown={correctOnEnter}
+              className="w-20"
+            />
+            <span className="text-[15px]">시간</span>
+            <input
+              id="proof-duration-minutes"
+              name="durationMinutes"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={59}
+              step={1}
+              disabled={busy}
+              ref={correctionMinutes}
+              onKeyDown={correctOnEnter}
+              className="w-20"
+            />
+            <span className="text-[15px]">분</span>
+            <button
+              type="button"
+              className="btn"
+              disabled={busy}
+              onClick={correctSeat}
+            >
+              직접 적기
+            </button>
+          </div>
+        </div>
+      </details>
+    </div>
+  );
+
+  const seatDoneField = (
+    <div className="grid gap-2">
+      <p className="text-[15px]">오늘 기록이 끝났습니다</p>
+      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-control bg-brand-soft px-4 py-3">
+        {finishedSeat ? (
+          <>
+            <span className="font-mono text-[32px] leading-tight tabular-nums">
+              {formatDuration(finishedSeat.recordMinutes)}
+            </span>
+            <span className="text-[15px]">
+              {formatSeatRange(
+                finishedSeat.startMinutes,
+                finishedSeat.recordMinutes,
+              )}
+            </span>
+          </>
+        ) : (
+          <span className="font-mono text-[32px] leading-tight tabular-nums">
+            {seatStartMinutes === null
+              ? "기록 완료"
+              : `${formatClock(seatStartMinutes)} 착석`}
+          </span>
+        )}
+      </div>
+      <p className="text-[13px] text-sub">
+        하루는 한 구간이라 오늘은 더 찍을 수 없습니다.
+      </p>
     </div>
   );
 
@@ -505,22 +684,32 @@ export function ProofForm({
           <div className="my-4 grid gap-5">
             {/* 기록이 이 그룹 인증의 알맹이라 맨 앞에 둡니다. */}
             {recordKind === "CLOCK" && clockField}
-            {recordKind === "DURATION" && durationField}
-            {/* 사진이 선택이면 먼저 쓰는 것은 메모라, 사진 영역을 뒤로 보냅니다. */}
-            {photoRequired ? (
+            {recordKind === "DURATION" &&
+              (seatDone
+                ? seatDoneField
+                : seatOpen
+                  ? seatOpenField
+                  : seatStartField)}
+            {/* 퇴근 도장은 시간만 채우므로 남길 자리가 없는 입력은 감춥니다. */}
+            {!seatOpen && !seatDone && (
               <>
-                {photoField}
-                {titleField}
-              </>
-            ) : (
-              <>
-                {titleField}
-                {photoField}
+                {/* 사진이 선택이면 먼저 쓰는 것은 메모라, 사진 영역을 뒤로 보냅니다. */}
+                {photoRequired ? (
+                  <>
+                    {photoField}
+                    {titleField}
+                  </>
+                ) : (
+                  <>
+                    {titleField}
+                    {photoField}
+                  </>
+                )}
+                {tagField}
               </>
             )}
-            {tagField}
 
-            {isCodingStudy && (
+            {!seatOpen && !seatDone && isCodingStudy && (
               <div className="grid gap-2">
                 <label htmlFor="proof-problem-url" className="text-[15px]">
                   문제 링크{" "}
@@ -562,9 +751,13 @@ export function ProofForm({
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-[13px] text-sub">
-              {autoApprove
-                ? "등록 시각이 기록되고 바로 인정됩니다."
-                : "등록 시각이 기록되고 검수 대기 상태가 됩니다."}
+              {seatDone
+                ? "오늘 기록은 이미 끝났습니다. 내일 다시 앉을 때 찍어주세요."
+                : seatOpen
+                  ? "퇴근 도장을 찍으면 착석 시각과의 차이가 시간으로 남습니다."
+                  : autoApprove
+                    ? "등록 시각이 기록되고 바로 인정됩니다."
+                    : "등록 시각이 기록되고 검수 대기 상태가 됩니다."}
             </span>
             <div className="flex flex-wrap items-center justify-end gap-3">
               {/* 버튼이 왜 눌리지 않는지 그 자리에서 알려줍니다. */}
@@ -576,11 +769,13 @@ export function ProofForm({
               )}
               <button
                 type="submit"
-                disabled={busy || preparing || (photoRequired && !prepared)}
+                disabled={
+                  busy || preparing || (photoRequired && !prepared) || seatDone
+                }
                 className="btn btn-primary min-h-12 gap-2 rounded-[10px] px-5 text-[16px]"
               >
                 <Seal className="size-6 text-primary-ink" tilt="-6deg" />
-                {busy ? "찍는 중…" : "도장 찍기"}
+                {busy ? "찍는 중…" : submitLabel}
               </button>
             </div>
           </div>

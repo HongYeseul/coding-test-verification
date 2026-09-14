@@ -1,6 +1,6 @@
 import type { GroupOverviewData } from "@/lib/group-overview";
 import { Seal } from "@/components/seal";
-import { formatRecord } from "@/lib/record-goal";
+import { formatOpenSeat, formatRecord } from "@/lib/record-goal";
 
 /** 오늘 날짜를 ‘9월 10일 목요일’로 적습니다. 스터디 하루 기준 날짜를 그대로 받습니다. */
 function longDate(value: string) {
@@ -39,7 +39,12 @@ export function TodayStrip({
           : rejected > 0
             ? "rejected"
             : "none";
-    return { ...member, state, recordMinutes: today?.recordMinutes ?? null };
+    return {
+      ...member,
+      state,
+      recordMinutes: today?.recordMinutes ?? null,
+      startMinutes: today?.startMinutes ?? null,
+    };
   });
   const recordKind = data.recordKind;
   // 찍은 사람이 앞에 옵니다. 같은 무리 안에서는 도장판과 같은 순서입니다.
@@ -112,8 +117,17 @@ export function TodayStrip({
                 {formatRecord(recordKind, member.recordMinutes, true)}
               </span>
             )}
+            {/* 착석은 아직 퇴근 전이라 값이 없습니다. 앉은 시각만 붙입니다. */}
+            {recordKind === "DURATION" &&
+              member.recordMinutes === null &&
+              member.startMinutes !== null && (
+                <span className="font-mono text-[12px] font-normal text-sub tabular-nums">
+                  {formatOpenSeat(member.startMinutes)}
+                </span>
+              )}
             {recordKind !== "NONE" &&
               member.recordMinutes === null &&
+              member.startMinutes === null &&
               member.goalMinutes !== null && (
                 <span className="text-[11px] font-normal text-sub">
                   목표{" "}

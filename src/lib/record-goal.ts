@@ -112,6 +112,22 @@ export function compareGoal(
   };
 }
 
+/**
+ * 착석과 퇴근을 한 줄로 적습니다. 예: "13:00 → 17:20"
+ *
+ * 자정을 넘겨 앉아 있었으면 끝 시각이 하루를 넘습니다. formatClock은 1440분에서
+ * 잘라내므로 여기서 먼저 하루로 되돌립니다 — 23:00에 두 시간이면 01:00입니다.
+ */
+export function formatSeatRange(startMinutes: number, durationMinutes: number) {
+  const endMinutes = (startMinutes + durationMinutes) % MAX_RECORD_MINUTES;
+  return `${formatClock(startMinutes)} → ${formatClock(endMinutes)}`;
+}
+
+/** 아직 퇴근하지 않은 자리입니다. 예: "13:00~" */
+export function formatOpenSeat(startMinutes: number) {
+  return `${formatClock(startMinutes)}~`;
+}
+
 /** 지금 이 순간의 한국시간을 자정부터 흐른 분으로 돌려줍니다. */
 export function nowClockMinutes(at: Date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-US", {

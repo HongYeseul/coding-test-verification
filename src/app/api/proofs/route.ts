@@ -90,6 +90,8 @@ export async function POST(request: Request) {
     solutionCode: text(body.solutionCode),
     tags: text(body.tags),
     recordMinutes: minutes(body.recordMinutes),
+    // 확장은 착석 도장을 찍지 않습니다. 값이 없으면 그냥 기록 하나입니다.
+    startMinutes: minutes(body.startMinutes),
   });
   if (result.error) return json({ error: result.error }, 400);
   return json({ autoApproved: Boolean(result.autoApproved) }, 201);

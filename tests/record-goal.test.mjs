@@ -6,7 +6,9 @@ import {
   formatClock,
   formatDuration,
   formatDurationCompact,
+  formatOpenSeat,
   formatRecord,
+  formatSeatRange,
   isRecordKind,
   nowClockMinutes,
   parseClock,
@@ -55,6 +57,14 @@ test("시각과 시간은 목표를 못 지킨 방향이 서로 반대다", () =
 test("목표가 없으면 견줄 것도 없다", () => {
   assert.equal(compareGoal("CLOCK", 390, null), null);
   assert.equal(compareGoal("NONE", 390, 390), null);
+});
+
+test("착석과 퇴근은 시각 두 개로 읽힌다", () => {
+  // 13:00에 앉아 4시간 20분 있었으면 17:20에 일어난 것입니다.
+  assert.equal(formatSeatRange(780, 260), "13:00 → 17:20");
+  // 자정을 넘겨 앉아 있었어도 끝 시각이 하루를 넘지 않습니다.
+  assert.equal(formatSeatRange(1380, 120), "23:00 → 01:00");
+  assert.equal(formatOpenSeat(780), "13:00~");
 });
 
 test("기록 종류는 세 값뿐이다", () => {

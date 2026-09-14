@@ -7,6 +7,8 @@ export type OverviewDay = {
   rejected: number;
   /** 기록 종류를 쓰는 그룹에서만 값이 있습니다. 시각은 그날 가장 이른 값, 시간은 합계입니다. */
   recordMinutes: number | null;
+  /** 착석 스터디에서 앉은 시각입니다. 값이 있는데 recordMinutes가 없으면 아직 퇴근 전입니다. */
+  startMinutes: number | null;
 };
 
 export type OverviewMember = {

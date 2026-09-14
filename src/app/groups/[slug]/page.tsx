@@ -374,6 +374,25 @@ export default async function GroupPage({
     proofData = response.data ?? [];
   }
 
+  // 착석 스터디는 오늘 내 기록이 없는지·앉아만 있는지·끝났는지에 따라 도장이 갈립니다.
+  const studyTodayDate = overview?.today ?? studyToday();
+  const { data: seatRow } =
+    recordKind === "DURATION"
+      ? await supabase
+          .from("proofs")
+          .select("start_minutes, record_minutes")
+          .eq("group_id", group.id)
+          .eq("user_id", user.id)
+          .neq("verification_status", "CANCELING")
+          .gte("created_at", studyDayStart(studyTodayDate))
+          .lt("created_at", nextStudyDayStart(studyTodayDate))
+          .maybeSingle()
+      : { data: null };
+  const seatToday = seatRow as {
+    start_minutes: number | null;
+    record_minutes: number | null;
+  } | null;
+
   const proofs = proofData as ProofRow[];
   const proofIds = proofs.map((proof) => proof.id);
   const accountIds = [
@@ -664,6 +683,8 @@ export default async function GroupPage({
             isCodingStudy={group.is_coding_study}
             recordKind={recordKind}
             goalMinutes={currentMembership.goal_minutes ?? null}
+            seatStartMinutes={seatToday?.start_minutes ?? null}
+            seatFinished={seatToday?.record_minutes !== null && seatToday !== null}
           />
         </div>
       </header>
