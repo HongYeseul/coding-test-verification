@@ -308,6 +308,25 @@ test("코딩 테스트 스터디가 아니면 문제 목록과 제목을 조회�
   );
 });
 
+test("코딩 테스트 스터디에서는 최근 활동을 조회하지 않는다", async (t) => {
+  // 오른쪽 칸이 푼 문제 목록으로 이미 차 있어 화면에 없는 목록입니다.
+  const coding = await renderGroup(t);
+  await coding.render();
+  assert.equal(
+    coding.rpcCalls.find((call) => call.name === "get_group_activity"),
+    undefined,
+  );
+});
+
+test("코딩 테스트 스터디가 아니면 최근 활동을 조회한다", async (t) => {
+  const plain = await renderGroup(t, { isCodingStudy: false });
+  await plain.render();
+  assert.deepEqual(
+    plain.rpcCalls.find((call) => call.name === "get_group_activity")?.args,
+    { target_group_id: "group", target_limit: 20 },
+  );
+});
+
 test("선택한 주를 현황판 조회 인자로 넘긴다", async (t) => {
   const { rpcCalls, render } = await renderGroup(t, {
     searchParams: { week: "2026-09-02" },

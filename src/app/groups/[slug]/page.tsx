@@ -398,10 +398,14 @@ export default async function GroupPage({
     record_minutes: number | null;
   } | null;
 
-  const { data: activityData } = await supabase.rpc("get_group_activity", {
-    target_group_id: group.id,
-    target_limit: 20,
-  });
+  // 코딩 테스트 스터디는 오른쪽 칸이 푼 문제 목록으로 이미 차 있어 활동을 두지 않습니다.
+  // 화면에 없는 목록이라 조회도 하지 않습니다.
+  const { data: activityData } = group.is_coding_study
+    ? { data: null }
+    : await supabase.rpc("get_group_activity", {
+        target_group_id: group.id,
+        target_limit: 20,
+      });
   // 활동은 곁들이는 값이라, 모양이 어긋나도 그룹 화면 전체가 멈추면 안 됩니다.
   const activity = (
     Array.isArray(activityData) ? (activityData as GroupActivityEvent[]) : []
@@ -860,7 +864,9 @@ export default async function GroupPage({
               canEditTitle={canReview}
             />
           )}
-          <GroupActivity events={activity} today={studyTodayDate} />
+          {!group.is_coding_study && (
+            <GroupActivity events={activity} today={studyTodayDate} />
+          )}
         </aside>
       </div>
 
