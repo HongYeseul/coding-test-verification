@@ -3,6 +3,7 @@ import Link from "next/link";
 import { signOutAction } from "@/app/actions/auth";
 import { createGroupAction, joinByCodeAction } from "@/app/actions/groups";
 import { AppShell } from "@/components/app-shell";
+import { ExtensionCard } from "@/components/extension-card";
 import { StatusMessage } from "@/components/status-message";
 import { requireUser } from "@/lib/auth";
 import { firstQueryValue } from "@/lib/form";
@@ -209,6 +210,10 @@ export default async function DashboardPage({
           </button>
         </form>
       </section>
+
+      <div className="mt-5">
+        <ExtensionCard />
+      </div>
     </AppShell>
   );
 }
