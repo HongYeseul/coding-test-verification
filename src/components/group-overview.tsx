@@ -360,10 +360,21 @@ export function GroupOverview({
                         minutes !== null && start !== null
                           ? formatSeatRange(start, minutes)
                           : undefined;
+                      // 설명은 칸 하나에 하나입니다. 도장과 값에 따로 달면 어디에
+                      // 마우스를 올렸느냐에 따라 다른 말이 떠서 찾기 어렵습니다.
+                      const cellTitle = [
+                        description,
+                        seatRange,
+                        openSeat ? "아직 퇴근 전" : null,
+                        goal?.description,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ");
 
                       return (
                         <td
                           key={date}
+                          title={total > 0 ? cellTitle : undefined}
                           className={`${rowHeight(recordKind)} border-t border-line text-center text-[15px] ${
                             isToday ? "bg-brand-soft/50" : ""
                           }`}
@@ -371,8 +382,7 @@ export function GroupOverview({
                           {total > 0 ? (
                             <Link
                               href={`/groups/${groupSlug}?proofMember=${member.userId}&proofDate=${date}${weekParam}#proof-records`}
-                              title={description}
-                              aria-label={`${description}. 인증 기록 보기`}
+                              aria-label={`${cellTitle}. 인증 기록 보기`}
                               className="relative inline-flex"
                             >
                               {stamped || waiting > 0 ? (
@@ -415,9 +425,6 @@ export function GroupOverview({
                               못 지킨 값만 색이 달라지고, 얼마나 차이 나는지는 설명에 둡니다. */}
                           {minutes !== null && (
                             <span
-                              title={[seatRange, goal?.description]
-                                .filter(Boolean)
-                                .join(" · ")}
                               className={`mt-0.5 block font-mono text-[11px] leading-none tabular-nums sm:text-[12px] ${
                                 goal?.missed ? "text-warn" : "text-sub"
                               }`}
@@ -428,7 +435,6 @@ export function GroupOverview({
                           {/* 아직 퇴근 전이라 목표 대비는 붙이지 않습니다. */}
                           {openSeat && (
                             <span
-                              title="아직 퇴근 전"
                               className="mt-0.5 flex items-center justify-center font-mono text-[11px] leading-none text-sub tabular-nums sm:text-[12px]"
                             >
                               {openSeat}
