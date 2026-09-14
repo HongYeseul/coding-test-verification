@@ -13,11 +13,12 @@
 <text x="64" y="323" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">내려주므로 방문자는</text>
 <text x="64" y="340" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">Google에 요청하지</text>
 <text x="64" y="357" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">않습니다.</text>
-<text x="236" y="254" font-size="14" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="500">명조  Noto Serif KR 600·700</text>
-<text x="236" y="276" font-size="14" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="500">고딕  IBM Plex Sans KR 400–700</text>
-<text x="236" y="298" font-size="14" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="500">고정폭  IBM Plex Mono 400·500</text>
-<text x="236" y="336" font-size="12" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">명조는 h1·h2와 현황판의 큰 숫자, 고딕은 본문, 고정폭은 날짜·아이디입니다.</text>
+<text x="236" y="254" font-size="14" fill="#1a1d22" font-family="'Noto Serif KR', 'Nanum Myeongjo', serif" font-weight="500">명조  Noto Serif KR 600·700</text>
+<text x="236" y="278" font-size="14" fill="#1a1d22" font-family="'IBM Plex Sans KR', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="500">고딕  IBM Plex Sans KR 400–700</text>
+<text x="236" y="302" font-size="14" fill="#1a1d22" font-family="'IBM Plex Mono', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="500">고정폭  IBM Plex Mono 400·500</text>
+<text x="236" y="336" font-size="12" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">명조는 h1·h2와 현황판의 큰 숫자, 고딕은 본문, 고정폭은 날짜·시각·아이디입니다.</text>
 <text x="236" y="355" font-size="12" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">한글 글꼴은 유니코드 범위별로 잘려 있어 화면에 쓰인 조각만 받습니다.</text>
+<text x="236" y="374" font-size="12" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">SVG에는 웹폰트를 심을 수 없어, 견본은 보는 기기에 그 글꼴이 있을 때만 제대로 보입니다.</text>
 <line x1="64" y1="390" x2="1016" y2="390" stroke="#e3dfd5" stroke-width="1"/>
 <text x="64" y="430" font-size="12" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">단계</text>
 <text x="64" y="452" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">h3가 h2보다 컸던</text>
@@ -26,22 +27,22 @@
 <text x="64" y="503" font-size="11.5" fill="#aaa79f" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">고르지 않습니다.</text>
 <text x="236" y="430" font-size="12" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">h1</text>
 <text x="236" y="447" font-size="10.5" fill="#aaa79f" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">34 / 700 / -0.03em · 명조</text>
-<text x="386" y="434" font-size="34" fill="#1a1d22" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="700" letter-spacing="-1.02px">이번 주 도장판</text>
+<text x="386" y="434" font-size="34" fill="#1a1d22" font-family="'Noto Serif KR', 'Nanum Myeongjo', serif" font-weight="700" letter-spacing="-1.02px">이번 주 도장판</text>
 <text x="236" y="494" font-size="12" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">h2</text>
 <text x="236" y="511" font-size="10.5" fill="#aaa79f" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">22 / 600 / -0.024em · 명조</text>
-<text x="386" y="498" font-size="22" fill="#1a1d22" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="600" letter-spacing="-0.53px">알고리즘 스터디</text>
+<text x="386" y="498" font-size="22" fill="#1a1d22" font-family="'Noto Serif KR', 'Nanum Myeongjo', serif" font-weight="600" letter-spacing="-0.53px">알고리즘 스터디</text>
 <text x="236" y="552" font-size="12" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">h3</text>
-<text x="236" y="569" font-size="10.5" fill="#aaa79f" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">17 / 600 / -0.012em</text>
-<text x="386" y="556" font-size="17" fill="#1a1d22" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="600" letter-spacing="-0.2px">최근 인증 기록</text>
+<text x="236" y="569" font-size="10.5" fill="#aaa79f" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">17 / 600 / -0.012em · 고딕</text>
+<text x="386" y="556" font-size="17" fill="#1a1d22" font-family="'IBM Plex Sans KR', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="600" letter-spacing="-0.2px">최근 인증 기록</text>
 <text x="236" y="610" font-size="12" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">본문</text>
-<text x="236" y="627" font-size="10.5" fill="#aaa79f" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">15 / 400 / 1.6</text>
-<text x="386" y="614" font-size="15" fill="#1a1d22" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" letter-spacing="0">오늘 푼 문제를 남기면 스터디원이 검수합니다.</text>
+<text x="236" y="627" font-size="10.5" fill="#aaa79f" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">15 / 400 / 1.6 · 고딕</text>
+<text x="386" y="614" font-size="15" fill="#1a1d22" font-family="'IBM Plex Sans KR', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" letter-spacing="0">오늘 푼 문제를 남기면 스터디원이 검수합니다.</text>
 <text x="236" y="668" font-size="12" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">보조</text>
-<text x="236" y="685" font-size="10.5" fill="#aaa79f" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">13 / 400</text>
-<text x="386" y="672" font-size="13" fill="#1a1d22" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" letter-spacing="0">멤버 4명 · 이번 주 11번</text>
+<text x="236" y="685" font-size="10.5" fill="#aaa79f" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">13 / 400 · 고딕</text>
+<text x="386" y="672" font-size="13" fill="#1a1d22" font-family="'IBM Plex Sans KR', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" letter-spacing="0">멤버 4명 · 이번 주 11번</text>
 <text x="236" y="726" font-size="12" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600">메타</text>
-<text x="236" y="743" font-size="10.5" fill="#aaa79f" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">12 / 500 / .1em</text>
-<text x="386" y="730" font-size="12" fill="#1a1d22" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="500" letter-spacing="1.2px">검수 대기</text>
+<text x="236" y="743" font-size="10.5" fill="#aaa79f" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">12 / 500 / .1em · 고딕</text>
+<text x="386" y="730" font-size="12" fill="#1a1d22" font-family="'IBM Plex Sans KR', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="500" letter-spacing="1.2px">검수 대기</text>
 <line x1="64" y1="758" x2="1016" y2="758" stroke="#e3dfd5" stroke-width="1"/>
 <text x="64" y="788" font-size="12" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">자간</text>
 <text x="236" y="788" font-size="13" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">한글은 라틴보다 글자 폭이 고르기 때문에, 큰 제목에서 자간을 붙이지 않으면</text>
@@ -51,7 +52,9 @@
 <text x="236" y="876" font-size="13" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">크기를 바꿔도 비율이 유지됩니다.</text>
 <line x1="64" y1="898" x2="1016" y2="898" stroke="#e3dfd5" stroke-width="1"/>
 <text x="64" y="928" font-size="12" fill="#1a1d22" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="600" letter-spacing="0.08em">숫자</text>
-<text x="236" y="932" font-size="22" fill="#1a1d22" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="650">13번</text>
-<text x="326" y="932" font-size="22" fill="#1a1d22" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif" font-weight="650">9.7 — 9.13</text>
-<text x="236" y="962" font-size="12" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">자리를 맞춰 세로로 읽히게 tabular-nums를 씁니다. 집계와 날짜가 해당합니다.</text>
+<text x="236" y="932" font-size="22" fill="#1a1d22" font-family="'Noto Serif KR', 'Nanum Myeongjo', serif" font-weight="650">13번</text>
+<text x="346" y="932" font-size="22" fill="#1a1d22" font-family="'IBM Plex Mono', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace" font-weight="650">9.7 — 9.13</text>
+<text x="236" y="958" font-size="10.5" fill="#aaa79f" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">명조 · 현황판</text>
+<text x="346" y="958" font-size="10.5" fill="#aaa79f" font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace">고정폭 · 날짜</text>
+<text x="236" y="986" font-size="12" fill="#6d6a63" font-family="-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif">자리를 맞춰 세로로 읽히게 tabular-nums를 씁니다. 집계와 날짜가 해당합니다.</text>
 </svg>

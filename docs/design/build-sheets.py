@@ -19,7 +19,16 @@ BODY_W = W - M - BODY_X
 SANS = "-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"
 MONO = "ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace"
 
+# 타이포 시트의 견본은 역할에 맞는 글꼴로 보여야 합니다. SVG에는 웹폰트를 심을 수
+# 없으므로 대체 스택만 적어 두고, 보는 사람 기기에 글꼴이 있으면 제대로 나옵니다.
+# 명조 스택에서는 앱과 달리 고딕 대체 글꼴을 뺍니다 — 시트에서는 획이 보여야 합니다.
+SERIF_APP = "'Noto Serif KR', 'Nanum Myeongjo', serif"
+SANS_APP = "'IBM Plex Sans KR', " + SANS
+MONO_APP = "'IBM Plex Mono', " + MONO
+
 INK, SUB, LINE, FAINT = "#1a1d22", "#6d6a63", "#e3dfd5", "#aaa79f"
+# 종이 위에 올라앉는 면입니다. 흰색이 아니라 --surface라서 바탕과 한 단계 갈립니다.
+SURFACE = "#fdfcfa"
 BRAND, BRAND_SOFT = "#1d5091", "#e6edf7"
 PRIMARY, WARN, DANGER = "#1a4784", "#8d5a15", "#ab3a31"
 
@@ -65,9 +74,11 @@ def label(y, name, note=None):
 # ─── 도장 도형 ───────────────────────────────────────────────────
 # 좌표를 베껴 두면 한쪽만 바뀌어도 모릅니다. 실제로 손목(rect)을 빠뜨려
 # 시트 네 장이 손목 없는 도장을 그린 적이 있어, seal.tsx에서 읽어 옵니다.
-def thumb_shapes():
-    src = (pathlib.Path(__file__).resolve().parent.parent.parent
-           / "src" / "components" / "seal.tsx").read_text()
+SRC = pathlib.Path(__file__).resolve().parent.parent.parent / "src"
+
+
+def thumb_shapes(extra='fill="#000"'):
+    src = (SRC / "components" / "seal.tsx").read_text()
     block = re.search(r'<g id="dojang-thumb">(.*?)</g>', src, re.S)
     if not block:
         raise SystemExit("seal.tsx에서 dojang-thumb 그룹을 못 찾았습니다.")
@@ -75,11 +86,33 @@ def thumb_shapes():
     rect = re.search(r"<rect[^>]*?/>", block.group(1))
     if not path or not rect:
         raise SystemExit("seal.tsx의 엄지가 path 하나와 rect 하나가 아닙니다.")
-    return (f'<path d="{path.group(1)}" fill="#000"/>\n    '
-            + rect.group(0).replace("/>", 'fill="#000"/>'))
+    return (f'<path d="{path.group(1)}" {extra}/>\n    '
+            + rect.group(0).replace("/>", f"{extra}/>"))
+
+
+# 검수 대기 도장도 같은 이유로 seal.tsx에서 읽어 옵니다. 원의 반지름·선 굵기·점선
+# 간격과 엄지 윤곽의 선 굵기만 가져오면 나머지는 승인 도장과 같은 판입니다.
+def ghost_specs():
+    src = (SRC / "components" / "seal.tsx").read_text()
+    block = re.search(r'<symbol id="dojang-ghost".*?</symbol>', src, re.S)
+    if not block:
+        raise SystemExit("seal.tsx에서 dojang-ghost 심볼을 못 찾았습니다.")
+    circle = re.search(r"<circle\b.*?/>", block.group(0), re.S)
+    use = re.search(r"<use\b.*?/>", block.group(0), re.S)
+    if not circle or not use:
+        raise SystemExit("dojang-ghost가 circle 하나와 use 하나가 아닙니다.")
+    r = re.search(r'\br="([\d.]+)"', circle.group(0))
+    width = re.search(r'strokeWidth="([\d.]+)"', circle.group(0))
+    dash = re.search(r'strokeDasharray="([^"]+)"', circle.group(0))
+    thumb_width = re.search(r'strokeWidth="([\d.]+)"', use.group(0))
+    if not r or not width or not dash or not thumb_width:
+        raise SystemExit("dojang-ghost에서 반지름·선 굵기·점선 간격을 못 읽었습니다.")
+    return r.group(1), width.group(1), dash.group(1), thumb_width.group(1)
 
 
 THUMB = thumb_shapes()
+THUMB_OUTLINE = thumb_shapes('fill="none"')
+GHOST_R, GHOST_W, GHOST_DASH, GHOST_THUMB_W = ghost_specs()
 
 SEAL_DEFS = f"""
   <filter id="rim" x="-14%" y="-14%" width="128%" height="128%" color-interpolation-filters="sRGB">
@@ -105,7 +138,38 @@ SEAL_DEFS = f"""
   </symbol>
   <symbol id="seal-lg" viewBox="0 0 120 120">
     <g filter="url(#ink)"><rect width="120" height="120" fill="currentColor" mask="url(#face)"/></g>
+  </symbol>
+  <symbol id="seal-ghost" viewBox="0 0 120 120">
+    <circle cx="60" cy="60" r="{GHOST_R}" fill="none" stroke="currentColor"
+            stroke-width="{GHOST_W}" stroke-dasharray="{GHOST_DASH}"/>
+    <g fill="none" stroke="currentColor" stroke-width="{GHOST_THUMB_W}" stroke-linejoin="round">
+    {THUMB_OUTLINE}</g>
   </symbol>"""
+
+
+# ─── 하트 ───────────────────────────────────────────────────────
+# 응원 하트도 cheer-button.tsx에서 읽어 옵니다.
+def heart_shape():
+    src = (SRC / "components" / "cheer-button.tsx").read_text()
+    block = re.search(r"function HeartIcon\(.*?</svg>", src, re.S)
+    if not block:
+        raise SystemExit("cheer-button.tsx에서 HeartIcon을 못 찾았습니다.")
+    path = re.search(r'd="([^"]+)"', block.group(0))
+    width = re.search(r"strokeWidth=\{([\d.]+)\}", block.group(0))
+    if not path or not width:
+        raise SystemExit("HeartIcon에서 path와 선 굵기를 못 읽었습니다.")
+    return path.group(1), width.group(1)
+
+
+HEART_D, HEART_W = heart_shape()
+
+
+def heart(x, y, size, filled, color=DANGER):
+    """viewBox 24 짜리 하트를 size에 맞춰 놓습니다. 채우면 응원한 상태입니다."""
+    s = size / 24
+    return (f'<g transform="translate({x} {y}) scale({s:.4f})">'
+            f'<path d="{HEART_D}" fill="{color if filled else "none"}" stroke="{color}" '
+            f'stroke-width="{HEART_W}" stroke-linejoin="round"/></g>')
 
 
 def seal(x, y, size, color=BRAND, tilt=-6, plate="sm"):
@@ -291,27 +355,29 @@ def page_colour():
 def page_type():
     p, y = [], 250
     p.append(label(y, "글꼴", ["세 벌입니다.", "next/font가 빌드 때", "받아 같은 도메인에서", "내려주므로 방문자는", "Google에 요청하지", "않습니다."]))
-    p.append(t(BODY_X, y + 4, "명조  Noto Serif KR 600·700", 14, INK, 500, MONO))
-    p.append(t(BODY_X, y + 26, "고딕  IBM Plex Sans KR 400–700", 14, INK, 500, MONO))
-    p.append(t(BODY_X, y + 48, "고정폭  IBM Plex Mono 400·500", 14, INK, 500, MONO))
-    p.append(t(BODY_X, y + 86, "명조는 h1·h2와 현황판의 큰 숫자, 고딕은 본문, 고정폭은 날짜·아이디입니다.", 12, SUB))
+    # 견본을 각자의 글꼴로 그립니다. 없는 기기에서는 대체 스택으로 떨어집니다.
+    p.append(t(BODY_X, y + 4, "명조  Noto Serif KR 600·700", 14, INK, 500, SERIF_APP))
+    p.append(t(BODY_X, y + 28, "고딕  IBM Plex Sans KR 400–700", 14, INK, 500, SANS_APP))
+    p.append(t(BODY_X, y + 52, "고정폭  IBM Plex Mono 400·500", 14, INK, 500, MONO_APP))
+    p.append(t(BODY_X, y + 86, "명조는 h1·h2와 현황판의 큰 숫자, 고딕은 본문, 고정폭은 날짜·시각·아이디입니다.", 12, SUB))
     p.append(t(BODY_X, y + 105, "한글 글꼴은 유니코드 범위별로 잘려 있어 화면에 쓰인 조각만 받습니다.", 12, SUB))
+    p.append(t(BODY_X, y + 124, "SVG에는 웹폰트를 심을 수 없어, 견본은 보는 기기에 그 글꼴이 있을 때만 제대로 보입니다.", 12, FAINT))
 
     y = 430
     p.append(rule(y - 40))
     p.append(label(y, "단계", ["h3가 h2보다 컸던", "계층을 되돌렸습니다.", "요소로 크기를", "고르지 않습니다."]))
     steps = [
-        ("h1", "34 / 700 / -0.03em · 명조", "이번 주 도장판", 34, 700, "-1.02px"),
-        ("h2", "22 / 600 / -0.024em · 명조", "알고리즘 스터디", 22, 600, "-0.53px"),
-        ("h3", "17 / 600 / -0.012em", "최근 인증 기록", 17, 600, "-0.2px"),
-        ("본문", "15 / 400 / 1.6", "오늘 푼 문제를 남기면 스터디원이 검수합니다.", 15, 400, "0"),
-        ("보조", "13 / 400", "멤버 4명 · 이번 주 11번", 13, 400, "0"),
-        ("메타", "12 / 500 / .1em", "검수 대기", 12, 500, "1.2px"),
+        ("h1", "34 / 700 / -0.03em · 명조", "이번 주 도장판", 34, 700, "-1.02px", SERIF_APP),
+        ("h2", "22 / 600 / -0.024em · 명조", "알고리즘 스터디", 22, 600, "-0.53px", SERIF_APP),
+        ("h3", "17 / 600 / -0.012em · 고딕", "최근 인증 기록", 17, 600, "-0.2px", SANS_APP),
+        ("본문", "15 / 400 / 1.6 · 고딕", "오늘 푼 문제를 남기면 스터디원이 검수합니다.", 15, 400, "0", SANS_APP),
+        ("보조", "13 / 400 · 고딕", "멤버 4명 · 이번 주 11번", 13, 400, "0", SANS_APP),
+        ("메타", "12 / 500 / .1em · 고딕", "검수 대기", 12, 500, "1.2px", SANS_APP),
     ]
-    for name, spec, sample, size, weight, sp in steps:
+    for name, spec, sample, size, weight, sp, family in steps:
         p.append(t(BODY_X, y, name, 12, INK, 600, MONO))
         p.append(t(BODY_X, y + 17, spec, 10.5, FAINT, 400, MONO))
-        p.append(t(BODY_X + 150, y + 4, sample, size, INK, weight, spacing=sp))
+        p.append(t(BODY_X + 150, y + 4, sample, size, INK, weight, family, spacing=sp))
         y += max(size + 30, 58)
 
     y += 4
@@ -329,9 +395,11 @@ def page_type():
     y += 140
     p.append(rule(y - 30))
     p.append(label(y, "숫자"))
-    p.append(t(BODY_X, y + 4, "13번", 22, INK, 650))
-    p.append(t(BODY_X + 90, y + 4, "9.7 — 9.13", 22, INK, 650))
-    p.append(t(BODY_X, y + 34, "자리를 맞춰 세로로 읽히게 tabular-nums를 씁니다. 집계와 날짜가 해당합니다.", 12, SUB))
+    p.append(t(BODY_X, y + 4, "13번", 22, INK, 650, SERIF_APP))
+    p.append(t(BODY_X + 110, y + 4, "9.7 — 9.13", 22, INK, 650, MONO_APP))
+    p.append(t(BODY_X, y + 30, "명조 · 현황판", 10.5, FAINT, 400, MONO))
+    p.append(t(BODY_X + 110, y + 30, "고정폭 · 날짜", 10.5, FAINT, 400, MONO))
+    p.append(t(BODY_X, y + 58, "자리를 맞춰 세로로 읽히게 tabular-nums를 씁니다. 집계와 날짜가 해당합니다.", 12, SUB))
     return sheet("타이포", 3, "\n".join(p))
 
 
@@ -341,7 +409,7 @@ def page_parts():
     p.append(label(y, "버튼", ["높이 40px,", "모서리 8px.", "터치 기기에서는", "44px로 커집니다."]))
     btns = [
         ("도장 찍기", PRIMARY, "#ffffff", None),
-        ("취소", "#ffffff", INK, LINE),
+        ("취소", SURFACE, INK, LINE),
         ("닫기", None, SUB, None),
     ]
     x = BODY_X
@@ -354,36 +422,55 @@ def page_parts():
         x += w + 20
     p.append(t(BODY_X, y + 52, "btn-primary · btn · btn-ghost", 11.5, FAINT, 400, MONO))
 
-    y = 400
-    p.append(rule(y - 44))
+    # 도장 버튼. 3종과 같은 절에 한 칸 더 둡니다 — 같은 btn-primary인데 혼자 큽니다.
+    by, bw = y + 68, 168
+    p.append(f'<rect x="{BODY_X}" y="{by}" width="{bw}" height="48" rx="10" fill="{PRIMARY}"/>')
+    p.append(seal(BODY_X + 22, by + 12, 24, color="#ffffff"))
+    p.append(t(BODY_X + 60, by + 30, "도장 찍기", 16, "#ffffff", 550))
+    p.append(t(BODY_X + bw + 24, by + 24, "이 서비스에서 가장 큰 버튼입니다. 도장 찍기 창의 제출 버튼으로,", 12, SUB))
+    p.append(t(BODY_X + bw + 24, by + 44, "높이 48px · 모서리 10px이고 채운 면 위라 도장이 흰색입니다.", 12, SUB))
+
+    y = 452
+    p.append(rule(y - 42))
     p.append(label(y, "입력", ["포커스 링은", "브랜드 파랑입니다.", "중성 배경 어디서든", "또렷합니다."]))
-    p.append(f'<rect x="{BODY_X}" y="{y - 16}" width="300" height="42" rx="8" fill="#ffffff" stroke="{LINE}"/>')
+    p.append(f'<rect x="{BODY_X}" y="{y - 16}" width="300" height="42" rx="8" fill="{SURFACE}" stroke="{LINE}"/>')
     p.append(t(BODY_X + 14, y + 11, "양궁대회", 15, INK))
     fx = BODY_X + 340
     p.append(f'<rect x="{fx - 3}" y="{y - 19}" width="306" height="48" rx="10" fill="none" stroke="{BRAND}" stroke-width="2"/>')
-    p.append(f'<rect x="{fx}" y="{y - 16}" width="300" height="42" rx="8" fill="#ffffff" stroke="{LINE}"/>')
+    p.append(f'<rect x="{fx}" y="{y - 16}" width="300" height="42" rx="8" fill="{SURFACE}" stroke="{LINE}"/>')
     p.append(t(fx + 14, y + 11, "완전탐색, 재귀", 15, INK))
     p.append(t(BODY_X, y + 58, "기본", 11.5, FAINT, 400, MONO))
     p.append(t(fx, y + 58, "포커스", 11.5, FAINT, 400, MONO))
 
-    y = 560
-    p.append(rule(y - 46))
+    y = 594
+    p.append(rule(y - 42))
     p.append(label(y, "상태", ["색보다 형태가", "먼저입니다. 색을", "구분하지 못해도,", "흑백으로 찍어도", "나뉩니다."]))
     p.append(seal(BODY_X, y - 14, 38, tilt=-4))
     p.append(t(BODY_X, y + 52, "승인", 13, INK, 600))
-    p.append(t(BODY_X, y + 72, "동그란 도장", 11.5, SUB))
-    for i, (mark, name, colour, note) in enumerate((
-        ("◷", "검수 대기", WARN, "둥근 네모 테두리"),
-        ("×", "반려", DANGER, "둥근 네모 테두리"),
-    )):
-        bx = BODY_X + 160 + i * 160
-        p.append(f'<rect x="{bx}" y="{y - 14}" width="38" height="38" rx="8" fill="#ffffff" stroke="{LINE}"/>')
-        p.append(t(bx + 19, y + 12, mark, 17, colour, 650, anchor="middle"))
-        p.append(t(bx, y + 52, name, 13, INK, 600))
-        p.append(t(bx, y + 72, note, 11.5, SUB))
+    p.append(t(BODY_X, y + 72, "잉크로 채운 도장", 11.5, SUB))
+    # 검수 대기는 같은 엄지를 점선 윤곽으로만 그린 도장입니다. 실루엣이 달라 색 없이도 갈립니다.
+    wx = BODY_X + 170
+    p.append(seal(wx, y - 14, 38, color=WARN, tilt=-4, plate="ghost"))
+    p.append(t(wx, y + 52, "검수 대기", 13, INK, 600))
+    p.append(t(wx, y + 72, "점선 윤곽 도장", 11.5, SUB))
+    rx = BODY_X + 340
+    p.append(f'<rect x="{rx}" y="{y - 14}" width="38" height="38" rx="8" fill="{SURFACE}" stroke="{LINE}"/>')
+    p.append(t(rx + 19, y + 12, "×", 17, DANGER, 650, anchor="middle"))
+    p.append(t(rx, y + 52, "반려", 13, INK, 600))
+    p.append(t(rx, y + 72, "둥근 네모 테두리", 11.5, SUB))
 
-    y = 740
-    p.append(rule(y - 46))
+    y = 748
+    p.append(rule(y - 42))
+    p.append(label(y, "응원", ["검수와 달리 권한을", "가리지 않습니다."]))
+    p.append(heart(BODY_X, y - 14, 36, False))
+    p.append(t(BODY_X, y + 44, "아직 안 누름", 11.5, SUB))
+    hx = BODY_X + 150
+    p.append(heart(hx, y - 14, 36, True))
+    p.append(t(hx, y + 44, "누름", 11.5, SUB))
+    p.append(t(BODY_X, y + 74, "검수 권한이 없는 멤버도 남길 수 있는 유일한 반응입니다. 색은 --danger입니다.", 12, SUB))
+
+    y = 890
+    p.append(rule(y - 44))
     p.append(label(y, "도장판", ["승인만 형태가 달라", "찍힌 칸이 곧 그 주의", "성과로 읽힙니다."]))
     cells = ["seal", "seal", "wait", "seal", "seal", "dot", "future"]
     days = ["월", "화", "수", "목", "금", "토", "일"]
@@ -393,14 +480,30 @@ def page_parts():
         if kind == "seal":
             p.append(seal(cx, y - 8, 38, tilt=(-7, -3, 2, 5)[i % 4]))
         elif kind == "wait":
-            p.append(f'<rect x="{cx}" y="{y - 8}" width="38" height="38" rx="8" fill="#ffffff" stroke="{LINE}"/>')
-            p.append(t(cx + 19, y + 18, "◷", 17, WARN, 650, anchor="middle"))
+            p.append(seal(cx, y - 8, 38, color=WARN, tilt=2, plate="ghost"))
         else:
             p.append(t(cx + 19, y + 18, "·" if kind == "dot" else "–", 17, FAINT, anchor="middle"))
-    p.append(t(BODY_X, y + 68, "두 건 이상이면 칸 어깨에 건수를 답니다. 도장 안에는 숫자를 넣을 수 없습니다.", 12, SUB))
+    p.append(t(BODY_X, y + 62, "두 건 이상이면 칸 어깨에 건수를 답니다. 도장 안에는 숫자를 넣을 수 없습니다.", 12, SUB))
 
-    y = 920
-    p.append(rule(y - 46))
+    y = 1016
+    p.append(rule(y - 40))
+    p.append(label(y, "선택 목록", ["기록 종류처럼 처음", "한 번 고르는 설정에", "씁니다."]))
+    for i, (name, on) in enumerate((
+        ("도장만 찍기", True),
+        ("몇 시에 했는지", False),
+        ("얼마나 했는지", False),
+    )):
+        ry = y + i * 30
+        p.append(f'<circle cx="{BODY_X + 8}" cy="{ry - 5}" r="7.5" fill="{SURFACE}" '
+                 f'stroke="{BRAND if on else LINE}" stroke-width="{1.6 if on else 1}"/>')
+        if on:
+            p.append(f'<circle cx="{BODY_X + 8}" cy="{ry - 5}" r="3.6" fill="{BRAND}"/>')
+        p.append(t(BODY_X + 28, ry, name, 14, INK))
+    p.append(t(BODY_X, y + 102, "globals.css의 기본 입력 규칙에서 라디오를 빼야 합니다. 빼지 않으면 너비 100%와", 12, SUB))
+    p.append(t(BODY_X, y + 120, "테두리가 씌워져 막대처럼 늘어납니다. 실제로 한 번 그렇게 깨졌습니다.", 12, SUB))
+
+    y = 1200
+    p.append(rule(y - 40))
     p.append(label(y, "모서리", ["다섯 종이 섞여", "있던 것을 둘로", "모았습니다."]))
     for i, (name, r, use) in enumerate((
         ("--r-control", 8, "홀로 서는 조작 요소 — 버튼, 입력, 셀렉트, 도장판 칸"),
