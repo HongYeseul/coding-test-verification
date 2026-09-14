@@ -266,8 +266,12 @@ export default async function GroupPage({
   const isOwner = currentMembership.role === "OWNER";
   // 기록 종류는 그룹 설정이라 현황판과 도장 찍기가 같은 값을 봅니다.
   const recordKind = isRecordKind(group.record_kind) ? group.record_kind : "NONE";
-  const [{ data: membershipData }, overviewResult, { data: invitation }] =
-    await Promise.all([
+  const [
+    { data: membershipData },
+    overviewResult,
+    { data: invitation },
+    { data: hasWebhook },
+  ] = await Promise.all([
       supabase
         .from("group_members")
         .select("user_id, role, status, joined_at")
@@ -286,6 +290,10 @@ export default async function GroupPage({
             .gt("expires_at", "now")
             .maybeSingle()
         : Promise.resolve({ data: null }),
+      // 웹훅 주소 자체는 아무도 읽지 못합니다. 켜져 있는지만 물어봅니다.
+      isOwner
+        ? supabase.rpc("has_group_webhook", { target_group_id: group.id })
+        : Promise.resolve({ data: false }),
     ]);
 
   const overview = overviewResult.error
@@ -647,6 +655,7 @@ export default async function GroupPage({
                 requiresPhoto={group.requires_photo}
                 isCodingStudy={group.is_coding_study}
                 recordKind={recordKind}
+                hasWebhook={Boolean(hasWebhook)}
               />
             )}
           </div>

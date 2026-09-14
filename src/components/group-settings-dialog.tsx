@@ -35,6 +35,7 @@ export function GroupSettingsDialog({
   requiresPhoto,
   isCodingStudy,
   recordKind,
+  hasWebhook,
 }: {
   groupId: string;
   groupSlug: string;
@@ -43,6 +44,7 @@ export function GroupSettingsDialog({
   requiresPhoto: boolean;
   isCodingStudy: boolean;
   recordKind: RecordKind;
+  hasWebhook: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -213,6 +215,44 @@ export function GroupSettingsDialog({
                 그대로입니다.
               </p>
             </fieldset>
+
+            {/* 주소는 저장하고 나면 다시 보여주지 않습니다. 그 주소를 아는 사람은
+                누구나 그 채널에 글을 쓸 수 있어 브라우저로 내려보내지 않습니다. */}
+            <div>
+              <label className="flex items-start gap-2 text-[15px]">
+                <input
+                  type="checkbox"
+                  name="discordEnabled"
+                  defaultChecked={hasWebhook}
+                  className="mt-1"
+                />
+                <span>
+                  디스코드 알림
+                  <span className="mt-1 block text-[13px] text-sub">
+                    누가 착석하고 퇴근했는지, 응원과 검수가 오갔는지를 디스코드
+                    채널에 한 줄씩 올립니다. 쓰고 있는 서버의 서버 설정 → 연동 →
+                    웹훅에서 주소를 만들어 붙여넣으세요.
+                  </span>
+                </span>
+              </label>
+              <input
+                type="url"
+                name="webhookUrl"
+                autoComplete="off"
+                aria-label="디스코드 웹훅 주소"
+                placeholder={
+                  hasWebhook
+                    ? "바꿀 때만 새 주소를 붙여넣으세요"
+                    : "https://discord.com/api/webhooks/..."
+                }
+                className="mt-2"
+              />
+              <p className="mt-2 text-[13px] text-sub">
+                {hasWebhook
+                  ? "주소는 저장된 뒤로 다시 보이지 않습니다. 체크를 풀고 저장하면 지워집니다."
+                  : "주소를 아는 사람은 누구나 그 채널에 글을 쓸 수 있어, 저장한 뒤에는 다시 보여주지 않습니다."}
+              </p>
+            </div>
           </div>
 
           <div className="flex justify-end gap-2">

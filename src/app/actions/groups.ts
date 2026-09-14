@@ -286,6 +286,8 @@ export async function updateGroupSettingsAction(formData: FormData) {
   const requiresPhoto = getRequiredText(formData, "requiresPhoto") === "on";
   const isCodingStudy = getRequiredText(formData, "isCodingStudy") === "on";
   const recordKind = getRequiredText(formData, "recordKind");
+  const discordEnabled = getRequiredText(formData, "discordEnabled") === "on";
+  const webhookUrl = getRequiredText(formData, "webhookUrl");
   if (!UUID_PATTERN.test(groupId) || !SLUG_PATTERN.test(groupSlug)) {
     redirect(withStatus("/dashboard", "error", "그룹을 확인해주세요."));
   }
@@ -305,6 +307,41 @@ export async function updateGroupSettingsAction(formData: FormData) {
       withStatus(groupPath, "error", "그룹 소유자만 설정을 바꿀 수 있습니다."),
     );
   }
+  // 웹훅을 먼저 처리합니다. 주소가 틀렸을 때 다른 설정만 저장되고 마는 일을 막습니다.
+  // 저장된 주소는 다시 읽을 수 없으므로 켜져 있는지만 물어봅니다.
+  const { data: hadWebhook } = await supabase.rpc("has_group_webhook", {
+    target_group_id: groupId,
+  });
+  if (!discordEnabled && hadWebhook) {
+    const { error: clearError } = await supabase.rpc("set_group_webhook", {
+      target_group_id: groupId,
+      webhook_url: null,
+    });
+    if (clearError) {
+      redirect(withStatus(groupPath, "error", "디스코드 알림을 끄지 못했습니다."));
+    }
+  }
+  if (discordEnabled && !webhookUrl && !hadWebhook) {
+    redirect(
+      withStatus(groupPath, "error", "디스코드 웹훅 주소를 붙여넣어주세요."),
+    );
+  }
+  if (discordEnabled && webhookUrl) {
+    const { error: hookError } = await supabase.rpc("set_group_webhook", {
+      target_group_id: groupId,
+      webhook_url: webhookUrl,
+    });
+    if (hookError) {
+      redirect(
+        withStatus(
+          groupPath,
+          "error",
+          "디스코드 웹훅 주소가 맞는지 확인해주세요. 서버 설정 → 연동 → 웹훅에서 복사한 주소여야 합니다.",
+        ),
+      );
+    }
+  }
+
   const { error } = await supabase
     .from("groups")
     .update({
@@ -326,6 +363,7 @@ export async function updateGroupSettingsAction(formData: FormData) {
     `사진 필수 ${requiresPhoto ? "켬" : "끔"}`,
     `코딩 테스트 스터디 ${isCodingStudy ? "켬" : "끔"}`,
     `기록 종류 ${recordKindLabels[recordKind]}`,
+    `디스코드 알림 ${discordEnabled ? "켬" : "끔"}`,
   ].join(" · ");
   redirect(withStatus(groupPath, "message", `${summary}으로 저장했습니다.`));
 }

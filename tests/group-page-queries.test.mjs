@@ -103,6 +103,9 @@ async function renderGroup(
       // 활동 목록은 배열입니다. 현황판과 모양이 달라 따로 돌려줍니다.
       if (name === "get_group_activity")
         return Promise.resolve({ data: [], error: null });
+      // 웹훅은 켜졌는지만 돌려주는 불리언입니다.
+      if (name === "has_group_webhook")
+        return Promise.resolve({ data: false, error: null });
       return Promise.resolve({ data: overview, error: null });
     },
   };
