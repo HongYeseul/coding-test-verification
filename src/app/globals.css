@@ -141,7 +141,9 @@
     outline-offset: 2px;
   }
 
-  input:where(:not([type="checkbox"], [type="file"])),
+  /* 글자를 받는 입력에만 겁니다. 스스로 모양을 가진 컨트롤은 빼야 합니다 —
+     빠뜨리면 너비 100%에 테두리까지 씌워져 라디오가 막대처럼 늘어납니다. */
+  input:where(:not([type="checkbox"], [type="radio"], [type="file"])),
   textarea {
     width: 100%;
     padding: 10px 12px;
