@@ -62,6 +62,12 @@ NeetCode는 에디터가 Monaco라 같은 이유로 DOM에서 코드를 읽을 �
 `runCodeFunctionHttp`로 아예 달라서 정답으로 착각하지 않습니다. 정답 판정은 NeetCode가
 쓰는 것과 같은 식(`status.description === "Accepted"`)을 씁니다.
 
+요청은 **`XMLHttpRequest`로** 나갑니다. NeetCode는 Angular HttpClient를 쓰고 그 기본값이
+XHR입니다. 처음에 `fetch`만 가로챘다가 카드가 아예 뜨지 않았습니다. `fetch` 쪽도 함께
+보지만 그건 HttpClient가 `withFetch()`로 바뀔 때의 대비고, 지금 실제로 쓰이는 길은 XHR입니다.
+응답은 `responseType`에 따라 읽는 법이 달라, `json`으로 받을 때 `responseText`를 건드리면
+예외가 납니다. 둘 다 처리합니다.
+
 요청을 보려면 페이지와 같은 세계에서 돌아야 해서 `content/neetcode-intercept.js`만
 `world: "MAIN"`입니다. 이 파일은 화면을 건드리지 않고, 정답일 때 이벤트 하나만 띄웁니다.
 NeetCode는 화면 전환이 페이지 새로고침 없이 일어나므로 `neetcode.io/*` 전체에 붙입니다.
