@@ -69,6 +69,32 @@ end $$;
 
 reset role;
 
+-- 초대 링크는 멤버 화면의 href가 되므로 형식을 DB가 막아야 합니다.
+-- 방장은 브라우저에서 groups를 직접 고칠 수 있어 앱의 검사만으로는 부족합니다.
+do $$
+declare bad text;
+begin
+ foreach bad in array array[
+   'javascript:alert(1)',
+   'https://evil.invalid/discord.gg/abc',
+   'http://discord.gg/abc',
+   'https://discord.gg/',
+   'https://discord.gg/abc"onmouseover=x',
+   'https://discord.com/api/webhooks/1/x'
+ ] loop
+  begin
+   update public.groups set discord_invite_url = bad
+   where id = '00000000-0000-4000-8000-00000000eb01';
+   assert false, '막혀야 하는 초대 링크: ' || bad;
+  exception when check_violation then null;
+  end;
+ end loop;
+ update public.groups set discord_invite_url = 'https://discord.gg/aBc-123'
+ where id = '00000000-0000-4000-8000-00000000eb01';
+ update public.groups set discord_invite_url = 'https://discord.com/invite/aBc-123'
+ where id = '00000000-0000-4000-8000-00000000eb01';
+end $$;
+
 -- 여기부터는 도장이 멀쩡히 남는지를 봅니다.
 insert into public.proofs(id,group_id,user_id,problem_key,accepted_at,verification_status,start_minutes)
 values ('00000000-0000-4000-8000-00000000ec01','00000000-0000-4000-8000-00000000eb01',

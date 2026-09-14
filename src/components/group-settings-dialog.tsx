@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { updateGroupSettingsAction } from "@/app/actions/groups";
+import { DiscordMark } from "@/components/discord-mark";
 import {
   RECORD_KINDS,
   recordKindLabels,
@@ -36,6 +37,7 @@ export function GroupSettingsDialog({
   isCodingStudy,
   recordKind,
   hasWebhook,
+  discordInviteUrl,
 }: {
   groupId: string;
   groupSlug: string;
@@ -45,6 +47,7 @@ export function GroupSettingsDialog({
   isCodingStudy: boolean;
   recordKind: RecordKind;
   hasWebhook: boolean;
+  discordInviteUrl: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -228,6 +231,13 @@ export function GroupSettingsDialog({
                 />
                 <span>
                   디스코드 알림
+                  {/* 저장된 주소는 되읽지 못하니, 연동됐다는 사실만이라도 보여줍니다. */}
+                  {hasWebhook && (
+                    <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-soft px-2 py-0.5 align-middle text-[12px] text-sub">
+                      <DiscordMark className="size-3 text-[#5865f2]" />
+                      연동됨
+                    </span>
+                  )}
                   <span className="mt-1 block text-[13px] text-sub">
                     누가 착석하고 퇴근했는지, 응원과 검수가 오갔는지를 디스코드
                     채널에 한 줄씩 올립니다. 쓰고 있는 서버의 서버 설정 → 연동 →
@@ -251,6 +261,23 @@ export function GroupSettingsDialog({
                 {hasWebhook
                   ? "주소는 저장된 뒤로 다시 보이지 않습니다. 체크를 풀고 저장하면 지워집니다."
                   : "주소를 아는 사람은 누구나 그 채널에 글을 쓸 수 있어, 저장한 뒤에는 다시 보여주지 않습니다."}
+              </p>
+
+              {/* 초대 링크는 웹훅 주소에서 알아낼 수 없어 따로 받습니다. 남에게 주라고
+                  있는 값이라 웹훅과 달리 저장한 것을 그대로 보여주고, 지울 때는 비우면 됩니다. */}
+              <input
+                type="url"
+                name="discordInviteUrl"
+                autoComplete="off"
+                aria-label="디스코드 초대 링크"
+                defaultValue={discordInviteUrl ?? ""}
+                placeholder="https://discord.gg/... (초대 링크, 선택)"
+                className="mt-3"
+              />
+              <p className="mt-2 text-[13px] text-sub">
+                초대 링크를 넣으면 멤버 화면에 ‘디스코드에서 알림 받기’ 단추가
+                생깁니다. 서버 이름 → 초대하기에서 만들고, 만료 기간을 ‘없음’으로
+                두세요. 기간이 지나면 단추만 남고 열리지 않습니다.
               </p>
             </div>
           </div>

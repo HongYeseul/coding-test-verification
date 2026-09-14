@@ -98,6 +98,9 @@ export async function joinByCodeAction(formData: FormData) {
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+/** `groups_discord_invite_url_check`와 같은 모양이어야 합니다. */
+const DISCORD_INVITE_PATTERN =
+  /^https:\/\/(discord\.gg|discord\.com\/invite|discordapp\.com\/invite)\/[A-Za-z0-9-]{2,64}$/;
 
 export async function createGroupAction(formData: FormData) {
   const name = getRequiredText(formData, "name");
@@ -288,12 +291,28 @@ export async function updateGroupSettingsAction(formData: FormData) {
   const recordKind = getRequiredText(formData, "recordKind");
   const discordEnabled = getRequiredText(formData, "discordEnabled") === "on";
   const webhookUrl = getRequiredText(formData, "webhookUrl");
+  // 끄면 초대 링크도 같이 내립니다. 알림을 안 쓰는 그룹에 참여 단추만 남으면
+  // 멤버는 무엇을 위한 단추인지 알 수 없습니다.
+  const inviteUrl = discordEnabled
+    ? getRequiredText(formData, "discordInviteUrl")
+    : "";
   if (!UUID_PATTERN.test(groupId) || !SLUG_PATTERN.test(groupSlug)) {
     redirect(withStatus("/dashboard", "error", "그룹을 확인해주세요."));
   }
   const groupPath = `/groups/${groupSlug}`;
   if (!isRecordKind(recordKind)) {
     redirect(withStatus(groupPath, "error", "기록 종류를 확인해주세요."));
+  }
+  // 같은 검사가 DB에도 CHECK로 걸려 있습니다. 여기 것은 말이 통하는 오류를 내려는
+  // 것뿐이고, 브라우저가 groups를 직접 고칠 수 있어 막는 쪽은 DB입니다.
+  if (inviteUrl && !DISCORD_INVITE_PATTERN.test(inviteUrl)) {
+    redirect(
+      withStatus(
+        groupPath,
+        "error",
+        "디스코드 초대 링크가 아닙니다. discord.gg 로 시작하는 주소여야 합니다.",
+      ),
+    );
   }
   const { supabase, user } = await requireUser(groupPath);
   const { data: membership } = await supabase
@@ -350,6 +369,7 @@ export async function updateGroupSettingsAction(formData: FormData) {
       requires_photo: requiresPhoto,
       is_coding_study: isCodingStudy,
       record_kind: recordKind,
+      discord_invite_url: inviteUrl || null,
     })
     .eq("id", groupId);
   if (error) {

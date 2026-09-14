@@ -17,6 +17,7 @@ import { GroupActivity } from "@/components/group-activity";
 import { GroupOverview } from "@/components/group-overview";
 import { TodayStrip } from "@/components/today-strip";
 import { GroupProblems } from "@/components/group-problems";
+import { DiscordMark } from "@/components/discord-mark";
 import { GroupSettingsDialog } from "@/components/group-settings-dialog";
 import { ProofFilterForm } from "@/components/proof-filter-form";
 import { ProofRecordList } from "@/components/proof-record-list";
@@ -243,7 +244,7 @@ export default async function GroupPage({
   const { data: group } = await supabase
     .from("groups")
     .select(
-      "id, name, slug, owner_id, auto_approve, is_public, requires_photo, is_coding_study, record_kind",
+      "id, name, slug, owner_id, auto_approve, is_public, requires_photo, is_coding_study, record_kind, discord_invite_url",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -656,6 +657,7 @@ export default async function GroupPage({
                 isCodingStudy={group.is_coding_study}
                 recordKind={recordKind}
                 hasWebhook={Boolean(hasWebhook)}
+                discordInviteUrl={group.discord_invite_url}
               />
             )}
           </div>
@@ -663,6 +665,31 @@ export default async function GroupPage({
             멤버 {activeMemberIds.length}명 · 내 역할:{" "}
             {roleLabels[currentMembership.role] ?? "멤버"}
           </p>
+          {/* 누가 들어왔는지 알 길이 없어 끄지 못합니다. 그래서 배너가 아니라
+              눈에 걸리지 않는 크기로 둡니다. 주소는 DB가 형식을 막습니다. */}
+          {group.discord_invite_url && (
+            <a
+              href={group.discord_invite_url}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-flex items-center gap-1.5 rounded-control border border-line px-2.5 py-1 text-[13px] text-sub hover:bg-soft hover:text-ink"
+            >
+              <DiscordMark className="size-3.5 text-[#5865f2]" />
+              디스코드에서 알림 받기
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                aria-hidden="true"
+              >
+                <path d="M8 16 16 8M9 8h7v7" />
+              </svg>
+            </a>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {isOwner && (
