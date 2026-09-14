@@ -13,6 +13,7 @@ import { AppShell } from "@/components/app-shell";
 import { StatusMessage } from "@/components/status-message";
 import { requireUser } from "@/lib/auth";
 import { firstQueryValue } from "@/lib/form";
+import { GroupActivity } from "@/components/group-activity";
 import { GroupOverview } from "@/components/group-overview";
 import { TodayStrip } from "@/components/today-strip";
 import { GroupProblems } from "@/components/group-problems";
@@ -22,6 +23,10 @@ import { ProofRecordList } from "@/components/proof-record-list";
 import type { ProofRecord } from "@/components/proof-record-list";
 import { githubHandle } from "@/lib/profile";
 import { isRecordKind } from "@/lib/record-goal";
+import {
+  isActivityKind,
+  type GroupActivityEvent,
+} from "@/lib/group-activity";
 import { problemLink } from "@/lib/proof-input";
 import type { GroupOverviewData } from "@/lib/group-overview";
 import type {
@@ -393,6 +398,15 @@ export default async function GroupPage({
     record_minutes: number | null;
   } | null;
 
+  const { data: activityData } = await supabase.rpc("get_group_activity", {
+    target_group_id: group.id,
+    target_limit: 20,
+  });
+  // 활동은 곁들이는 값이라, 모양이 어긋나도 그룹 화면 전체가 멈추면 안 됩니다.
+  const activity = (
+    Array.isArray(activityData) ? (activityData as GroupActivityEvent[]) : []
+  ).filter((event) => isActivityKind(event?.kind));
+
   const proofs = proofData as ProofRow[];
   const proofIds = proofs.map((proof) => proof.id);
   const accountIds = [
@@ -696,18 +710,10 @@ export default async function GroupPage({
         />
       </div>
 
-      <div
-        className={
-          group.is_coding_study
-            ? "lg:grid lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start lg:gap-6"
-            : ""
-        }
-      >
-        {/* 한 칸일 때도 두 칸 레이아웃의 왼쪽 칸(1024-280-24)과 같은 폭을 씁니다.
-            전폭으로 늘리면 기록 한 줄에서 제목과 날짜 사이가 크게 벌어집니다. */}
-        <div
-          className={group.is_coding_study ? "min-w-0" : "min-w-0 lg:max-w-[656px]"}
-        >
+      {/* 오른쪽 칸은 어느 그룹에나 있습니다. 최근 활동이 늘 들어가고,
+          코딩 테스트 스터디는 그 위에 푼 문제 목록이 함께 놓입니다. */}
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start lg:gap-6">
+        <div className="min-w-0">
       {overview ? (
         <>
           <TodayStrip data={overview} currentUserId={user.id} />
@@ -843,8 +849,8 @@ export default async function GroupPage({
         </div>
 
         {/* 좁은 화면에서는 기록 아래로 쌓이고, 넓으면 스크롤을 따라옵니다. */}
-        {group.is_coding_study && (
-          <aside className="mt-7 lg:sticky lg:top-6 lg:mt-0 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto">
+        <aside className="mt-7 grid gap-7 lg:sticky lg:top-6 lg:mt-0 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto">
+          {group.is_coding_study && (
             <GroupProblems
               rows={problemRows}
               groupTitles={groupTitles}
@@ -853,8 +859,9 @@ export default async function GroupPage({
               groupSlug={group.slug}
               canEditTitle={canReview}
             />
-          </aside>
-        )}
+          )}
+          <GroupActivity events={activity} today={studyTodayDate} />
+        </aside>
       </div>
 
       {isOwner && (pendingMemberships.length > 0 || manageableMembers.length > 0) && (

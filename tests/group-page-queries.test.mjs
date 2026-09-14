@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import ts from "typescript";
 import { githubHandle } from "../src/lib/profile.ts";
 import { isRecordKind } from "../src/lib/record-goal.ts";
+import { isActivityKind } from "../src/lib/group-activity.ts";
 
 async function renderGroup(
   t,
@@ -99,12 +100,16 @@ async function renderGroup(
     },
     rpc(name, args) {
       rpcCalls.push({ name, args });
+      // 활동 목록은 배열입니다. 현황판과 모양이 달라 따로 돌려줍니다.
+      if (name === "get_group_activity")
+        return Promise.resolve({ data: [], error: null });
       return Promise.resolve({ data: overview, error: null });
     },
   };
   globalThis.__groupPageImports = {
     githubHandle,
     isRecordKind,
+    isActivityKind,
     requireUser: async () => ({ supabase, user: { id: "user" } }),
     redirect(path) {
       throw Error(`redirect:${path}`);
@@ -122,9 +127,9 @@ async function renderGroup(
   ).replace(/import[\s\S]*?from\s+["'][^"']+["'];/g, "");
   const compiled = ts.transpileModule(
     `
-    const { requireUser, redirect, notFound, githubHandle, isRecordKind } = globalThis.__groupPageImports;
+    const { requireUser, redirect, notFound, githubHandle, isRecordKind, isActivityKind } = globalThis.__groupPageImports;
     const React = { createElement: (type, props, ...children) => ({ type, props, children }) };
-    const Link='a', ProofForm='form', StatusMessage='div', GroupOverview='section', TodayStrip='div', InvitePopover='div', GroupProblems='section', GroupSettingsDialog='div', AppShell='main', ProofRecordList='div', ProofFilterForm='form';
+    const Link='a', ProofForm='form', StatusMessage='div', GroupOverview='section', TodayStrip='div', GroupActivity='div', InvitePopover='div', GroupProblems='section', GroupSettingsDialog='div', AppShell='main', ProofRecordList='div', ProofFilterForm='form';
     const problemLink=(value)=>value ? { url: value, platform: '플랫폼' } : null;
     const approveMembershipAction=()=>{}, rotateInviteCodeAction=()=>{}, setMemberRoleAction=()=>{}, deleteProofAction=()=>{}, reviewProofAction=()=>{};
     const firstQueryValue=(value)=>value, getSiteUrl=()=>"https://example.invalid";
@@ -309,12 +314,14 @@ test("선택한 주를 현황판 조회 인자로 넘긴다", async (t) => {
     overview: weekOverview(),
   });
   await render();
-  assert.deepEqual(rpcCalls, [
+  // 화면이 부르는 함수가 늘어도 깨지지 않도록 현황판 호출만 집어 봅니다.
+  assert.deepEqual(
+    rpcCalls.find((call) => call.name === "get_group_overview"),
     {
       name: "get_group_overview",
       args: { target_group_id: "group", target_week_start: "2026-09-02" },
     },
-  ]);
+  );
 });
 
 test("형식이 잘못된 주는 현황판 조회에서 무시한다", async (t) => {
