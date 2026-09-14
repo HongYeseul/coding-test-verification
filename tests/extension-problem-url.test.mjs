@@ -10,6 +10,7 @@ const cases = [
   "https://school.programmers.co.kr/learn/courses/30/lessons/42626",
   "https://www.acmicpc.net/problem/1000/",
   "https://leetcode.com/problems/two-sum?envType=daily",
+  "https://neetcode.io/problems/duplicate-integer/question?list=neetcode150",
   "https://codeforces.com/problemset/problem/4/A",
   "https://atcoder.jp/contests/abc300/tasks/abc300_a",
   "https://hackerrank.com/challenges/solve-me-first",

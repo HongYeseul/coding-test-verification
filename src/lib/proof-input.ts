@@ -44,6 +44,7 @@ const PROBLEM_PLATFORMS: Record<string, string> = {
   "school.programmers.co.kr": "프로그래머스",
   "acmicpc.net": "백준",
   "leetcode.com": "LeetCode",
+  "neetcode.io": "NeetCode",
   "codeforces.com": "Codeforces",
   "atcoder.jp": "AtCoder",
   "hackerrank.com": "HackerRank",

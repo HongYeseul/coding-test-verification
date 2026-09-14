@@ -68,6 +68,7 @@ const PROBLEM_HOSTS = [
   "school.programmers.co.kr",
   "acmicpc.net",
   "leetcode.com",
+  "neetcode.io",
   "codeforces.com",
   "atcoder.jp",
   "hackerrank.com",
