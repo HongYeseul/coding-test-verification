@@ -38,7 +38,7 @@ export function GroupProblems({
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h2 id="group-problems-title">우리 그룹이 푼 문제</h2>
         <span className="text-[13px] text-sub tabular-nums">
-          링크를 남긴 {problems.length}문제
+          {problems.length}문제
         </span>
       </div>
 
@@ -49,7 +49,7 @@ export function GroupProblems({
             return (
               <li
                 key={problem.url}
-                className="border-b border-line last:border-b-0"
+                className="relative border-b border-line last:border-b-0"
               >
                 <a
                   href={problem.url}
@@ -74,14 +74,17 @@ export function GroupProblems({
                   </span>
                 </a>
                 {canEditTitle && (
-                  // 스크립트 없이도 열고 닫히도록 details를 씁니다.
-                  <details className="px-4 pb-3">
-                    <summary className="inline-block cursor-pointer list-none text-[13px] text-sub underline [&::-webkit-details-marker]:hidden">
+                  // 스크립트 없이도 열고 닫히도록 details를 씁니다. summary는 details의
+                  // 직계 자식이어야 여는 단추 노릇을 하므로, 플랫폼 딱지와 같은 줄에
+                  // 놓으려면 감싸는 대신 칸 오른쪽 위로 띄웁니다. details 자체는 폭을
+                  // 그대로 두어 열린 폼이 칸 전체를 씁니다.
+                  <details>
+                    <summary className="absolute top-4 right-4 z-10 cursor-pointer list-none rounded-control px-1 text-[13px] text-sub underline hover:text-ink [&::-webkit-details-marker]:hidden">
                       {problem.title ? "제목 수정" : "제목 넣기"}
                     </summary>
                     <form
                       action={updateProblemTitleAction}
-                      className="mt-2 flex items-center gap-2"
+                      className="mx-4 mb-3 flex items-center gap-2"
                     >
                       <input type="hidden" name="groupSlug" value={groupSlug} />
                       <input

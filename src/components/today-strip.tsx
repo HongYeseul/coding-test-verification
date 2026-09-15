@@ -67,20 +67,29 @@ export function TodayStrip({
   return (
     <section
       aria-label="오늘 도장"
-      className="mb-6 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-surface border border-line bg-surface px-4 py-3 sm:px-5"
+      className="mb-6 rounded-surface border border-line bg-surface px-4 py-3 sm:px-5"
     >
-      <div className="min-w-[150px]">
-        <p className="text-[12px] tracking-[0.04em] text-sub">
-          오늘 · {longDate(data.today)}
-        </p>
-        <p className="mt-0.5 font-serif text-[26px] leading-[1.2] font-semibold tracking-[-0.02em] tabular-nums">
+      {/* 이름 칩을 가운데 좁은 칸에 두면 사람이 늘 때마다 네댓 줄로 접힙니다.
+          숫자와 남은 인원을 한 줄에 얹고 칩에는 폭을 다 내줍니다. */}
+      <p className="text-[12px] tracking-[0.04em] text-sub">
+        오늘 · {longDate(data.today)}
+      </p>
+      <div className="mt-0.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <p className="font-serif text-[26px] leading-[1.2] font-semibold tracking-[-0.02em] tabular-nums">
           {stamped.length}
           <span className="ml-1 font-sans text-[15px] font-medium text-sub">
             / {members.length}명 도장
           </span>
         </p>
+        <p
+          className={`text-[13px] ${
+            meRemaining ? "font-medium text-brand" : "text-sub"
+          }`}
+        >
+          {note}
+        </p>
       </div>
-      <ul className="flex min-w-0 flex-1 flex-wrap gap-2">
+      <ul className="mt-3 flex flex-wrap gap-2">
         {members.map((member) => (
           <li
             key={member.userId}
@@ -139,13 +148,6 @@ export function TodayStrip({
           </li>
         ))}
       </ul>
-      <p
-        className={`text-[13px] whitespace-nowrap ${
-          meRemaining ? "font-medium text-brand" : "text-sub"
-        }`}
-      >
-        {note}
-      </p>
     </section>
   );
 }
