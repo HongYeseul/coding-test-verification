@@ -118,10 +118,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             <p className="text-[13px] text-sub">
               스터디 <Figure>{groups.length}</Figure>개 · 멤버{" "}
               <Figure>{directory.totalMembers}</Figure>명
-              {directory.weekApproved > 0 && (
+              {directory.totalApproved > 0 && (
                 <>
-                  {" · "}이번 주 인증{" "}
-                  <Figure>{directory.weekApproved}</Figure>번
+                  {" · "}누적 인증{" "}
+                  <Figure>{directory.totalApproved}</Figure>번
                 </>
               )}
             </p>

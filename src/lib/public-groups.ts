@@ -12,8 +12,10 @@ export type GroupDirectoryEntry = {
 export type GroupDirectory = {
   today: string;
   weekStart: string;
+  /** 여러 스터디에 든 사람도 한 번만 셉니다. */
   totalMembers: number;
-  weekApproved: number;
+  /** 서비스를 연 뒤 쌓인 전체 인증입니다. 그룹 칸의 `weekApproved`와 기간이 다릅니다. */
+  totalApproved: number;
   groups: GroupDirectoryEntry[];
 };
 
