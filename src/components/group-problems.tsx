@@ -79,8 +79,31 @@ export function GroupProblems({
                   // 놓으려면 감싸는 대신 칸 오른쪽 위로 띄웁니다. details 자체는 폭을
                   // 그대로 두어 열린 폼이 칸 전체를 씁니다.
                   <details>
-                    <summary className="absolute top-4 right-4 z-10 cursor-pointer list-none rounded-control px-1 text-[13px] text-sub underline hover:text-ink [&::-webkit-details-marker]:hidden">
-                      {problem.title ? "제목 수정" : "제목 넣기"}
+                    <summary
+                      aria-label={
+                        problem.title
+                          ? `${problem.title} 제목 수정`
+                          : "제목 넣기"
+                      }
+                      title={problem.title ? "제목 수정" : "제목 넣기"}
+                      className="absolute top-3 right-3 z-10 grid size-7 cursor-pointer list-none place-items-center rounded-control text-sub hover:bg-soft hover:text-ink [&::-webkit-details-marker]:hidden"
+                    >
+                      {/* 글자로 두면 280px 칸에서 플랫폼 딱지와 폭을 다툽니다.
+                          무엇을 고치는지는 title과 읽어주는 라벨이 말합니다. */}
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M4 20h4L19 9a2.83 2.83 0 0 0-4-4L4 16v4Z" />
+                        <path d="M14 6l4 4" />
+                      </svg>
                     </summary>
                     <form
                       action={updateProblemTitleAction}
