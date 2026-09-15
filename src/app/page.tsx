@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
 import { GithubSignInButton } from "@/components/github-sign-in-button";
+import { ReleaseNotes } from "@/components/release-notes";
 import { StatusMessage } from "@/components/status-message";
 import { getOptionalUser } from "@/lib/auth";
 import { authErrorMessage, safeNextPath } from "@/lib/auth-navigation";
@@ -199,6 +200,12 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           </p>
         )}
       </section>
+
+      {/* 로그인 전에도 무엇이 달라졌는지 보입니다. 확장은 웹스토어 등록 전이라
+          자동 갱신이 되지 않아, 새 버전이 나온 것을 알 자리가 여기와 대시보드뿐입니다. */}
+      <div className="mt-7">
+        <ReleaseNotes />
+      </div>
     </AppShell>
   );
 }

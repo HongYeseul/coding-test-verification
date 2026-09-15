@@ -109,24 +109,41 @@ values ('00000000-0000-4000-8000-00000000ec01','00000000-0000-4000-8000-00000000
 
 do $$
 declare
- sent text[];
+ embeds jsonb[];
 begin
  assert (select count(*) from public.proofs
    where id = '00000000-0000-4000-8000-00000000ec01') = 1, '도장이 남아 있음';
 
- -- pg_net은 본문을 bytea로 담아 둡니다.
- select array_agg((convert_from(request.body,'UTF8')::jsonb)->>'content' order by request.id)
- into sent from net.http_request_queue request
+ -- pg_net은 본문을 bytea로 담아 둡니다. 문장은 임베드 제목으로 갑니다 —
+ -- 제목이 링크가 되어야 문장을 눌러 그룹 화면으로 갈 수 있습니다.
+ select array_agg((convert_from(request.body,'UTF8')::jsonb)->'embeds'->0 order by request.id)
+ into embeds from net.http_request_queue request
  where request.url like '%1234567890%';
 
- assert sent[1] = '**' || (select display_name from public.profiles
-   where id = '00000000-0000-4000-8000-00000000ea02') || '**님이 13:00에 착석했습니다.',
-  '착석 문장: ' || coalesce(sent[1], '없음');
- assert sent[2] like '%님이 퇴근했습니다. 4시간 20분', '퇴근 문장: ' || coalesce(sent[2], '없음');
- assert sent[3] like '%님에게 응원을 보냈습니다.', '응원 문장: ' || coalesce(sent[3], '없음');
+ assert embeds[1]->>'title' = (select display_name from public.profiles
+   where id = '00000000-0000-4000-8000-00000000ea02') || '님이 13:00에 착석했습니다.',
+  '착석 문장: ' || coalesce(embeds[1]->>'title', '없음');
+ assert embeds[2]->>'title' like '%님이 퇴근했습니다. 4시간 20분',
+  '퇴근 문장: ' || coalesce(embeds[2]->>'title', '없음');
+ assert embeds[3]->>'title' like '%님에게 응원을 보냈습니다.',
+  '응원 문장: ' || coalesce(embeds[3]->>'title', '없음');
+ assert embeds[4]->>'title' like '%님의 기록을 반려했습니다.',
+  '반려 문장: ' || coalesce(embeds[4]->>'title', '없음');
  -- 반려 이유는 한 줄로 펴서 인용합니다.
- assert sent[4] like E'%님의 기록을 반려했습니다.\n> 사진이 흐립니다',
-  '반려 문장: ' || coalesce(sent[4], '없음');
+ assert embeds[4]->>'description' = '> 사진이 흐립니다',
+  '반려 이유: ' || coalesce(embeds[4]->>'description', '없음');
+
+ -- 임베드 제목은 마크다운을 그리지 않으므로 **가 남아 있으면 글자로 찍힙니다.
+ assert (select count(*) from unnest(embeds) as embed
+   where embed->>'title' like '%**%') = 0, '제목에 마크다운 없음';
+
+ -- 넷 다 그룹 화면으로 연결돼야 합니다.
+ assert (select count(*) from unnest(embeds) as embed
+   where embed->>'url' <> 'https://coding-test-verification.vercel.app/groups/hook-test') = 0,
+  '임베드 링크가 그룹 화면을 가리킴';
+ -- 반려만 색이 다릅니다.
+ assert (embeds[4]->>'color')::int = 11221553 and (embeds[1]->>'color')::int = 1921169,
+  '반려만 다른 색';
 
  -- 닉네임에 @everyone을 넣어도 서버 전체가 울리면 안 됩니다.
  assert (select count(*) from net.http_request_queue
