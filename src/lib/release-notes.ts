@@ -38,6 +38,15 @@ export type Release = {
 /** 최신이 위로 옵니다. 새 배포를 낼 때 맨 앞에 더합니다. */
 export const RELEASES: Release[] = [
   {
+    surface: "EXTENSION",
+    date: "2026-09-23",
+    summary: "문제를 열어 둔 채 확장을 설치하거나 바꿔도 바로 도장을 찍을 수 있습니다.",
+    highlights: [
+      "설치하거나 새 버전으로 바꿀 때 열려 있던 문제 탭에서도 정답 카드가 뜹니다",
+      "확장을 바꾸기 전에 뜬 카드에서 도장 찍기가 멈추던 문제를 고쳤습니다",
+    ],
+  },
+  {
     surface: "WEB",
     date: "2026-09-15",
     summary: "스터디에서 일어난 일을 디스코드로 받을 수 있습니다.",
@@ -63,6 +72,7 @@ export const RELEASES: Release[] = [
   },
   {
     surface: "EXTENSION",
+    version: "0.2.6",
     date: "2026-09-14",
     summary:
       "프로그래머스와 NeetCode에서 정답을 맞히면 방금 제출한 코드까지 남길 수 있습니다.",

@@ -29,6 +29,12 @@
  * 것까지고, 실제로 남는 것은 사용자가 도장 찍기를 눌러야 생깁니다.
  */
 (function () {
+  // 설치하거나 새 버전으로 바꿀 때 background가 이미 열린 탭에 이 파일을 다시 넣습니다.
+  // 페이지 쪽 세계는 하나뿐이라, 이미 감쌌으면 또 감싸지 않습니다. 겹쳐 감싸면 정답
+  // 한 번에 알림이 여러 번 갑니다. 그래서 이 파일을 고치면 새로고침한 탭부터 적용됩니다.
+  if (window.dojangIntercepting) return;
+  window.dojangIntercepting = true;
+
   const SUBMIT_PATH = "/api/executeCodeFunctionHttp";
 
   function isSubmit(url) {

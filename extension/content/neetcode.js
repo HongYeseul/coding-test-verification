@@ -14,6 +14,10 @@
 (function () {
   const TITLE_SUFFIX = " - NeetCode";
 
+  // programmers.js와 같은 까닭으로, 같은 탭에 두 번 들어오면 늦게 온 쪽만 남깁니다.
+  const owner = {};
+  window.dojangNeetcode = owner;
+
   function problemTitle() {
     const title = document.title.trim();
     const name = title.endsWith(TITLE_SUFFIX)
@@ -31,7 +35,13 @@
     return `https://neetcode.io/problems/${encodeURIComponent(problemId)}`;
   }
 
-  window.addEventListener("dojang:neetcode-accepted", (event) => {
+  function onAccepted(event) {
+    // 끊겼거나 뒤를 이은 쪽이 있으면 물러나고, 떠 있던 카드도 치웁니다.
+    if (window.dojangNeetcode !== owner || !window.dojangConnected()) {
+      window.removeEventListener("dojang:neetcode-accepted", onAccepted);
+      if (!window.dojangCardShowingResult()) window.dojangCardRemove();
+      return;
+    }
     const { problemId, code } = event.detail ?? {};
     if (!problemId || !code) return;
     window.dojangCard({
@@ -39,5 +49,7 @@
       code,
       problemUrl: problemUrl(problemId),
     });
-  });
+  }
+
+  window.addEventListener("dojang:neetcode-accepted", onAccepted);
 })();

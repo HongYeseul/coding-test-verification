@@ -111,6 +111,15 @@ test("XHR로 정답을 제출하면 코드와 문제를 실어 알린다", () =>
   assert.equal(page.events[0].detail.code, CODE);
 });
 
+test("이미 열린 탭에 한 번 더 들어와도 정답 한 번에 한 번만 알린다", () => {
+  const page = pageWith(judged("Accepted"));
+  // 설치하거나 새 버전으로 바꿀 때 background가 같은 파일을 다시 넣습니다.
+  runInContext(SOURCE, page.window);
+  submitViaXhr(page);
+
+  assert.equal(page.events.length, 1);
+});
+
 test("XHR 응답을 json으로 받아도 읽는다", () => {
   const page = pageWith(judged("Accepted"));
   const request = new page.FakeXHR();

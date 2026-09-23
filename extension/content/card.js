@@ -13,6 +13,16 @@
  * onStamped는 도장이 실제로 찍힌 뒤에만 부릅니다. 실패했을 때는 부르지 않아,
  * 감지하는 쪽이 '이미 남긴 풀이'로 착각하지 않게 합니다.
  */
+
+// 이 스크립트 묶음이 띄운 카드에 붙이는 표시입니다.
+//
+// 확장을 새 버전으로 바꾸면 이미 열린 탭에 붙어 있던 옛 스크립트는 확장과 끊긴 채
+// 페이지에 남아 계속 돕니다. background가 새 스크립트를 넣어 주지만 둘은 서로의 전역을
+// 볼 수 없는 다른 격리 세계에서 돌고, 페이지 DOM만 같이 씁니다. 그래서 카드마다 어느
+// 쪽이 띄웠는지 적어 두고 저마다 자기 카드만 다룹니다. 같은 세계에 두 번 들어오면
+// 값을 이어받아 한 벌처럼 움직입니다.
+window.dojangWorld = window.dojangWorld ?? crypto.randomUUID();
+
 window.dojangCard = function dojangCard({
   title,
   code,
@@ -20,9 +30,10 @@ window.dojangCard = function dojangCard({
   mount,
   onStamped,
 }) {
-  if (document.querySelector(".dojang-card")) return;
+  if (ownCard()) return;
 
   const card = el("div", "dojang-card");
+  card.dataset.dojang = window.dojangWorld;
   const head = el("div", "dojang-head");
   head.append(seal(), el("span", null, "정답입니다"), closeButton());
 
@@ -79,7 +90,7 @@ window.dojangCard = function dojangCard({
     // 처음 누르면 GitHub 창이 열리므로 무엇을 기다리는지 알려줍니다.
     stamp.textContent = groupId ? "남기는 중…" : "연결하고 남기는 중…";
     tell("");
-    const result = await chrome.runtime.sendMessage({
+    const result = await sendToBackground({
       type: "submit-code",
       solutionCode: code,
       problemUrl,
@@ -112,12 +123,44 @@ window.dojangCard = function dojangCard({
 
 /** 결과를 보여주는 중인지 봅니다. 감지 쪽이 카드를 함부로 치우지 않게 하는 표시입니다. */
 window.dojangCardShowingResult = function dojangCardShowingResult() {
-  return Boolean(document.querySelector(".dojang-timer"));
+  return Boolean(ownCard()?.querySelector(".dojang-timer"));
 };
 
 window.dojangCardRemove = function dojangCardRemove() {
-  document.querySelector(".dojang-card")?.remove();
+  ownCard()?.remove();
 };
+
+/**
+ * 확장과 아직 이어져 있는지 봅니다. 끊긴 스크립트에서는 chrome.runtime이 사라집니다.
+ * 감지하는 쪽은 이 값이 거짓이면 스스로 멈추고, 새로 들어온 스크립트가 뒤를 잇습니다.
+ */
+window.dojangConnected = function dojangConnected() {
+  return Boolean(chrome.runtime?.id);
+};
+
+/** 이 세계가 띄운 카드입니다. 끊긴 옛 스크립트가 남긴 카드는 건드리지 않습니다. */
+function ownCard() {
+  return document.querySelector(
+    `.dojang-card[data-dojang="${window.dojangWorld}"]`,
+  );
+}
+
+/**
+ * 등록을 백그라운드에 맡깁니다. 답을 받지 못해도 버튼이 '남기는 중'에 멈춰 있지
+ * 않도록 실패를 결과로 바꿔 돌려줍니다.
+ */
+async function sendToBackground(message) {
+  try {
+    return await chrome.runtime.sendMessage(message);
+  } catch {
+    // 확장을 새 버전으로 바꾸기 전에 떠 있던 카드는 보낼 곳을 잃습니다.
+    return {
+      error: window.dojangConnected()
+        ? "도장을 찍지 못했습니다. 다시 시도해주세요."
+        : "확장 프로그램이 바뀌어 연결이 끊겼습니다. 페이지를 새로고침한 뒤 다시 제출해주세요.",
+    };
+  }
+}
 
 function el(tag, className, text) {
   const node = document.createElement(tag);

@@ -20,6 +20,11 @@
   const FAIL_WORDS = ["실패", "오답", "런타임 에러", "시간 초과"];
   let registeredCode = "";
 
+  // 같은 탭에 이 파일이 두 번 들어올 수 있습니다. 설치하는 순간 막 열리던 탭에는
+  // 크롬이 넣은 것과 background가 넣은 것이 함께 돕니다. 늦게 온 쪽만 남깁니다.
+  const owner = {};
+  window.dojangProgrammers = owner;
+
   /**
    * 지금 화면에 떠 있는 결과 모달만 돌려줍니다.
    * offsetParent로 판단하면 안 됩니다. 부트스트랩 모달은 position:fixed라
@@ -61,7 +66,14 @@
     return `https://${host}${window.location.pathname.replace(/\/+$/, "")}`;
   }
 
-  setInterval(() => {
+  const timer = setInterval(() => {
+    // 확장이 바뀌어 끊겼거나 새로 들어온 쪽이 뒤를 이었으면 물러납니다.
+    // 떠 있던 카드는 물러나는 쪽에 묶여 있으니 치웁니다. 뒤를 이은 쪽이 다시 띄웁니다.
+    if (window.dojangProgrammers !== owner || !window.dojangConnected()) {
+      clearInterval(timer);
+      if (!window.dojangCardShowingResult()) window.dojangCardRemove();
+      return;
+    }
     const modal = visibleModal();
     if (!modal || !passed(modal)) {
       // 모달이 닫히면 카드도 함께 치웁니다. 결과를 보여주는 중이면 그대로 둡니다.

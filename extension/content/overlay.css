@@ -6,6 +6,13 @@
   box-sizing: border-box;
 }
 
+/* 0.2.6까지의 카드에는 누가 띄웠는지 적는 표시(data-dojang)가 없습니다. 새 버전으로
+   바꾸면 그 스크립트는 확장과 끊긴 채 열린 탭에 남아 여전히 카드를 띄우는데, 그 카드는
+   눌러도 보낼 곳이 없습니다. 지금 확장이 띄운 카드만 보이게 합니다. */
+.dojang-card:not([data-dojang]) {
+  display: none !important;
+}
+
 /* 축하 조각을 덮는 캔버스입니다. 클릭은 그대로 통과시킵니다. */
 .dojang-confetti {
   position: fixed;

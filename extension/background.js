@@ -1,7 +1,13 @@
 import { CONFIG } from "./config.js";
 import { getSession, signIn } from "./auth.js";
+import { injectIntoOpenTabs } from "./inject.js";
 
 const LAST_GROUP_KEY = "dojang.lastGroup";
+
+// 문제를 열어 둔 채 설치하거나 새 버전으로 바꿔도 그 탭에서 바로 카드가 뜨게 합니다.
+chrome.runtime.onInstalled.addListener((details) => {
+  void injectIntoOpenTabs(details);
+});
 
 /**
  * 콘텐츠 스크립트는 페이지 오리진에 묶여 있어 우리 서버로 바로 요청할 수 없습니다.
