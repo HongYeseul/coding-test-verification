@@ -28,6 +28,30 @@
       <p id="link" class="hint" hidden></p>
 
       <button id="submit" class="primary">이 화면으로 도장 찍기</button>
+
+      <details id="repo" class="repo">
+        <summary>
+          GitHub 저장소 <span id="repo-state" class="repo-state">연결 안 됨</span>
+        </summary>
+        <div id="repo-off" class="repo-body">
+          <p class="hint">
+            프로그래머스·NeetCode 카드로 도장을 찍으면 풀이 코드를 고른 저장소에도
+            올립니다. GitHub에서 공개 저장소에 쓰는 권한을 한 번 더 묻습니다.
+          </p>
+          <button id="repo-connect">GitHub 저장소 연결</button>
+        </div>
+        <div id="repo-on" class="repo-body" hidden>
+          <label for="repo-select">올릴 저장소 <span class="hint">공개 저장소만</span></label>
+          <select id="repo-select"></select>
+          <div id="repo-create" hidden>
+            <label for="repo-new-name">새 저장소 이름</label>
+            <input id="repo-new-name" maxlength="100" placeholder="예: coding-test" />
+            <button id="repo-create-button">공개 저장소로 만들기</button>
+          </div>
+          <button id="repo-disconnect" class="ghost">저장소 연결 끊기</button>
+        </div>
+      </details>
+
       <button id="signout" class="ghost">연결 끊기</button>
     </section>
 

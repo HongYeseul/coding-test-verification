@@ -48,18 +48,22 @@ async function store(session) {
   return saved;
 }
 
-/** GitHub 로그인 창을 띄우고 받은 코드를 세션으로 바꿉니다. */
-export async function signIn() {
+/**
+ * GitHub 로그인 창을 띄우고 받은 코드를 토큰 응답으로 바꿉니다.
+ * scopes를 주면 Supabase가 GitHub에 그 권한을 더 청합니다.
+ */
+async function authorize(scopes) {
   const redirectTo = chrome.identity.getRedirectURL();
   const { verifier, challenge } = await createPkce();
-  const authorize =
+  const url =
     `${CONFIG.supabaseUrl}/auth/v1/authorize?provider=github` +
     `&redirect_to=${encodeURIComponent(redirectTo)}` +
     `&code_challenge=${encodeURIComponent(challenge)}` +
-    `&code_challenge_method=s256`;
+    `&code_challenge_method=s256` +
+    (scopes ? `&scopes=${encodeURIComponent(scopes)}` : "");
 
   const callback = await chrome.identity.launchWebAuthFlow({
-    url: authorize,
+    url,
     interactive: true,
   });
   const returned = new URL(callback);
@@ -72,11 +76,27 @@ export async function signIn() {
   const code = params.get("code");
   if (!code) throw new Error("로그인 응답에 코드가 없습니다.");
 
-  const session = await tokenRequest("pkce", {
+  return tokenRequest("pkce", {
     auth_code: code,
     code_verifier: verifier,
   });
-  return store(session);
+}
+
+/** GitHub 로그인 창을 띄우고 받은 코드를 세션으로 바꿉니다. */
+export async function signIn() {
+  return store(await authorize());
+}
+
+/**
+ * GitHub 권한을 더 받아 로그인하고, GitHub가 내준 토큰을 돌려줍니다.
+ * Supabase는 이 토큰을 로그인 응답에 한 번 실어 줄 뿐 보관하지 않으므로 받는 쪽이
+ * 간직해야 합니다. 도장 세션도 새로 받은 것으로 바꿉니다.
+ */
+export async function signInWithScopes(scopes) {
+  const session = await authorize(scopes);
+  await store(session);
+  if (!session.provider_token) throw new Error("GitHub 권한을 받지 못했습니다.");
+  return session.provider_token;
 }
 
 export async function signOut() {

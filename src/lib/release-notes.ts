@@ -39,6 +39,18 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     surface: "EXTENSION",
+    date: "2026-09-24",
+    summary: "도장을 찍으면 풀이를 내 GitHub 저장소에도 올릴 수 있습니다.",
+    highlights: [
+      "팝업에서 GitHub 저장소를 연결하고 올릴 저장소를 고르거나 새로 만듭니다",
+      "카드로 도장을 찍으면 코드와 문제 정보가 그 저장소에 커밋 하나로 올라갑니다",
+      "문제 설명은 올리지 않고 제목·링크·태그만 적습니다",
+      "공개 저장소만 고를 수 있고, 연결하지 않으면 지금과 같습니다",
+    ],
+  },
+  {
+    surface: "EXTENSION",
+    version: "0.2.7",
     date: "2026-09-23",
     summary: "문제를 열어 둔 채 확장을 설치하거나 바꿔도 바로 도장을 찍을 수 있습니다.",
     highlights: [

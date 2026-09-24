@@ -44,11 +44,12 @@
   /** 보낸 코드와 받은 판정을 맞춰 보고, 정답일 때만 알립니다. */
   function announce(sentBody, received) {
     if (received?.data?.status?.description !== "Accepted") return;
-    const { problemId, rawCode } = JSON.parse(sentBody)?.data ?? {};
+    const { problemId, rawCode, lang } = JSON.parse(sentBody)?.data ?? {};
     if (!problemId || !rawCode) return;
     window.dispatchEvent(
       new CustomEvent("dojang:neetcode-accepted", {
-        detail: { problemId, code: rawCode },
+        // 언어는 저장소에 올릴 파일 확장자만 정합니다.
+        detail: { problemId, code: rawCode, language: lang ?? "" },
       }),
     );
   }

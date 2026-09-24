@@ -160,6 +160,32 @@
   color: #ab3a31;
 }
 
+/* 결과 줄의 값도 같은 이유로 직접 정합니다. 위의 span 규칙보다 뒤에 두어 이깁니다. */
+.dojang-row > span.dojang-bad {
+  color: #ab3a31;
+}
+
+/* 저장소에 올린 폴더로 가는 링크입니다. 남의 페이지 a 규칙에 밀리지 않게 직접 정합니다. */
+.dojang-card .dojang-row a {
+  color: #1a4784;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dojang-retry {
+  width: 100%;
+  min-height: 32px;
+  border: 1px solid #e3dfd5;
+  border-radius: var(--r-control);
+  background: #ffffff;
+  color: #1a4784;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 /* 사라질 때까지 남은 시간을 바닥에서 줄어드는 막대로 보여줍니다. */
 .dojang-timer {
   height: 3px;

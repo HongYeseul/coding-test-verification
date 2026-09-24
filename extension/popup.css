@@ -103,6 +103,31 @@ button:disabled {
   font-size: 13px;
 }
 
+/* 저장소는 한 번 정하면 다시 볼 일이 드물어 접어 둡니다. 닫혀 있어도 상태는 한 줄로 보입니다. */
+.repo {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.repo summary {
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.repo-state {
+  margin-left: 4px;
+  color: var(--sub);
+}
+
+.repo-body {
+  margin-top: 12px;
+}
+
+#repo-create {
+  margin-bottom: 4px;
+}
+
 #status {
   margin: 12px 0 0;
   font-size: 13px;

@@ -2,9 +2,10 @@
  * 프로그래머스 채점 결과를 지켜보다가, 정답이면 카드를 띄웁니다.
  * 카드는 content/card.js가 그립니다. 여기는 정답을 알아내는 일만 합니다.
  *
- * 읽는 것은 두 가지뿐입니다.
+ * 읽는 것은 세 가지뿐입니다.
  *   1) 채점 결과 모달의 제목 — 카드를 띄울지 정하는 데만 쓰고 서버로 보내지 않습니다.
  *   2) 사용자가 제출한 코드 — 사용자 본인의 저작물입니다.
+ *   3) 그 코드의 언어 값 — GitHub 저장소에 올릴 파일 확장자를 정하는 데만 씁니다.
  * 문제 설명·입출력 예시 같은 플랫폼 콘텐츠는 읽지 않습니다.
  *
  * 실제 DOM에서 확인한 사실 (2026-09-13, lessons/42576):
@@ -13,6 +14,11 @@
  *     그래서 문구만 보면 첫 정답 이후 계속 뜬다. 보이는 동안만 인정해야 한다.
  *   - `textarea#code`는 타이핑 중에는 CodeMirror와 어긋나지만,
  *     제출할 때 동기화된다. 우리가 읽는 시점은 언제나 제출 직후라 안전하다.
+ *
+ * 언어는 2026-09-24에 같은 문제에서 확인했습니다. 에디터 탭 `a.btn-tab.active`와
+ * 문제 영역 `.lesson-algorithm-main-section`에 `data-language="python3"`처럼 붙고,
+ * 언어를 바꾸면 페이지가 `?language=`를 달고 다시 열립니다. 기본 언어로 풀면
+ * 주소에는 없어서 주소는 뒷받침으로만 씁니다.
  */
 (function () {
   const POLL_MS = 1000;
@@ -55,6 +61,18 @@
     return textarea?.value?.trim() ? textarea.value : "";
   }
 
+  /** 제출한 코드의 언어입니다. 파일 확장자만 정하므로 모르면 빈 값으로 둡니다. */
+  function submittedLanguage() {
+    const tagged = document.querySelector(
+      "a.btn-tab.active[data-language], .lesson-algorithm-main-section[data-language]",
+    );
+    return (
+      tagged?.dataset.language ||
+      new URLSearchParams(window.location.search).get("language") ||
+      ""
+    );
+  }
+
   function problemTitle() {
     const heading = document.querySelector(".algorithm-title, .challenge-title");
     return heading?.textContent?.trim().slice(0, 160) ?? "";
@@ -92,6 +110,7 @@
       title: problemTitle(),
       code,
       problemUrl: problemUrl(),
+      language: submittedLanguage(),
       mount: modal,
       onStamped: () => {
         registeredCode = code;

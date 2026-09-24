@@ -109,6 +109,8 @@ test("XHR로 정답을 제출하면 코드와 문제를 실어 알린다", () =>
   // 이벤트는 페이지 쪽 세계에서 만들어져 프로토타입이 달라, 값만 하나씩 봅니다.
   assert.equal(page.events[0].detail.problemId, "duplicate-integer");
   assert.equal(page.events[0].detail.code, CODE);
+  // 저장소에 올릴 파일 확장자를 정하는 값입니다.
+  assert.equal(page.events[0].detail.language, "python");
 });
 
 test("이미 열린 탭에 한 번 더 들어와도 정답 한 번에 한 번만 알린다", () => {
