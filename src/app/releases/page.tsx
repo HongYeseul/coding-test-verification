@@ -31,8 +31,9 @@ export default function Releases() {
 
       <ol className="grid gap-4">
         {RELEASES.map((release) => (
+          // 하루에 두 번 내는 날이 있어 날짜만으로는 겹칩니다.
           <li
-            key={`${release.surface}-${release.date}`}
+            key={`${release.surface}-${release.date}-${release.summary}`}
             className="grid content-start rounded-surface border border-line bg-surface px-5 py-4"
           >
             <ReleaseEntry release={release} />

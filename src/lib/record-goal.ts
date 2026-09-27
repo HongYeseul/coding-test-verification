@@ -60,11 +60,13 @@ export function formatDuration(minutes: number) {
 }
 
 /**
- * 260 → "4h 20m". 도장판 칸처럼 좁은 자리에 씁니다.
+ * 260 → "4h20m". 도장판 칸처럼 좁은 자리에 씁니다.
  *
  * 한글 단위를 그대로 쓰면 ‘8시간33분’이 62px 칸에서 석 줄로 쪼개집니다.
  * 라틴 단위는 절반 폭이고, 이미 사진 용량을 MB·KB로 적고 있어 낯설지 않습니다.
- * 읽는 문장에서는 계속 formatDuration의 한글을 씁니다.
+ * 가운데 공백도 뺍니다. 오른쪽 칸이 생긴 뒤 도장판 칸이 40px 안팎이라, ‘4h 50m’은
+ * 칸보다 넓어 이웃한 날의 값과 겹쳤습니다. 읽는 문장에서는 계속 formatDuration의
+ * 한글을 씁니다.
  */
 export function formatDurationCompact(minutes: number) {
   const clamped = Math.max(0, Math.min(MAX_RECORD_MINUTES, Math.round(minutes)));
@@ -72,7 +74,7 @@ export function formatDurationCompact(minutes: number) {
   const minute = clamped % 60;
   if (!hour) return `${minute}m`;
   if (!minute) return `${hour}h`;
-  return `${hour}h ${minute}m`;
+  return `${hour}h${minute}m`;
 }
 
 /** 종류에 맞는 표시입니다. 칸에서는 compact를 씁니다. */

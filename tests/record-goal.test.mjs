@@ -37,11 +37,11 @@ test("시간은 읽는 자리와 좁은 자리에서 형식만 갈린다", () =>
   assert.equal(formatDuration(240), "4시간");
   assert.equal(formatDuration(20), "20분");
   // 좁은 칸에서는 라틴 단위를 씁니다. 한글 단위는 62px 칸에서 줄이 쪼개집니다.
-  assert.equal(formatDurationCompact(260), "4h 20m");
+  assert.equal(formatDurationCompact(260), "4h20m");
   assert.equal(formatDurationCompact(240), "4h");
   assert.equal(formatDurationCompact(20), "20m");
-  assert.equal(formatDurationCompact(513), "8h 33m");
-  assert.equal(formatRecord("DURATION", 260, true), "4h 20m");
+  assert.equal(formatDurationCompact(513), "8h33m");
+  assert.equal(formatRecord("DURATION", 260, true), "4h20m");
   assert.equal(formatRecord("CLOCK", 260), "04:20");
   assert.equal(formatRecord("NONE", 260), "");
 });
