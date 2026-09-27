@@ -228,6 +228,10 @@ publishable key는 배포된 사이트의 자바스크립트에 이미 실려 �
 자기 릴리스 페이지에 이미 남아 있습니다. 대시보드 카드에 나가는 문구는
 `src/lib/release-notes.ts`에 있으니 함께 고칩니다.
 
+내기 전에 고친 것은 `RELEASE_NOTES.md`의 다음 버전 절에만 쌓아 둡니다. `manifest.json`의
+`version`과 `release-notes.ts`는 낼 때 바꿉니다. 웹은 `main`에 올라가는 대로 배포되고 가장 최근
+확장 항목의 번호를 manifest에서 읽어서, 먼저 바꾸면 아직 없는 버전을 알리게 됩니다.
+
 ```bash
 bash extension/release.sh            # zip만 만들어 확인
 bash extension/release.sh --publish  # 태그와 공개 릴리스까지
