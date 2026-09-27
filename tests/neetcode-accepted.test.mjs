@@ -111,6 +111,9 @@ test("XHR로 정답을 제출하면 코드와 문제를 실어 알린다", () =>
   assert.equal(page.events[0].detail.code, CODE);
   // 저장소에 올릴 파일 확장자를 정하는 값입니다.
   assert.equal(page.events[0].detail.language, "python");
+  // 커밋 메시지의 `34/34 통과`가 됩니다.
+  assert.equal(page.events[0].detail.grading.passed, 34);
+  assert.equal(page.events[0].detail.grading.total, 34);
 });
 
 test("이미 열린 탭에 한 번 더 들어와도 정답 한 번에 한 번만 알린다", () => {

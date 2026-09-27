@@ -3,9 +3,13 @@ import assert from "node:assert/strict";
 
 import { CONFIG } from "../extension/config.js";
 import {
+  chooseRepoByName,
   commitFiles,
   connectGithub,
+  createAndChooseRepo,
   GithubError,
+  githubState,
+  repoNames,
   uploadSolution,
 } from "../extension/github.js";
 
@@ -290,4 +294,90 @@ test("GitHub 토큰이 응답에 없으면 연결하지 않는다", async () => 
 
   await assert.rejects(connectGithub(), /GitHub 권한을 받지 못했습니다/);
   assert.equal(store["dojang.github"], undefined);
+});
+
+/**
+ * 카드의 저장소 줄이 background에 부탁하는 일들입니다. 카드는 남의 페이지에 붙어 있으니
+ * 토큰을 받지 않고, 보내오는 이름도 믿지 않습니다.
+ */
+test("카드에 주는 상태에는 토큰이 없다", async () => {
+  fakeStorage({ "dojang.github": { token: "secret", login: "yeseul", repo: REPO } });
+
+  assert.deepEqual(await githubState(), {
+    connected: true,
+    repo: "yeseul/algo",
+    url: "https://github.com/yeseul/algo",
+  });
+
+  fakeStorage({ "dojang.github": { token: null, login: "yeseul", repo: REPO } });
+  assert.equal((await githubState()).connected, false);
+  assert.equal((await githubState()).repo, "yeseul/algo");
+
+  fakeStorage({});
+  assert.deepEqual(await githubState(), { connected: false, repo: null, url: null });
+});
+
+test("카드가 고른 저장소는 이름 모양을 다시 보고 정한다", async () => {
+  const store = fakeStorage({ "dojang.github": { token: "t", login: "yeseul", repo: null } });
+
+  const state = await chooseRepoByName("yeseul/algo.solutions");
+  assert.equal(state.repo, "yeseul/algo.solutions");
+  assert.deepEqual(store["dojang.github"].repo, { owner: "yeseul", name: "algo.solutions" });
+
+  for (const bad of ["", "algo", "a/b/c", "../etc/passwd", "yeseul/algo?x=1", "yeseul /algo"])
+    await assert.rejects(chooseRepoByName(bad), /이름을 확인/, bad);
+});
+
+test("연결하지 않았으면 카드에서 저장소를 고를 수 없다", async () => {
+  fakeStorage({});
+  await assert.rejects(chooseRepoByName("yeseul/algo"), /먼저 연결/);
+});
+
+test("카드의 저장소 목록은 쓸 수 있는 공개 저장소 이름만 보낸다", async () => {
+  fakeStorage({ "dojang.github": { token: "t", login: "yeseul", repo: null } });
+  const repo = (name, extra = {}) => ({
+    owner: { login: "yeseul" },
+    name,
+    permissions: { push: true },
+    archived: false,
+    private: false,
+    ...extra,
+  });
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify([
+        repo("algo"),
+        repo("diary", { private: true }),
+        repo("old", { archived: true }),
+        repo("readonly", { permissions: { push: false } }),
+      ]),
+      { status: 200 },
+    );
+
+  assert.deepEqual(await repoNames(), { repos: ["yeseul/algo"] });
+});
+
+test("카드에서 만든 저장소를 바로 올릴 곳으로 정한다", async () => {
+  const store = fakeStorage({ "dojang.github": { token: "t", login: "yeseul", repo: null } });
+  const sent = [];
+  globalThis.fetch = async (url, init = {}) => {
+    sent.push({ url: String(url), method: init.method, body: init.body && JSON.parse(init.body) });
+    return new Response(
+      JSON.stringify({ owner: { login: "yeseul" }, name: "coding-test" }),
+      { status: 201 },
+    );
+  };
+
+  const state = await createAndChooseRepo("  coding-test ");
+  assert.equal(state.repo, "yeseul/coding-test");
+  assert.deepEqual(store["dojang.github"].repo, { owner: "yeseul", name: "coding-test" });
+  // 빈 저장소가 되지 않도록 README를 넣어 만듭니다.
+  assert.deepEqual(sent, [
+    {
+      url: "https://api.github.com/user/repos",
+      method: "POST",
+      body: { name: "coding-test", auto_init: true },
+    },
+  ]);
+  await assert.rejects(createAndChooseRepo("  "), /이름을 적어/);
 });

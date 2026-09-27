@@ -61,7 +61,7 @@ export async function POST(request: Request) {
   // 확장이 보낸 토큰은 믿을 수 없으므로 Auth 서버에 직접 확인합니다.
   const { data, error } = await supabase.auth.getUser(token);
   if (error || !data.user)
-    return json({ error: "로그인이 만료됐습니다. 다시 연결해주세요." }, 401);
+    return json({ error: "로그인이 만료됐습니다. 다시 로그인해주세요." }, 401);
 
   let body: Record<string, unknown>;
   try {

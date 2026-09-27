@@ -82,6 +82,7 @@
 /* 무엇이 올라가는지 한눈에 보이도록 줄마다 이름과 값을 나눕니다. */
 .dojang-row {
   display: flex;
+  align-items: center;
   gap: 8px;
   font-size: 13px;
 }
@@ -173,7 +174,8 @@
   text-underline-offset: 2px;
 }
 
-.dojang-retry {
+/* 다시 올리기·저장소 만들기처럼 도장 찍기 다음가는 단추입니다. */
+.dojang-secondary {
   width: 100%;
   min-height: 32px;
   border: 1px solid #e3dfd5;
@@ -184,6 +186,77 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.dojang-secondary:disabled,
+.dojang-small:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+/* 저장소 줄의 값입니다. 저장소 이름이 길면 줄이고, 바꾸기는 늘 보이게 합니다. */
+.dojang-repo {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+}
+
+.dojang-repo > a,
+.dojang-card .dojang-repo > .dojang-muted {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dojang-card .dojang-repo > .dojang-muted {
+  color: #6d6a63;
+}
+
+/* 저장소 줄 안의 작은 단추입니다. 줄 높이를 크게 바꾸지 않을 만큼만 둡니다. */
+.dojang-small {
+  flex: none;
+  min-height: 26px;
+  padding: 0 10px;
+  border: 1px solid #e3dfd5;
+  border-radius: var(--r-control);
+  background: #ffffff;
+  color: #1a4784;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* 바꾸기·취소처럼 글자만 있는 단추입니다. 오른쪽 끝에 붙습니다. */
+.dojang-text {
+  flex: none;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #6d6a63;
+  font: inherit;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* 카드 안에서 저장소를 고르는 칸입니다. */
+.dojang-repo-pick {
+  display: grid;
+  gap: 6px;
+}
+
+.dojang-pick-head {
+  display: flex;
+  align-items: baseline;
+}
+
+.dojang-pick-head > label {
+  margin-bottom: 0;
 }
 
 /* 사라질 때까지 남은 시간을 바닥에서 줄어드는 막대로 보여줍니다. */

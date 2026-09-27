@@ -51,6 +51,9 @@ const PROBLEM_PLATFORMS: Record<string, string> = {
   "codewars.com": "Codewars",
 };
 
+/** 안내 문구에 적는 플랫폼 이름입니다. 호스트 목록에서 만들어 목록과 안내가 어긋나지 않습니다. */
+export const PROBLEM_PLATFORM_NAMES = [...new Set(Object.values(PROBLEM_PLATFORMS))];
+
 export type ProblemLink = { url: string; platform: string };
 
 /**

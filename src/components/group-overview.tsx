@@ -221,10 +221,10 @@ export function GroupOverview({
       >
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-t-[calc(var(--r-surface)-1px)] bg-soft px-3 py-4 sm:px-5">
           <h2 id="group-overview-title" className="sr-only">
-            {weekLabel} 인증 현황
+            {weekLabel} 도장판
           </h2>
           <div className="flex items-center gap-6 sm:gap-8">
-            <Stat label="오늘 인증" tone="text-brand">
+            <Stat label="오늘 도장" tone="text-brand">
               {todayParticipants}
               <span className="text-[17px] font-[550]">/{data.members.length}</span>
             </Stat>
@@ -266,13 +266,13 @@ export function GroupOverview({
 
         {data.members.length === 0 ? (
           <p className="px-5 py-10 text-center text-[13px] text-sub">
-            아직 활동 중인 멤버가 없습니다.
+            아직 활동 중인 멤버가 없어요.
           </p>
         ) : (
           <div className="px-2 pt-2 sm:px-5">
             <table className="w-full table-fixed border-collapse">
               <caption className="sr-only">
-                멤버별 주간 인증 현황. 승인 열은 선택한 주의 승인 건수입니다. 멤버는
+                멤버별 도장판. 승인 열은 선택한 주의 승인 건수입니다. 멤버는
                 {weekLabel} 승인이 많은 순서로 놓고, 같으면 누적 승인이 많은 순서,
                 그다음 닉네임순입니다.
               </caption>
@@ -382,7 +382,7 @@ export function GroupOverview({
                           {total > 0 ? (
                             <Link
                               href={`/groups/${groupSlug}?proofMember=${member.userId}&proofDate=${date}${weekParam}#proof-records`}
-                              aria-label={`${cellTitle}. 인증 기록 보기`}
+                              aria-label={`${cellTitle}. 기록 보기`}
                               className="relative inline-flex"
                             >
                               {stamped || waiting > 0 ? (
@@ -485,6 +485,7 @@ export function GroupOverview({
           dates={data.days}
           days={me.days}
           goalMinutes={me.goalMinutes}
+          weekLabel={weekLabel}
         />
       )}
       {showSeatChart && me && (
@@ -492,6 +493,7 @@ export function GroupOverview({
           dates={data.days}
           days={me.days}
           goalMinutes={me.goalMinutes}
+          weekLabel={weekLabel}
         />
       )}
     </>

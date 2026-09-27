@@ -41,7 +41,7 @@ export default function Releases() {
       </ol>
 
       <p className="mt-5 text-[13px] text-sub">
-        이전 버전 확장은{" "}
+        지난 버전 확장은{" "}
         <a
           href={GITHUB_RELEASE_URL}
           target="_blank"

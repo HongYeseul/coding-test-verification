@@ -25,6 +25,9 @@ export function TodayStrip({
   currentUserId: string;
 }) {
   if (data.members.length === 0) return null;
+  // 지난 주를 보고 있으면 이 표에는 오늘이 없습니다. 모두 ‘남았어요’로 보이지 않게 띠를 숨깁니다.
+  if (!data.members.some((member) => member.days.some((day) => day.date === data.today)))
+    return null;
 
   const members = data.members.map((member) => {
     const today = member.days.find((day) => day.date === data.today);

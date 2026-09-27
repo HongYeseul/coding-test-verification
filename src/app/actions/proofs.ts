@@ -35,7 +35,7 @@ export async function createProofRecordAction(input: {
     ...record
   } = input;
   if (!SLUG_PATTERN.test(groupSlug))
-    return { error: "인증 내용을 확인해주세요." };
+    return { error: "기록 내용을 확인해주세요." };
   const { supabase, user } = await requireUser();
   const result = await createProofRecord(supabase, user.id, {
     ...record,
@@ -186,7 +186,7 @@ export async function createProofAction(formData: FormData) {
       withStatus(
         "/dashboard",
         "error",
-        "활성 멤버만 도장을 찍을 수 있습니다.",
+        "가입 승인을 받은 멤버만 도장을 찍을 수 있습니다.",
       ),
     );
   }
@@ -294,10 +294,12 @@ export async function reviewProofAction(formData: FormData) {
         .eq("user_id", user.id)
         .maybeSingle()
     : { data: null };
+  // 자동 인정된 기록도 반려하거나 승인으로 확정할 수 있습니다. DB 정책과 트리거가 같은
+  // 두 상태를 받고, 목록도 둘 다 검수할 수 있게 그립니다.
   if (
     !proof ||
     proof.user_id === user.id ||
-    proof.verification_status !== "PENDING" ||
+    !["PENDING", "AUTO_APPROVED"].includes(proof.verification_status) ||
     membership?.status !== "ACTIVE" ||
     !["OWNER", "REVIEWER"].includes(membership.role)
   ) {
@@ -305,7 +307,7 @@ export async function reviewProofAction(formData: FormData) {
       withStatus(
         groupPath,
         "error",
-        "다른 멤버의 검수 대기 풀이만 검수할 수 있습니다.",
+        "다른 멤버의 검수 대기·자동 인정 기록만 검수할 수 있습니다.",
       ),
     );
   }
@@ -317,7 +319,13 @@ export async function reviewProofAction(formData: FormData) {
   });
 
   if (error) {
-    redirect(withStatus(groupPath, "error", "검수를 마치지 못했습니다."));
+    redirect(
+      withStatus(
+        groupPath,
+        "error",
+        "검수를 마치지 못했습니다. 잠시 후 다시 시도해주세요.",
+      ),
+    );
   }
 
   revalidatePath(groupPath);
@@ -328,7 +336,7 @@ export async function deleteProofAction(formData: FormData) {
   const proofId = getRequiredText(formData, "proofId");
   const groupSlug = getRequiredText(formData, "groupSlug");
   if (!UUID_PATTERN.test(proofId) || !SLUG_PATTERN.test(groupSlug)) {
-    redirect(withStatus("/dashboard", "error", "삭제할 풀이를 확인해주세요."));
+    redirect(withStatus("/dashboard", "error", "취소할 기록을 확인해주세요."));
   }
   const groupPath = `/groups/${groupSlug}`;
   const { supabase, user } = await requireUser(groupPath);
@@ -346,7 +354,7 @@ export async function deleteProofAction(formData: FormData) {
         .maybeSingle()
     : { data: null };
   if (!group || member?.status !== "ACTIVE") {
-    redirect(withStatus(groupPath, "error", "풀이를 삭제할 권한이 없습니다."));
+    redirect(withStatus(groupPath, "error", "기록을 취소할 권한이 없습니다."));
   }
   const args = { target_group_id: group.id, target_proof_id: proofId };
   const { data: cancellation, error: beginError } = await supabase.rpc(
@@ -361,8 +369,11 @@ export async function deleteProofAction(formData: FormData) {
         "검수 대기이거나 자동 인정된 본인 기록만 취소할 수 있습니다.",
       ),
     );
+  // 사진이 없던 기록에 ‘사진을 지웠다’고 말하지 않도록 따로 들고 있습니다.
+  let removedPhoto = false;
   if (cancellation) {
     if (cancellation.evidence_path) {
+      removedPhoto = true;
       try {
         await supabase.storage
           .from("proof-evidence")
@@ -391,7 +402,9 @@ export async function deleteProofAction(formData: FormData) {
     withStatus(
       groupPath,
       "message",
-      "검수 요청이 취소됐습니다. 사진과 업로드 기록을 삭제했습니다.",
+      removedPhoto
+        ? "기록을 취소했습니다. 올린 사진도 지웠습니다."
+        : "기록을 취소했습니다.",
     ),
   );
 }

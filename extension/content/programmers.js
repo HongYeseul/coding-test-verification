@@ -2,10 +2,12 @@
  * 프로그래머스 채점 결과를 지켜보다가, 정답이면 카드를 띄웁니다.
  * 카드는 content/card.js가 그립니다. 여기는 정답을 알아내는 일만 합니다.
  *
- * 읽는 것은 세 가지뿐입니다.
+ * 읽는 것은 다섯 가지뿐입니다.
  *   1) 채점 결과 모달의 제목 — 카드를 띄울지 정하는 데만 쓰고 서버로 보내지 않습니다.
  *   2) 사용자가 제출한 코드 — 사용자 본인의 저작물입니다.
  *   3) 그 코드의 언어 값 — GitHub 저장소에 올릴 파일 확장자를 정하는 데만 씁니다.
+ *   4) 채점 결과 표의 통과 칸 — 커밋 메시지의 시간·메모리·통과 수가 됩니다.
+ *   5) 문제의 식별 정보 — 제목과 난이도. 난이도는 커밋 메시지와 README에만 씁니다.
  * 문제 설명·입출력 예시 같은 플랫폼 콘텐츠는 읽지 않습니다.
  *
  * 실제 DOM에서 확인한 사실 (2026-09-13, lessons/42576):
@@ -19,6 +21,11 @@
  * 문제 영역 `.lesson-algorithm-main-section`에 `data-language="python3"`처럼 붙고,
  * 언어를 바꾸면 페이지가 `?language=`를 달고 다시 열립니다. 기본 언어로 풀면
  * 주소에는 없어서 주소는 뒷받침으로만 씁니다.
+ *
+ * 난이도는 문제 영역 `.lesson-content`의 `data-challenge-level`에 숫자로 붙어 있습니다
+ * (2026-09-27, lessons/42746에서 `2`). 채점 결과는 `td.result.passed` 칸마다
+ * `통과 (0.02ms, 10.2MB)`처럼 적힙니다. 둘 다 백준허브가 읽는 자리와 같습니다. 시간과
+ * 메모리를 어떻게 줄일지는 `solution-files.js`가 정하고, 여기서는 칸의 글자만 넘깁니다.
  */
 (function () {
   const POLL_MS = 1000;
@@ -73,6 +80,21 @@
     );
   }
 
+  /** 문제의 난이도입니다. 숫자가 아니면 빈 값으로 둡니다. */
+  function problemLevel() {
+    const level = document.querySelector(".lesson-content")?.dataset
+      .challengeLevel;
+    return /^\d{1,2}$/.test(level ?? "") ? level : "";
+  }
+
+  /** 채점 결과 표에서 통과한 칸의 글자입니다. SQL처럼 표가 없는 문제는 빈 목록입니다. */
+  function passedCells() {
+    return [...document.querySelectorAll("td.result.passed")]
+      .map((cell) => cell.textContent.replace(/\s+/g, " ").trim())
+      .filter(Boolean)
+      .slice(0, 200);
+  }
+
   function problemTitle() {
     const heading = document.querySelector(".algorithm-title, .challenge-title");
     return heading?.textContent?.trim().slice(0, 160) ?? "";
@@ -111,6 +133,8 @@
       code,
       problemUrl: problemUrl(),
       language: submittedLanguage(),
+      level: problemLevel(),
+      grading: { cells: passedCells() },
       mount: modal,
       onStamped: () => {
         registeredCode = code;

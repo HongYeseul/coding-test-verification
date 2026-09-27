@@ -107,7 +107,7 @@ export function MemberGoalDialog({
             </p>
             <p className="text-[13px] text-sub">
               목표는 지금의 기준이라, 바꾸면 지난 칸의 표시도 새 목표로 다시
-              셉니다. 남은 기록 자체는 달라지지 않습니다.
+              셉니다. 이미 남긴 기록은 달라지지 않습니다.
             </p>
           </div>
 

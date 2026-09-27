@@ -11,8 +11,8 @@
     </header>
 
     <section id="signin" hidden>
-      <p class="hint">처음 한 번만 연결하면 됩니다.</p>
-      <button id="signin-button" class="primary">GitHub로 연결</button>
+      <p class="hint">처음 한 번만 로그인하면 됩니다.</p>
+      <button id="signin-button" class="primary">GitHub로 로그인</button>
     </section>
 
     <section id="form" hidden>
@@ -22,38 +22,24 @@
       <label for="title" id="title-label">문제 제목 <span class="hint">선택</span></label>
       <input id="title" maxlength="160" placeholder="예: 더 맵게" />
 
-      <label for="tags">주제 태그 <span class="hint">쉼표로 구분 · 선택</span></label>
+      <label for="tags">주제 태그 <span class="hint">쉼표로 구분 · 5개까지 · 선택</span></label>
       <input id="tags" placeholder="예: 해시, 정렬" />
 
       <p id="link" class="hint" hidden></p>
 
       <button id="submit" class="primary">이 화면으로 도장 찍기</button>
 
-      <details id="repo" class="repo">
-        <summary>
-          GitHub 저장소 <span id="repo-state" class="repo-state">연결 안 됨</span>
-        </summary>
-        <div id="repo-off" class="repo-body">
-          <p class="hint">
-            프로그래머스·NeetCode 카드로 도장을 찍으면 풀이 코드를 고른 저장소에도
-            올립니다. GitHub에서 공개 저장소에 쓰는 권한을 한 번 더 묻습니다.
-          </p>
-          <button id="repo-connect">GitHub 저장소 연결</button>
-        </div>
-        <div id="repo-on" class="repo-body" hidden>
-          <label for="repo-select">올릴 저장소 <span class="hint">공개 저장소만</span></label>
-          <select id="repo-select"></select>
-          <div id="repo-create" hidden>
-            <label for="repo-new-name">새 저장소 이름</label>
-            <input id="repo-new-name" maxlength="100" placeholder="예: coding-test" />
-            <button id="repo-create-button">공개 저장소로 만들기</button>
-          </div>
-          <button id="repo-disconnect" class="ghost">저장소 연결 끊기</button>
-        </div>
-      </details>
+      <p id="repo" class="repo" hidden>
+        <span>저장소</span>
+        <a id="repo-link" target="_blank" rel="noopener"></a>
+        <span id="repo-state" class="repo-state"></span>
+        <button id="repo-disconnect" type="button" class="repo-disconnect">연결 끊기</button>
+      </p>
 
-      <button id="signout" class="ghost">연결 끊기</button>
     </section>
+
+    <!-- 스터디가 없을 때도 다른 계정으로 바꿀 수 있게 폼 밖에 둡니다. -->
+    <button id="signout" class="ghost" hidden>로그아웃</button>
 
     <p id="status" role="status" aria-live="polite"></p>
     <script src="seal.js"></script>

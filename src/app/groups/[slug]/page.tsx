@@ -505,7 +505,11 @@ export default async function GroupPage({
     if (proof.evidence_path)
       return isCodingStudy ? "사진 풀이 기록" : "사진 인증 기록";
     if (proof.solution_code) return "풀이 코드";
-    return proof.platform_account_id ? proof.problem_key : "인증 기록";
+    return proof.platform_account_id
+      ? proof.problem_key
+      : isCodingStudy
+        ? "풀이 기록"
+        : "인증 기록";
   };
   const pendingMemberships = memberships.filter(
     (membership) => membership.status === "PENDING",
@@ -594,10 +598,10 @@ export default async function GroupPage({
       source: account
         ? `${platformLabels[account.platform]} ${account.handle}`
         : proof.evidence_path
-          ? "사진 인증"
+          ? "사진"
           : proof.solution_code
-            ? "코드 인증"
-            : "메모 인증",
+            ? "코드"
+            : "메모",
       hasPhoto: Boolean(proof.evidence_path) && active,
       solutionCode: active ? (proof.solution_code ?? null) : null,
       tags: proof.tags ?? [],
@@ -739,6 +743,7 @@ export default async function GroupPage({
             goalMinutes={currentMembership.goal_minutes ?? null}
             seatStartMinutes={seatToday?.start_minutes ?? null}
             seatFinished={seatToday?.record_minutes !== null && seatToday !== null}
+            canManage={isOwner}
           />
         </div>
       </header>
@@ -770,7 +775,7 @@ export default async function GroupPage({
           role="alert"
           className="mb-7 rounded-surface border border-line bg-soft p-5 text-[15px] text-warn"
         >
-          인증 현황을 불러오지 못했습니다. 잠시 후 페이지를 새로고침해주세요.
+          도장판을 불러오지 못했습니다. 잠시 후 페이지를 새로고침해주세요.
         </p>
       )}
 
@@ -922,7 +927,7 @@ export default async function GroupPage({
                   >
                     <MemberLabel
                       profile={profileById.get(membership.user_id)}
-                      fallback={`멤버 ${membership.user_id.slice(0, 8)}`}
+                      fallback="이름 없는 멤버"
                     />
                     <form action={approveMembershipAction}>
                       <input type="hidden" name="groupId" value={group.id} />
@@ -975,7 +980,7 @@ export default async function GroupPage({
                         <option value="REVIEWER">검수자</option>
                       </select>
                       <button type="submit" className="btn">
-                        변경
+                        바꾸기
                       </button>
                     </form>
                   </li>

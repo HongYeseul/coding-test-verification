@@ -54,7 +54,7 @@ export async function rotateInviteCodeAction(formData: FormData) {
     if (error.code !== "23505") break;
   }
   redirect(
-    withStatus(`/groups/${slug}`, "error", "초대코드를 만들지 못했습니다."),
+    withStatus(`/groups/${slug}`, "error", "초대코드를 만들지 못했습니다. 잠시 후 다시 시도해주세요."),
   );
 }
 
@@ -110,7 +110,7 @@ export async function createGroupAction(formData: FormData) {
 
   if (name.length < 1 || name.length > 60 || !SLUG_PATTERN.test(slug)) {
     redirect(
-      withStatus("/dashboard", "error", "그룹 이름과 주소를 확인해주세요."),
+      withStatus("/dashboard", "error", "그룹 이름과 주소를 확인해주세요. 주소는 영문 소문자·숫자·하이픈만 씁니다."),
     );
   }
 
@@ -125,7 +125,7 @@ export async function createGroupAction(formData: FormData) {
     const message =
       error.code === "23505"
         ? "이미 사용 중인 그룹 주소입니다."
-        : "그룹을 만들지 못했습니다.";
+        : "그룹을 만들지 못했습니다. 잠시 후 다시 시도해주세요.";
     redirect(withStatus("/dashboard", "error", message));
   }
 
@@ -230,7 +230,7 @@ export async function approveMembershipAction(formData: FormData) {
   });
 
   if (error) {
-    redirect(withStatus(groupPath, "error", "멤버를 승인하지 못했습니다."));
+    redirect(withStatus(groupPath, "error", "멤버를 승인하지 못했습니다. 잠시 후 다시 시도해주세요."));
   }
 
   revalidatePath(groupPath);
@@ -249,7 +249,7 @@ export async function setMemberRoleAction(formData: FormData) {
     !["MEMBER", "REVIEWER"].includes(role)
   ) {
     redirect(
-      withStatus("/dashboard", "error", "역할 변경 대상을 확인해주세요."),
+      withStatus("/dashboard", "error", "역할을 바꿀 멤버를 확인해주세요."),
     );
   }
   const groupPath = `/groups/${groupSlug}`;
@@ -265,7 +265,7 @@ export async function setMemberRoleAction(formData: FormData) {
       withStatus(
         "/dashboard",
         "error",
-        "그룹 소유자만 역할을 변경할 수 있습니다.",
+        "그룹 소유자만 역할을 바꿀 수 있습니다.",
       ),
     );
   }
@@ -275,9 +275,9 @@ export async function setMemberRoleAction(formData: FormData) {
     member_role: role,
   });
   if (error)
-    redirect(withStatus(groupPath, "error", "역할을 변경하지 못했습니다."));
+    redirect(withStatus(groupPath, "error", "역할을 바꾸지 못했습니다. 잠시 후 다시 시도해주세요."));
   revalidatePath(groupPath);
-  redirect(withStatus(groupPath, "message", "멤버 역할을 변경했습니다."));
+  redirect(withStatus(groupPath, "message", "멤버 역할을 바꿨습니다."));
 }
 
 export async function updateGroupSettingsAction(formData: FormData) {
@@ -310,7 +310,7 @@ export async function updateGroupSettingsAction(formData: FormData) {
       withStatus(
         groupPath,
         "error",
-        "디스코드 초대 링크가 아닙니다. discord.gg 로 시작하는 주소여야 합니다.",
+        "디스코드 초대 링크가 아닙니다. discord.gg/… 같은 초대 링크여야 합니다.",
       ),
     );
   }
@@ -337,7 +337,7 @@ export async function updateGroupSettingsAction(formData: FormData) {
       webhook_url: null,
     });
     if (clearError) {
-      redirect(withStatus(groupPath, "error", "디스코드 알림을 끄지 못했습니다."));
+      redirect(withStatus(groupPath, "error", "디스코드 알림을 끄지 못했습니다. 잠시 후 다시 시도해주세요."));
     }
   }
   if (discordEnabled && !webhookUrl && !hadWebhook) {
@@ -373,7 +373,7 @@ export async function updateGroupSettingsAction(formData: FormData) {
     })
     .eq("id", groupId);
   if (error) {
-    redirect(withStatus(groupPath, "error", "설정을 저장하지 못했습니다."));
+    redirect(withStatus(groupPath, "error", "설정을 저장하지 못했습니다. 잠시 후 다시 시도해주세요."));
   }
   revalidatePath(groupPath);
   revalidatePath("/");
@@ -446,7 +446,7 @@ export async function setMemberGoalAction(formData: FormData) {
     target_goal_minutes: goalMinutes,
   });
   if (error) {
-    redirect(withStatus(groupPath, "error", "목표를 저장하지 못했습니다."));
+    redirect(withStatus(groupPath, "error", "목표를 저장하지 못했습니다. 잠시 후 다시 시도해주세요."));
   }
 
   revalidatePath(groupPath);

@@ -56,7 +56,7 @@ export function GithubSignInButton({
         onClick={signIn}
         className="btn btn-primary min-h-12 w-full"
       >
-        {loading ? "GitHub로 이동 중..." : "GitHub로 계속하기"}
+        {loading ? "GitHub로 이동하는 중…" : "GitHub로 계속하기"}
       </button>
       {error && (
         <p role="alert" className="mt-3 text-[15px] text-danger">

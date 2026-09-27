@@ -90,7 +90,7 @@ export function InvitePopover({
       >
         <h2>멤버 초대</h2>
         <p className="mt-1 text-[13px] text-sub">
-          링크나 코드를 공유하세요. 가입 신청 후 승인이 필요합니다.
+          링크나 코드를 공유해주세요. 가입 신청 후 승인이 필요합니다.
         </p>
         {inviteUrl && (
           <div className="mt-4">

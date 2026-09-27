@@ -19,10 +19,13 @@ export function RecordRhythm({
   dates,
   days,
   goalMinutes,
+  weekLabel = "이번 주",
 }: {
   dates: string[];
   days: OverviewDay[];
   goalMinutes: number | null;
+  /** 지난 주를 볼 때 요약이 ‘이번 주’라고 말하지 않게 도장판과 같은 이름을 받습니다. */
+  weekLabel?: string;
 }) {
   const marks = dates
     .map((date, index) => ({
@@ -153,7 +156,7 @@ export function RecordRhythm({
       </svg>
       {/* 차트를 못 보는 사람도 같은 것을 읽도록 요약을 글자로 둡니다. */}
       <p className="mt-1 text-[13px] text-sub">
-        이번 주 평균{" "}
+        {weekLabel} 평균{" "}
         <span className="font-mono tabular-nums">{formatClock(average)}</span>
         {inGoal !== null && (
           <span className="tabular-nums">

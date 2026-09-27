@@ -1,7 +1,16 @@
 import { CONFIG } from "./config.js";
 import { getSession, signIn } from "./auth.js";
-import { connectGithub, uploadSolution, uploadTarget } from "./github.js";
+import {
+  chooseRepoByName,
+  connectGithub,
+  createAndChooseRepo,
+  githubState,
+  repoNames,
+  uploadSolution,
+  uploadTarget,
+} from "./github.js";
 import { injectIntoOpenTabs } from "./inject.js";
+import { readable } from "./errors.js";
 
 const LAST_GROUP_KEY = "dojang.lastGroup";
 
@@ -18,9 +27,10 @@ chrome.runtime.onInstalled.addListener((details) => {
  * "아이콘을 눌러 연결하세요"라고 안내만 하면 그 아이콘을 찾는 일이 숙제가 됩니다.
  * 크롬은 확장 아이콘을 퍼즐 메뉴에 숨겨 두기 때문에 더 그렇습니다.
  *
- * GitHub 저장소에 올리는 일과 저장소 연결도 여기서 합니다. 올리기는 도장이 찍힌 뒤 카드가
- * 따로 부탁해, 실패해도 도장은 남습니다. 연결은 로그인 창을 띄우는데 팝업에서 띄우면
- * 팝업이 포커스를 잃고 닫혀 결과를 받을 곳이 사라집니다. 서비스 워커는 팝업보다 오래 삽니다.
+ * GitHub 저장소도 여기서 다룹니다. 카드의 저장소 줄이 연결·목록·고르기·만들기를 부탁하고,
+ * 올리기는 도장이 찍힌 뒤 따로 부탁해 실패해도 도장은 남습니다. 토큰은 카드로 내보내지
+ * 않습니다. 연결은 로그인 창을 띄우는데 팝업에서 띄우면 팝업이 포커스를 잃고 닫혀 결과를
+ * 받을 곳이 사라집니다. 서비스 워커는 팝업보다 오래 삽니다.
  */
 const TASKS = new Map([
   ["submit-code", { run: submit, fallback: "도장을 찍지 못했습니다." }],
@@ -32,13 +42,35 @@ const TASKS = new Map([
     "connect-github",
     { run: connectGithub, fallback: "GitHub 연결을 마치지 못했습니다." },
   ],
+  [
+    "github-state",
+    { run: githubState, fallback: "GitHub 연결 상태를 읽지 못했습니다." },
+  ],
+  [
+    "list-repos",
+    { run: repoNames, fallback: "저장소 목록을 불러오지 못했습니다." },
+  ],
+  [
+    "choose-repo",
+    {
+      run: ({ repo }) => chooseRepoByName(repo),
+      fallback: "저장소를 고르지 못했습니다.",
+    },
+  ],
+  [
+    "create-repo",
+    {
+      run: ({ name }) => createAndChooseRepo(name),
+      fallback: "저장소를 만들지 못했습니다.",
+    },
+  ],
 ]);
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   const task = TASKS.get(message?.type);
   if (!task) return false;
   task.run(message).then(sendResponse, (error) =>
-    sendResponse({ error: error?.message || task.fallback }),
+    sendResponse({ error: readable(error, task.fallback) }),
   );
   // 비동기로 답하므로 채널을 열어둡니다.
   return true;
@@ -46,7 +78,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
 async function loadGroups(session) {
   const response = await fetch(
-    `${CONFIG.supabaseUrl}/rest/v1/groups?select=id,name&order=name`,
+    `${CONFIG.supabaseUrl}/rest/v1/groups?select=id,name,is_coding_study&order=name`,
     {
       headers: {
         apikey: CONFIG.supabasePublishableKey,
@@ -54,46 +86,53 @@ async function loadGroups(session) {
       },
     },
   );
-  if (!response.ok) throw new Error("스터디 목록을 불러오지 못했습니다.");
+  if (!response.ok)
+    throw new Error("스터디 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
   // RLS가 활성 멤버인 그룹만 돌려줍니다.
   return response.json();
 }
 
-/** 고른 스터디가 없으면 정합니다. 하나뿐이면 묻지 않습니다. */
+/**
+ * 카드가 찍을 스터디를 정합니다. 하나뿐이면 묻지 않습니다.
+ *
+ * 카드는 풀이 코드를 남기므로 코딩 테스트 스터디에만 찍습니다. 팝업에서 마지막으로 고른
+ * 스터디가 다른 종류면 그 값은 쓰지 않습니다 — 서버가 거절하는데 카드에서는 스터디를 바꿀
+ * 길이 없어, 같은 오류만 되풀이됐습니다.
+ */
 async function resolveGroup(session, requestedGroupId) {
-  if (requestedGroupId) {
+  const groups = (await loadGroups(session)).filter(
+    (group) => group.is_coding_study,
+  );
+  const known = (id) => groups.some((group) => group.id === id);
+  if (requestedGroupId && known(requestedGroupId)) {
     await chrome.storage.local.set({ [LAST_GROUP_KEY]: requestedGroupId });
     return { groupId: requestedGroupId };
   }
   const stored = (await chrome.storage.local.get(LAST_GROUP_KEY))[
     LAST_GROUP_KEY
   ];
-  if (stored) return { groupId: stored };
+  if (known(stored)) return { groupId: stored };
 
-  const groups = await loadGroups(session);
   if (groups.length === 0)
-    return { error: "참여 중인 스터디가 없습니다. 웹에서 먼저 가입해주세요." };
+    return {
+      error: "참여 중인 코딩 테스트 스터디가 없습니다. 웹에서 먼저 가입해주세요.",
+    };
   if (groups.length === 1) {
     await chrome.storage.local.set({ [LAST_GROUP_KEY]: groups[0].id });
     return { groupId: groups[0].id };
   }
   // 여러 개면 화면에서 고르게 합니다.
-  return { chooseGroup: groups };
+  return { chooseGroup: groups.map(({ id, name }) => ({ id, name })) };
 }
 
 async function submit({ solutionCode, problemUrl, title, tags, groupId }) {
-  // 연결돼 있지 않으면 이 자리에서 바로 GitHub 창을 엽니다.
+  // 로그인돼 있지 않으면 이 자리에서 바로 GitHub 창을 엽니다.
   let session = await getSession();
   if (!session) {
     try {
       session = await signIn();
     } catch (error) {
-      return {
-        error:
-          error instanceof Error && error.message
-            ? error.message
-            : "GitHub 연결을 마치지 못했습니다.",
-      };
+      return { error: readable(error, "GitHub 로그인을 마치지 못했습니다. 창을 닫았다면 다시 눌러주세요.") };
     }
   }
 

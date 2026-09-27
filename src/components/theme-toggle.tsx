@@ -22,6 +22,13 @@ const nextTheme: Record<Theme, Theme> = {
   dark: "system",
 };
 
+/** 받침이 있으면 ‘으로’, 없거나 ㄹ이면 ‘로’를 붙입니다. ‘시스템로’처럼 틀리지 않게 합니다. */
+function withRo(word: string) {
+  const last = word.charCodeAt(word.length - 1) - 0xac00;
+  const final = last >= 0 && last < 11172 ? last % 28 : 0;
+  return `${word}${final === 0 || final === 8 ? "로" : "으로"}`;
+}
+
 /**
  * 아이콘은 SVG로 직접 그립니다.
  * ☀ ☾ 같은 글리프는 기기 폰트에 따라 굵기가 달라지거나 이모지로 바뀝니다.
@@ -85,7 +92,7 @@ function serverTheme(): Theme {
 export function ThemeToggle() {
   const theme = useSyncExternalStore(subscribe, readTheme, serverTheme);
   const next = nextTheme[theme];
-  const description = `화면 테마: ${labels[theme]}. 누르면 ${labels[next]}로 바꿉니다.`;
+  const description = `화면 테마: ${labels[theme]}. 누르면 ${withRo(labels[next])} 바꿉니다.`;
 
   function choose(value: Theme) {
     applyTheme(value);

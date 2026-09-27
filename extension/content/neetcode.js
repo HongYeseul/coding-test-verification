@@ -6,7 +6,7 @@
  * 읽는 것은 세 가지뿐이고 모두 사용자 본인의 것입니다.
  *   1) 본인이 제출한 코드 — 제출 요청에 실려 나가는 값을 그대로 받습니다.
  *   2) 그 코드의 언어 — 같은 요청의 lang입니다. 저장소에 올릴 파일 확장자만 정합니다.
- *   3) 정답인지 여부 — 카드를 띄울지 정하는 데만 씁니다.
+ *   3) 채점 결과 — 정답인지와 통과한 테스트 수. 카드를 띄울지 정하고 커밋 메시지에 씁니다.
  * 문제 설명·힌트·모범답안 같은 플랫폼 콘텐츠는 읽지 않습니다.
  *
  * 제목은 탭 제목에서 가져옵니다. NeetCode는 화면 안 제목의 클래스 이름이
@@ -43,14 +43,19 @@
       if (!window.dojangCardShowingResult()) window.dojangCardRemove();
       return;
     }
-    const { problemId, code, language } = event.detail ?? {};
+    const { problemId, code, language, grading } = event.detail ?? {};
     if (!problemId || !code) return;
     window.dojangCard({
       title: problemTitle(),
       code,
       problemUrl: problemUrl(problemId),
-      // 이 파일보다 먼저 붙은 옛 가로채기는 언어를 싣지 않습니다. 그때는 확장자를 모릅니다.
+      // 이 파일보다 먼저 붙은 옛 가로채기는 언어와 채점을 싣지 않습니다. 그때는 확장자를
+      // 모르고 커밋 메시지에 통과 수가 빠집니다.
       language: typeof language === "string" ? language : "",
+      grading: {
+        passed: Number.isInteger(grading?.passed) ? grading.passed : null,
+        total: Number.isInteger(grading?.total) ? grading.total : null,
+      },
     });
   }
 

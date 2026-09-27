@@ -21,7 +21,7 @@ const recordKindTitles: Record<RecordKind, string> = {
 };
 
 const recordKindNotes: Record<RecordKind, string> = {
-  NONE: "지금 그대로입니다. 도장 하나로 끝납니다.",
+  NONE: "기본값입니다. 도장 하나로 끝납니다.",
   CLOCK: "도장을 찍으면 그 시각이 함께 남습니다. 기상 스터디처럼 몇 시였는지가 중요할 때 씁니다.",
   DURATION:
     "시작할 때와 끝낼 때 두 번 찍으면 그사이가 남습니다. 착석 스터디처럼 얼마나 오래 했는지가 중요할 때 씁니다.",
@@ -124,9 +124,8 @@ export function GroupSettingsDialog({
               <span>
                 자동 인정
                 <span className="mt-1 block text-[13px] text-sub">
-                  켜면 새 기록이 등록하는 순간 인정됩니다. 소유자와 검수자가
-                  반려하면 미인정으로 내려갑니다. 이미 등록된 기록은 그대로
-                  둡니다.
+                  켜면 새 도장은 찍는 순간 인정됩니다. 소유자와 검수자는 나중에
+                  반려할 수 있습니다. 이미 남긴 기록은 그대로 둡니다.
                 </span>
               </span>
             </label>
@@ -158,9 +157,11 @@ export function GroupSettingsDialog({
               <span>
                 사진 필수
                 <span className="mt-1 block text-[13px] text-sub">
-                  끄면 사진 없이 한 줄 메모만으로도 도장을 찍을 수 있습니다. 켜
-                  두어도 풀이 코드를 남기면 사진 없이 등록됩니다. 이미 등록된
-                  기록은 그대로 둡니다.
+                  끄면 사진 없이 한 줄 메모만으로도 도장을 찍을 수 있습니다.
+                  {/* 풀이 코드는 코딩 테스트 스터디에서만 받습니다. */}
+                  {isCodingStudy &&
+                    " 켜 두어도 풀이 코드를 남기면 사진 없이도 도장이 찍힙니다."}{" "}
+                  이미 남긴 기록은 그대로 둡니다.
                 </span>
               </span>
             </label>
@@ -239,9 +240,9 @@ export function GroupSettingsDialog({
                     </span>
                   )}
                   <span className="mt-1 block text-[13px] text-sub">
-                    누가 착석하고 퇴근했는지, 응원과 검수가 오갔는지를 디스코드
-                    채널에 한 줄씩 올립니다. 쓰고 있는 서버의 서버 설정 → 연동 →
-                    웹훅에서 주소를 만들어 붙여넣으세요.
+                    도장·착석·퇴근·응원·검수가 있을 때마다 디스코드 채널에 한 줄씩
+                    올립니다. 쓰고 있는 서버의 서버 설정 → 연동 → 웹훅에서 주소를
+                    만들어 붙여넣어주세요.
                   </span>
                 </span>
               </label>
@@ -252,7 +253,7 @@ export function GroupSettingsDialog({
                 aria-label="디스코드 웹훅 주소"
                 placeholder={
                   hasWebhook
-                    ? "바꿀 때만 새 주소를 붙여넣으세요"
+                    ? "바꿀 때만 새 주소를 붙여넣어주세요"
                     : "https://discord.com/api/webhooks/..."
                 }
                 className="mt-2"
@@ -271,13 +272,13 @@ export function GroupSettingsDialog({
                 autoComplete="off"
                 aria-label="디스코드 초대 링크"
                 defaultValue={discordInviteUrl ?? ""}
-                placeholder="https://discord.gg/... (초대 링크, 선택)"
+                placeholder="https://discord.gg/... (디스코드 초대 링크, 선택)"
                 className="mt-3"
               />
               <p className="mt-2 text-[13px] text-sub">
-                초대 링크를 넣으면 멤버 화면에 ‘디스코드에서 알림 받기’ 단추가
-                생깁니다. 서버 이름 → 초대하기에서 만들고, 만료 기간을 ‘없음’으로
-                두세요. 기간이 지나면 단추만 남고 열리지 않습니다.
+                디스코드 초대 링크를 넣으면 멤버 화면에 ‘디스코드에서 알림 받기’
+                버튼이 생깁니다. 서버 이름 → 초대하기에서 만들고, 만료 기간을
+                ‘없음’으로 해주세요. 기간이 지나면 버튼만 남고 열리지 않습니다.
               </p>
             </div>
           </div>

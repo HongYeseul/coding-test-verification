@@ -48,10 +48,13 @@ export default async function InvitationPage({
             <form action={acceptInvitationAction}>
               <input type="hidden" name="token" value={token} />
               <p className="mb-3 text-[13px] text-sub">
+                {/* 영문 아이디 뒤에 ‘으로’를 붙이면 어색해 조사 없이 적습니다. */}
+                로그인한 계정{" "}
                 <strong className="font-semibold text-ink">
-                  {user.githubUserName ?? user.email ?? "현재 계정"}
+                  {user.githubUserName
+                    ? `@${user.githubUserName}`
+                    : (user.email ?? "현재 계정")}
                 </strong>
-                으로 로그인했습니다.
               </p>
               <button type="submit" className="btn btn-primary w-full">
                 초대 수락

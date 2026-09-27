@@ -29,7 +29,7 @@ export function authErrorMessage(error: string | undefined) {
   if (!error) return undefined;
   if (error === "configuration") return "로그인 서비스 연결을 준비 중입니다.";
   if (error === "denied")
-    return "GitHub 로그인이 취소되었습니다. 다시 로그인해주세요.";
+    return "GitHub 로그인이 취소됐습니다. 다시 로그인해주세요.";
   if (error === "signout") return "로그아웃하지 못했습니다. 다시 시도해주세요.";
-  return "로그인 연결이 만료되었거나 완료되지 않았습니다. 다시 로그인해주세요.";
+  return "로그인이 만료됐거나 끝나지 않았습니다. 다시 로그인해주세요.";
 }

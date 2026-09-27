@@ -70,8 +70,8 @@ export default async function ProfileSettingsPage({
           placeholder="그룹에서 보일 이름"
         />
         <p className="text-[13px] text-sub">
-          {MAX_DISPLAY_NAME_LENGTH}자까지 쓸 수 있습니다. 주간 현황과 인증
-          기록에 이 이름이 나옵니다.
+          {MAX_DISPLAY_NAME_LENGTH}자까지 쓸 수 있습니다. 도장판과 기록에 이
+          이름이 나옵니다.
         </p>
 
         <label htmlFor="bio" className="mt-3 text-[15px]">
@@ -85,7 +85,7 @@ export default async function ProfileSettingsPage({
           placeholder="매일 조금씩 이어가고 있어요"
         />
         <p className="text-[13px] text-sub">
-          비워둘 수 있고 {MAX_BIO_LENGTH}자까지 쓸 수 있습니다.
+          비워 둘 수 있고 {MAX_BIO_LENGTH}자까지 쓸 수 있습니다.
         </p>
 
         <button type="submit" className="btn btn-primary mt-4 justify-self-start">

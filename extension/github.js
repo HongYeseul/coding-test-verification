@@ -47,6 +47,11 @@ export function repoName(repo) {
   return `${repo.owner}/${repo.name}`;
 }
 
+/** 저장소의 GitHub 주소입니다. 카드와 팝업의 저장소 이름이 여기로 갑니다. */
+export function repoUrl(repo) {
+  return `https://github.com/${encodePath(repoName(repo))}`;
+}
+
 function repoPath(repo) {
   return `/repos/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.name)}`;
 }
@@ -93,7 +98,13 @@ export async function disconnectGithub() {
  */
 export async function connectGithub() {
   const token = await signInWithScopes(REPO_SCOPE);
-  const { data: user, response } = await send(token, "/user");
+  let user;
+  let response;
+  try {
+    ({ data: user, response } = await send(token, "/user"));
+  } catch (error) {
+    throw new Error(explain(error));
+  }
   // 권한이 빠진 토큰이면 올릴 때마다 실패하므로 여기서 멈춥니다.
   const scopes = response.headers.get("X-OAuth-Scopes");
   if (
@@ -153,6 +164,47 @@ export async function uploadTarget() {
 }
 
 /**
+ * 카드가 저장소 줄을 그리는 데 쓰는 상태입니다. 토큰은 카드로 내보내지 않습니다.
+ * 토큰이 거절돼 비었어도 고른 저장소는 남아 있어 ‘다시 연결’로 이어 씁니다.
+ */
+export async function githubState() {
+  const github = await getGithub();
+  return {
+    connected: Boolean(github?.token),
+    repo: github?.repo ? repoName(github.repo) : null,
+    url: github?.repo ? repoUrl(github.repo) : null,
+  };
+}
+
+/** 카드의 저장소 목록입니다. 이름만 보냅니다. */
+export async function repoNames() {
+  return { repos: (await listRepos()).map(repoName) };
+}
+
+/**
+ * 카드에서 고른 저장소를 정합니다. 목록에서 고른 이름이라도 모양을 다시 봅니다 —
+ * 메시지는 콘텐츠 스크립트가 보내고, 그 스크립트는 남의 페이지에 붙어 있습니다.
+ */
+export async function chooseRepoByName(fullName) {
+  const match = /^([A-Za-z0-9-]+)\/([A-Za-z0-9._-]+)$/.exec(
+    String(fullName ?? ""),
+  );
+  if (!match) throw new Error("저장소 이름을 확인해주세요.");
+  if (!(await getGithub())?.token)
+    throw new Error("GitHub 저장소를 먼저 연결해주세요.");
+  await chooseRepo({ owner: match[1], name: match[2] });
+  return githubState();
+}
+
+/** 카드에서 새 저장소를 만들고 바로 올릴 곳으로 정합니다. */
+export async function createAndChooseRepo(name) {
+  const trimmed = String(name ?? "").trim();
+  if (!trimmed) throw new Error("새 저장소 이름을 적어주세요.");
+  await chooseRepo(await createRepo(trimmed));
+  return githubState();
+}
+
+/**
  * 도장을 찍은 풀이를 고른 저장소에 올립니다. 도장과 따로 가므로 여기서 실패해도 도장은
  * 남습니다. 돌려주는 주소는 그 문제의 폴더입니다.
  */
@@ -161,7 +213,7 @@ export async function uploadSolution(input) {
   if (!solution)
     throw new Error("이 문제는 저장소에 둘 자리를 정하지 못했습니다.");
   return withToken(async (token, github) => {
-    if (!github.repo) throw new Error("팝업에서 올릴 저장소를 먼저 골라주세요.");
+    if (!github.repo) throw new Error("올릴 저장소를 먼저 골라주세요.");
     const { branch, unchanged } = await commitFiles(
       token,
       github.repo,
@@ -258,14 +310,14 @@ async function branchHead(token, base, branch) {
 async function withToken(work) {
   const github = await getGithub();
   if (!github?.token)
-    throw new Error("팝업에서 GitHub 저장소를 먼저 연결해주세요.");
+    throw new Error("GitHub 저장소를 먼저 연결해주세요.");
   try {
     return await work(github.token, github);
   } catch (error) {
     if (error instanceof GithubError && error.status === 401) {
       await saveGithub({ ...github, token: null });
       throw new Error(
-        "GitHub 연결이 풀렸습니다. 팝업에서 저장소를 다시 연결해주세요.",
+        "GitHub 연결이 풀렸습니다. 저장소를 다시 연결해주세요.",
       );
     }
     throw new Error(explain(error));
@@ -276,12 +328,12 @@ async function withToken(work) {
 function explain(error) {
   if (error instanceof GithubError) {
     if (error.status === 403 && /rate limit/i.test(error.message))
-      return "GitHub 요청 한도를 넘었습니다. 잠시 뒤 다시 시도해주세요.";
+      return "GitHub 요청 한도를 넘었습니다. 잠시 후 다시 시도해주세요.";
     if (error.status === 403 || error.status === 404)
-      return "이 저장소에 쓸 수 없습니다. 팝업에서 저장소를 다시 골라주세요.";
+      return "이 저장소에 쓸 수 없습니다. 저장소를 다시 골라주세요.";
     if (error.status === 409 || error.status === 422)
       return "그 사이 저장소가 바뀌어 올리지 못했습니다. 다시 시도해주세요.";
-    return "GitHub가 요청을 받지 않았습니다. 잠시 뒤 다시 시도해주세요.";
+    return "GitHub가 요청을 받지 않았습니다. 잠시 후 다시 시도해주세요.";
   }
   // fetch 자체가 실패하면 TypeError가 옵니다.
   if (error instanceof TypeError)

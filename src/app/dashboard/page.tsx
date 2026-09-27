@@ -83,7 +83,7 @@ export default async function DashboardPage({
       <header className="mb-6">
         <h1>{profile?.display_name ?? "멤버"}님의 그룹</h1>
         <p className="mt-1 text-[15px] text-sub">
-          활성 그룹 {groups.length}개
+          참여 중인 그룹 {groups.length}개
           {pendingCount > 0 ? ` · 가입 승인 대기 ${pendingCount}개` : ""}
         </p>
       </header>
@@ -194,11 +194,15 @@ export default async function DashboardPage({
             pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
             placeholder="algorithm-study"
             className="font-mono"
+            aria-describedby="slug-help"
           />
+          <p id="slug-help" className="text-[13px] text-sub">
+            영문 소문자·숫자·하이픈만 씁니다. 그룹 화면 주소가 됩니다.
+          </p>
           <label className="mt-2 flex items-start gap-2 text-[15px]">
             <input type="checkbox" name="isCodingStudy" className="mt-1" />
             <span>
-              코딩 테스트 스터디예요
+              코딩 테스트 스터디
               <span className="mt-1 block text-[13px] text-sub">
                 문제 링크 입력과 ‘우리 그룹이 푼 문제’ 목록을 씁니다. 나중에
                 그룹 설정에서 바꿀 수 있습니다.

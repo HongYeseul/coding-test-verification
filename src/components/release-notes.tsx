@@ -63,7 +63,7 @@ export function ReleaseNotes() {
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <h2 id="release-notes-title">릴리스 노트</h2>
         <a href="/releases" className="text-[13px] text-sub hover:text-ink">
-          지난 기록
+          지난 릴리스
         </a>
       </div>
 

@@ -214,7 +214,7 @@ export function ProofRecordList({
       {/* 사진도 코드도 없으면 채울 것이 정보뿐이라 좁게 엽니다. */}
       <dialog
         ref={dialogRef}
-        aria-label="인증 상세 및 검수"
+        aria-label="기록 상세"
         onClose={() => setOpenId(null)}
         onClick={(event) => {
           if (event.target === dialogRef.current) setOpenId(null);
@@ -273,7 +273,7 @@ export function ProofRecordList({
                     >
                       <Image
                         src={`/proofs/${record.id}/evidence`}
-                        alt="인증 사진"
+                        alt="올린 사진"
                         fill
                         sizes="(max-width: 640px) 100vw, 700px"
                         unoptimized
@@ -296,7 +296,7 @@ export function ProofRecordList({
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <h3>인증 정보</h3>
+                  <h3>기록 정보</h3>
                   <StatusLabel
                     tone={record.statusTone}
                     label={record.statusLabel}
@@ -304,7 +304,7 @@ export function ProofRecordList({
                 </div>
                 {record.tags.length > 0 && (
                   <div>
-                    <p className="text-[13px] text-sub">주제</p>
+                    <p className="text-[13px] text-sub">주제 태그</p>
                     <p className="mt-1 flex flex-wrap gap-1.5">
                       {record.tags.map((tag) => (
                         <span
@@ -433,7 +433,10 @@ export function ProofRecordList({
                       </button>
                     </div>
                     <p className="text-[12px] text-sub">
-                      승인하면 도장판의 점선 도장에 잉크가 채워집니다.
+                      {/* 자동 인정된 기록은 이미 잉크로 찍혀 있어 점선 이야기가 맞지 않습니다. */}
+                      {record.statusTone === "pending"
+                        ? "승인하면 도장판의 점선 도장에 잉크가 채워집니다."
+                        : "자동 인정된 기록입니다. 반려하면 도장판에서 빠집니다."}
                     </p>
                   </form>
                 ) : record.reviewLabel ? (
@@ -446,7 +449,7 @@ export function ProofRecordList({
                   </div>
                 ) : record.statusTone === "pending" ? (
                   <p className="text-[13px] text-sub">
-                    다른 검수자의 확인을 기다리고 있습니다.
+                    검수를 기다리고 있습니다.
                   </p>
                 ) : null}
 

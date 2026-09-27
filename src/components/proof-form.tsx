@@ -20,6 +20,7 @@ import {
   MAX_PROBLEM_URL_LENGTH,
   MAX_TAGS,
   MAX_TAG_LENGTH,
+  PROBLEM_PLATFORM_NAMES,
   PROBLEM_URL_ERROR,
   MAX_SOURCE_PHOTO_BYTES,
   PHOTO_EXTENSIONS,
@@ -55,6 +56,7 @@ export function ProofForm({
   goalMinutes,
   seatStartMinutes,
   seatFinished,
+  canManage,
 }: {
   groupId: string;
   groupSlug: string;
@@ -68,6 +70,8 @@ export function ProofForm({
   seatStartMinutes: number | null;
   /** 오늘 기록이 이미 끝났는지입니다. 하루는 한 구간입니다. */
   seatFinished: boolean;
+  /** 그룹 설정을 바꿀 수 있는지입니다. 설정을 안내하는 문구를 소유자에게만 보입니다. */
+  canManage: boolean;
 }) {
   const router = useRouter();
   // 시각·시간은 그 자체가 근거라, 기록을 남기는 그룹은 사진이 없어도 도장이 찍힙니다.
@@ -158,9 +162,10 @@ export function ProofForm({
     } catch (error) {
       if (current === selection.current)
         setMessage(
-          error instanceof Error
+          // 압축 도중 브라우저가 던진 영어 원문은 보이지 않습니다.
+          error instanceof Error && /[가-힣]/.test(error.message)
             ? error.message
-            : "사진을 압축하지 못했습니다.",
+            : "사진을 압축하지 못했습니다. 다른 사진으로 다시 골라주세요.",
         );
     } finally {
       if (current === selection.current) setPreparing(false);
@@ -193,7 +198,7 @@ export function ProofForm({
     submitting.current = true;
     setStamped(false);
     setBusy(true);
-    setMessage("도장을 찍고 있습니다.");
+    setMessage("도장 찍는 중…");
     try {
       const result = await finishSeatRecordAction({
         groupId,
@@ -277,7 +282,7 @@ export function ProofForm({
     let compressed: Blob | null = null;
     if (hasFile) {
       if (preparing || !prepared || prepared.file !== file) {
-        setMessage("사진 압축이 끝나면 등록할 수 있습니다.");
+        setMessage("사진 압축이 끝나면 도장을 찍을 수 있습니다.");
         return;
       }
       const validationError = photoError(file, MAX_SOURCE_PHOTO_BYTES);
@@ -301,12 +306,12 @@ export function ProofForm({
     submitting.current = true;
     setStamped(false);
     setBusy(true);
-    setMessage(hasFile ? "사진을 올리고 있습니다." : "도장을 찍고 있습니다.");
+    setMessage(hasFile ? "사진 올리는 중…" : "도장 찍는 중…");
     try {
       if (hasFile && compressed && (!upload.current || upload.current.file !== file)) {
         const previousPath = upload.current?.path;
         setMessage(
-          `사진 업로드 중: ${displaySize(file.size)} → ${displaySize(compressed.size)}`,
+          `사진 올리는 중… ${displaySize(file.size)} → ${displaySize(compressed.size)}`,
         );
         const supabase = createClient();
         const path = `${groupId}/${userId}/${crypto.randomUUID()}.${PHOTO_EXTENSIONS[compressed.type]}`;
@@ -391,7 +396,7 @@ export function ProofForm({
         <label htmlFor="proof-photo" className="text-[15px]">
           {isCodingStudy ? "풀이 결과가 보이는 사진 한 장" : "인증 사진 한 장"}
           {!photoRequired && (
-            <span className="ml-1 text-[13px]">선택 사항</span>
+            <span className="ml-1 text-[13px]">선택</span>
           )}
         </label>
         <input
@@ -408,13 +413,13 @@ export function ProofForm({
         />
         <p id="photo-help" className="text-[13px]">
           복사한 캡처를 붙여넣어도 됩니다 · 20MB까지
-          {!photoRequired && " · 사진 없이 등록해도 됩니다"}
+          {!photoRequired && " · 사진 없이 찍어도 됩니다"}
         </p>
       </div>
 
       {preparing && (
         <p role="status" className="text-[15px]">
-          사진 용량을 줄이고 있습니다…
+          사진 용량을 줄이는 중…
         </p>
       )}
 
@@ -559,7 +564,7 @@ export function ProofForm({
               disabled={busy}
               onClick={correctSeat}
             >
-              직접 적기
+              이 시간으로 퇴근 도장 찍기
             </button>
           </div>
         </div>
@@ -601,7 +606,7 @@ export function ProofForm({
     <div className="grid gap-2">
       <label htmlFor="proof-title" className="text-[15px]">
         {isCodingStudy ? "문제 제목" : "한 줄 메모"}{" "}
-        <span className="text-[13px] text-sub">선택 사항</span>
+        <span className="text-[13px] text-sub">선택</span>
       </label>
       <input
         id="proof-title"
@@ -616,7 +621,7 @@ export function ProofForm({
   const tagField = (
     <div className="grid gap-2">
       <label htmlFor="proof-tags" className="text-[15px]">
-        주제 태그 <span className="text-[13px] text-sub">선택 사항</span>
+        주제 태그 <span className="text-[13px] text-sub">선택</span>
       </label>
       <input
         id="proof-tags"
@@ -626,7 +631,7 @@ export function ProofForm({
         aria-describedby="tags-help"
       />
       <p id="tags-help" className="text-[13px] text-sub">
-        쉼표로 나눠 적습니다. {MAX_TAGS}개까지, 하나에 {MAX_TAG_LENGTH}자까지요.
+        쉼표로 나눠 적습니다. {MAX_TAGS}개까지, 하나에 {MAX_TAG_LENGTH}자까지 넣을 수 있습니다.
         나중에 무엇을 연습해왔는지 훑어볼 때 씁니다.
       </p>
     </div>
@@ -668,9 +673,7 @@ export function ProofForm({
       >
         <form onSubmit={submit} onPaste={pastePhoto}>
           <div className="flex items-center justify-between gap-3">
-            <h2>
-              {isCodingStudy ? "오늘 푼 문제를 공유해요" : "오늘의 인증"}
-            </h2>
+            <h2>{dialogTitle}</h2>
             <button
               type="button"
               className="btn btn-ghost"
@@ -713,7 +716,7 @@ export function ProofForm({
               <div className="grid gap-2">
                 <label htmlFor="proof-problem-url" className="text-[15px]">
                   문제 링크{" "}
-                  <span className="text-[13px] text-sub">선택 사항</span>
+                  <span className="text-[13px] text-sub">선택</span>
                 </label>
                 <input
                   id="proof-problem-url"
@@ -739,9 +742,9 @@ export function ProofForm({
                     </span>
                   ) : (
                     <>
-                      프로그래머스, 백준, LeetCode, Codeforces, AtCoder,
-                      HackerRank, Codewars의 https 주소만 받습니다. 넣으면 다른
-                      멤버가 같은 문제를 바로 풀어볼 수 있습니다.
+                      {PROBLEM_PLATFORM_NAMES.join(", ")}의 https 주소만
+                      받습니다. 넣으면 다른 멤버가 같은 문제를 바로 풀어볼 수
+                      있습니다.
                     </>
                   )}
                 </p>
@@ -763,8 +766,11 @@ export function ProofForm({
               {/* 버튼이 왜 눌리지 않는지 그 자리에서 알려줍니다. */}
               {photoRequired && !prepared && !preparing && !busy && (
                 <span className="max-w-[280px] text-[13px] text-sub">
-                  사진을 고르면 도장을 찍을 수 있습니다. 사진 필수는 스터디 이름
-                  옆 설정에서 끌 수 있습니다.
+                  사진을 고르면 도장을 찍을 수 있습니다.{" "}
+                  {/* 설정은 소유자만 열 수 있어 멤버에게는 끄는 길 대신 규칙이라고 알립니다. */}
+                  {canManage
+                    ? "사진 필수는 스터디 이름 옆 설정에서 끌 수 있습니다."
+                    : "사진 필수는 소유자가 정한 규칙입니다."}
                 </span>
               )}
               <button

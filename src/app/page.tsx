@@ -33,7 +33,7 @@ const steps = [
     number: "03",
     title: "도장 찍기",
     description:
-      "사진이나 한 줄 메모로 도장을 찍습니다. 검수자가 확인하거나 바로 인정됩니다.",
+      "사진이나 한 줄 메모로 도장을 찍습니다. 검수자가 검수하거나 바로 인정됩니다.",
   },
 ];
 
@@ -113,7 +113,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
       <section aria-labelledby="group-directory-title" className="mt-7">
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h2 id="group-directory-title">함께 하고 있는 스터디</h2>
+          <h2 id="group-directory-title">함께하고 있는 스터디</h2>
           {directory && groups.length > 0 && (
             <p className="text-[13px] text-sub">
               스터디 <Figure>{groups.length}</Figure>개 · 멤버{" "}

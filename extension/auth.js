@@ -31,9 +31,9 @@ async function tokenRequest(grant, body) {
     },
   );
   const data = await response.json().catch(() => null);
-  if (!response.ok || !data?.access_token) {
-    throw new Error(data?.error_description || data?.msg || "로그인에 실패했습니다.");
-  }
+  // Supabase가 준 영어 원문은 보이지 않습니다. 무엇을 하면 되는지만 말합니다.
+  if (!response.ok || !data?.access_token)
+    throw new Error("로그인을 마치지 못했습니다. 잠시 후 다시 시도해주세요.");
   return data;
 }
 
@@ -62,19 +62,21 @@ async function authorize(scopes) {
     `&code_challenge_method=s256` +
     (scopes ? `&scopes=${encodeURIComponent(scopes)}` : "");
 
-  const callback = await chrome.identity.launchWebAuthFlow({
-    url,
-    interactive: true,
-  });
+  // 사용자가 창을 닫으면 크롬이 영어 문장으로 거절합니다. 우리 말로 바꿔 둡니다.
+  const callback = await chrome.identity
+    .launchWebAuthFlow({ url, interactive: true })
+    .catch(() => {
+      throw new Error("GitHub 로그인을 마치지 못했습니다. 창을 닫았다면 다시 눌러주세요.");
+    });
   const returned = new URL(callback);
   // 오류는 질의값으로도 프래그먼트로도 올 수 있습니다.
   const params = new URLSearchParams(
     returned.search.slice(1) || returned.hash.slice(1),
   );
-  const failure = params.get("error_description") || params.get("error");
-  if (failure) throw new Error(failure);
+  if (params.get("error"))
+    throw new Error("GitHub에서 로그인을 허용하지 않았습니다. 다시 시도해주세요.");
   const code = params.get("code");
-  if (!code) throw new Error("로그인 응답에 코드가 없습니다.");
+  if (!code) throw new Error("로그인을 마치지 못했습니다. 다시 시도해주세요.");
 
   return tokenRequest("pkce", {
     auth_code: code,

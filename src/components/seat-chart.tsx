@@ -26,10 +26,13 @@ export function SeatChart({
   dates,
   days,
   goalMinutes,
+  weekLabel = "이번 주",
 }: {
   dates: string[];
   days: OverviewDay[];
   goalMinutes: number | null;
+  /** 지난 주를 볼 때 요약이 ‘이번 주’라고 말하지 않게 도장판과 같은 이름을 받습니다. */
+  weekLabel?: string;
 }) {
   const marks = dates.map((date, index) => {
     const day = days.find((entry) => entry.date === date);
@@ -181,7 +184,7 @@ export function SeatChart({
       <p className="mt-1 text-[13px] text-sub">
         {values.length > 0 && (
           <span className="tabular-nums">
-            이번 주 {formatDuration(total)} · 하루 평균{" "}
+            {weekLabel} {formatDuration(total)} · 하루 평균{" "}
             {formatDuration(average)}
           </span>
         )}
@@ -194,7 +197,7 @@ export function SeatChart({
         {open.length > 0 && (
           <span className="tabular-nums">
             {values.length > 0 ? " · " : ""}
-            앉아 있는 중 {open.length}일
+            퇴근 전 {open.length}일
           </span>
         )}
       </p>

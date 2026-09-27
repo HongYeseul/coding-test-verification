@@ -136,13 +136,13 @@ export function GroupProblems({
         </ul>
       ) : (
         <p className="rounded-surface border border-line bg-surface px-5 py-10 text-center text-[13px] text-sub">
-          아직 문제 링크가 없습니다. 도장을 찍을 때 문제 링크를 넣으면 여기에
-          모입니다.
+          아직 문제 링크가 없어요. 도장을 찍을 때 문제 링크를 넣으면 여기에
+          모여요.
         </p>
       )}
       {canEditTitle && problems.length > 0 && (
         <p className="mt-2 text-[13px] text-sub">
-          제목은 그룹 목록에만 적용되고 각 멤버의 기록은 그대로 둡니다.
+          제목은 이 문제 목록에만 적용되고 각 멤버의 기록은 그대로 둡니다.
         </p>
       )}
     </section>

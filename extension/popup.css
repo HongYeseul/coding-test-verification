@@ -103,29 +103,49 @@ button:disabled {
   font-size: 13px;
 }
 
-/* 저장소는 한 번 정하면 다시 볼 일이 드물어 접어 둡니다. 닫혀 있어도 상태는 한 줄로 보입니다. */
+/* GitHub 저장소는 한 줄입니다. 연결하고 고르는 일은 정답 카드에서 하고, 여기서는
+   어디에 올리고 있는지 보고 끕니다. */
 .repo {
-  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 0;
   padding-top: 12px;
   border-top: 1px solid var(--line);
-}
-
-.repo summary {
-  cursor: pointer;
   font-size: 13px;
 }
 
+.repo[hidden] {
+  display: none;
+}
+
+.repo > span:first-child {
+  flex: none;
+}
+
+.repo a {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--brand);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .repo-state {
-  margin-left: 4px;
   color: var(--sub);
 }
 
-.repo-body {
-  margin-top: 12px;
-}
-
-#repo-create {
-  margin-bottom: 4px;
+.repo-disconnect {
+  flex: none;
+  width: auto;
+  min-height: 0;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--sub);
+  font-size: 13px;
+  font-weight: 400;
 }
 
 #status {

@@ -46,10 +46,18 @@
     if (received?.data?.status?.description !== "Accepted") return;
     const { problemId, rawCode, lang } = JSON.parse(sentBody)?.data ?? {};
     if (!problemId || !rawCode) return;
+    // 통과한 테스트 수는 커밋 메시지에 `34/34 통과`로 남습니다. 시간·메모리는 응답에 없습니다.
+    const { test_case_count: total, correct_test_case_count: passed } =
+      received.data;
     window.dispatchEvent(
       new CustomEvent("dojang:neetcode-accepted", {
         // 언어는 저장소에 올릴 파일 확장자만 정합니다.
-        detail: { problemId, code: rawCode, language: lang ?? "" },
+        detail: {
+          problemId,
+          code: rawCode,
+          language: lang ?? "",
+          grading: { passed, total },
+        },
       }),
     );
   }

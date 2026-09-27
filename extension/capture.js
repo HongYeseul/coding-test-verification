@@ -10,7 +10,12 @@ const MAX_BYTES = 300 * 1024;
  * 스크린샷을 찍는 것과 같은 동작이며, activeTab 권한만 필요합니다.
  */
 export async function captureTab() {
-  const dataUrl = await chrome.tabs.captureVisibleTab({ format: "png" });
+  // 크롬 설정·웹스토어 같은 페이지는 크롬이 캡처를 막습니다. 거절 문장은 영어라 바꿔 둡니다.
+  const dataUrl = await chrome.tabs
+    .captureVisibleTab({ format: "png" })
+    .catch(() => {
+      throw new Error("이 페이지는 크롬이 캡처를 막습니다. 다른 탭에서 다시 눌러주세요.");
+    });
   const source = await (await fetch(dataUrl)).blob();
   const bitmap = await createImageBitmap(source);
   try {

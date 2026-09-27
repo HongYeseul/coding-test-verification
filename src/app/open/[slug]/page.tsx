@@ -124,7 +124,7 @@ export default async function PublicGroupBoardPage({
         </ol>
       ) : (
         <p className="rounded-surface border border-line bg-surface px-5 py-10 text-center text-[13px] text-sub">
-          아직 멤버가 없습니다.
+          아직 멤버가 없어요.
         </p>
       )}
 

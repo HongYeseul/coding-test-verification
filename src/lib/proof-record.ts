@@ -72,7 +72,7 @@ export async function createProofRecord(
       ? !isPhotoPath(evidencePath, groupId, userId)
       : !UUID_PATTERN.test(recordKey))
   ) {
-    return { error: "인증 내용을 확인해주세요." };
+    return { error: "기록 내용을 확인해주세요." };
   }
 
   const [
@@ -96,7 +96,7 @@ export async function createProofRecord(
   if (memberError || groupError)
     return { error: "그룹 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요." };
   if (member?.status !== "ACTIVE" || !group)
-    return { error: "활성 멤버만 도장을 찍을 수 있습니다." };
+    return { error: "가입 승인을 받은 멤버만 도장을 찍을 수 있습니다." };
   const recordKind = isRecordKind(group.record_kind) ? group.record_kind : "NONE";
   if (
     recordMinutes !== null &&
@@ -142,7 +142,12 @@ export async function createProofRecord(
     startMinutes === null &&
     group.requires_photo
   )
-    return { error: "이 그룹은 사진이나 풀이 코드가 필요합니다." };
+    // 풀이 코드는 코딩 테스트 스터디에서만 받으니, 다른 그룹에는 사진만 말합니다.
+    return {
+      error: group.is_coding_study
+        ? "이 그룹은 사진이나 풀이 코드가 필요합니다."
+        : "이 그룹은 사진이 필요합니다.",
+    };
   if ((problemUrl || solutionCode) && !group.is_coding_study)
     return { error: "이 그룹은 문제 링크와 풀이 코드를 사용하지 않습니다." };
   if (problemUrl && !link) return { error: PROBLEM_URL_ERROR };
@@ -195,7 +200,7 @@ export async function createProofRecord(
           ).maybeSingle()
         : { data: null };
     if (!existing)
-      return { error: "인증 기록을 저장하지 못했습니다. 다시 시도해주세요." };
+      return { error: "기록을 저장하지 못했습니다. 다시 시도해주세요." };
   }
 
   return { autoApproved };

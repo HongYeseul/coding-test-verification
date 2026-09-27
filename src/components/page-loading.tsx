@@ -5,7 +5,7 @@ export function PageLoading() {
       aria-busy="true"
     >
       <p role="status" className="text-[15px] text-sub">
-        화면을 불러오는 중입니다…
+        화면을 불러오는 중…
       </p>
       <div
         aria-hidden="true"

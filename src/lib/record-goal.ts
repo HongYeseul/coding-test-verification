@@ -111,7 +111,7 @@ export function compareGoal(
           ? "목표 시각 정각"
           : difference > 0
             ? `목표보다 ${difference}분 늦음`
-            : `목표보다 ${-difference}분 이름`,
+            : `목표보다 ${-difference}분 빠름`,
     };
   }
   return {
