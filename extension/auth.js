@@ -84,7 +84,10 @@ async function authorize(scopes) {
   });
 }
 
-/** GitHub 로그인 창을 띄우고 받은 코드를 세션으로 바꿉니다. */
+/**
+ * GitHub 로그인 창을 띄우고 받은 코드를 세션으로 바꿉니다. 창을 띄우므로 background에서만
+ * 부릅니다 — 팝업에서 부르면 창이 닫힐 때 팝업도 닫혀 코드를 세션으로 바꾸지 못합니다.
+ */
 export async function signIn() {
   return store(await authorize());
 }

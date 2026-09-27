@@ -1,5 +1,5 @@
 import { CONFIG } from "./config.js";
-import { getSession, signIn, signOut, userIdFrom } from "./auth.js";
+import { getSession, signOut, userIdFrom } from "./auth.js";
 import { captureTab, problemUrlFromTab } from "./capture.js";
 import { disconnectGithub, getGithub, repoName, repoUrl } from "./github.js";
 import { readable } from "./errors.js";
@@ -7,6 +7,7 @@ import { readable } from "./errors.js";
 const LAST_GROUP_KEY = "dojang.lastGroup";
 const view = {
   signin: document.getElementById("signin"),
+  signinButton: document.getElementById("signin-button"),
   form: document.getElementById("form"),
   status: document.getElementById("status"),
   group: document.getElementById("group"),
@@ -209,17 +210,26 @@ view.repoDisconnect.addEventListener("click", async () => {
   await renderRepo();
   say("저장소 연결을 끊었습니다. 다음 정답 카드에서 다시 연결할 수 있습니다.");
 });
-document.getElementById("signin-button").addEventListener("click", async () => {
-  try {
-    say("GitHub 로그인 창을 여는 중…");
-    await signIn();
-    say("");
-    await showForm(await getSession());
-  } catch (error) {
-    say(
-      readable(error, "GitHub 로그인을 마치지 못했습니다. 창을 닫았다면 다시 눌러주세요."),
+view.signinButton.addEventListener("click", async () => {
+  view.signinButton.disabled = true;
+  say("GitHub 로그인 창을 여는 중…");
+  // 로그인 창은 background가 띄웁니다. 로그인을 마친 창이 닫히며 팝업도 닫히지만 로그인은
+  // 끝까지 가고, 다시 열면 폼이 보입니다.
+  const result = await chrome.runtime
+    .sendMessage({ type: "sign-in" })
+    .catch(() => null);
+  view.signinButton.disabled = false;
+  if (!result || result.error)
+    return say(
+      result?.error ??
+        "GitHub 로그인을 마치지 못했습니다. 창을 닫았다면 다시 눌러주세요.",
       true,
     );
+  say("");
+  try {
+    await showForm(await getSession());
+  } catch (error) {
+    say(readable(error, "불러오지 못했습니다. 잠시 후 다시 시도해주세요."), true);
   }
 });
 document.getElementById("signout").addEventListener("click", async () => {
