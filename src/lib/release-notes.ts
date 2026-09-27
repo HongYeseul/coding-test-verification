@@ -38,6 +38,15 @@ export type Release = {
 /** 최신이 위로 옵니다. 새 배포를 낼 때 맨 앞에 더합니다. */
 export const RELEASES: Release[] = [
   {
+    surface: "EXTENSION",
+    date: "2026-09-27",
+    summary: "처음 쓰는 사람도 팝업에서 GitHub로 바로 로그인됩니다.",
+    highlights: [
+      "팝업의 ‘GitHub로 로그인’을 마치고 다시 열면 바로 도장 찍기 화면이 나옵니다",
+      "GitHub 로그인 창을 거쳐야 할 때 로그인이 남지 않던 것을 고쳤습니다",
+    ],
+  },
+  {
     surface: "WEB",
     date: "2026-09-27",
     summary: "화면 곳곳의 말과 동작을 한결같이 맞췄습니다.",
@@ -50,6 +59,7 @@ export const RELEASES: Release[] = [
   },
   {
     surface: "EXTENSION",
+    version: "0.2.9",
     date: "2026-09-27",
     summary: "정답 카드에서 바로 GitHub 저장소를 연결하고 고릅니다.",
     highlights: [
