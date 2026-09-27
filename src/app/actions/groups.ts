@@ -285,6 +285,8 @@ export async function updateGroupSettingsAction(formData: FormData) {
   const groupSlug = getRequiredText(formData, "groupSlug");
   // 체크하지 않은 상자는 아무 값도 보내지 않으므로 빈 문자열이 곧 꺼짐입니다.
   const autoApprove = getRequiredText(formData, "autoApprove") === "on";
+  const autoApproveJoins =
+    getRequiredText(formData, "autoApproveJoins") === "on";
   const isPublic = getRequiredText(formData, "isPublic") === "on";
   const requiresPhoto = getRequiredText(formData, "requiresPhoto") === "on";
   const isCodingStudy = getRequiredText(formData, "isCodingStudy") === "on";
@@ -365,6 +367,7 @@ export async function updateGroupSettingsAction(formData: FormData) {
     .from("groups")
     .update({
       auto_approve: autoApprove,
+      auto_approve_joins: autoApproveJoins,
       is_public: isPublic,
       requires_photo: requiresPhoto,
       is_coding_study: isCodingStudy,
@@ -380,6 +383,7 @@ export async function updateGroupSettingsAction(formData: FormData) {
   const summary = [
     `자동 인정 ${autoApprove ? "켬" : "끔"}`,
     `공개 리더보드 ${isPublic ? "켬" : "끔"}`,
+    `가입 자동 승인 ${autoApproveJoins ? "켬" : "끔"}`,
     `사진 필수 ${requiresPhoto ? "켬" : "끔"}`,
     `코딩 테스트 스터디 ${isCodingStudy ? "켬" : "끔"}`,
     `기록 종류 ${recordKindLabels[recordKind]}`,

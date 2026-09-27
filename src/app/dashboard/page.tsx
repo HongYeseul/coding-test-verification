@@ -144,7 +144,7 @@ export default async function DashboardPage({
           <h2>초대코드로 가입</h2>
           <p className="text-[13px] text-sub">
             받은 5자리 코드를 넣으면 가입을 신청합니다. 소유자가 승인해야 기록을
-            볼 수 있습니다.
+            볼 수 있고, 가입 자동 승인을 켠 그룹은 바로 들어갑니다.
           </p>
           <label htmlFor="invite-code" className="mt-2 text-[15px]">
             초대코드

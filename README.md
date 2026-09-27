@@ -10,7 +10,7 @@
 - 초대·멤버십·플랫폼 계정·기록·검수 데이터 모델
 - `ACTIVE` 그룹 멤버 기준 PostgreSQL RLS
 - 증빙 이미지·영상용 비공개 Storage 정책
-- 그룹 생성, 5자리 초대코드 공유·가입 신청, 소유자 가입 승인
+- 그룹 생성, 5자리 초대코드 공유·가입 신청, 소유자 가입 승인과 그룹별 가입 자동 승인
 - 플랫폼 계정 없이 사진으로 도장 찍기, 승인·반려 검수 화면, 그룹별 자동 인정 설정
 - 그룹별 사진 필수·코딩 테스트 스터디·기록 종류 설정과 그에 따라 달라지는 입력·문구
 - 기상·착석 스터디의 시각·시간 기록과 멤버별 목표
@@ -128,6 +128,7 @@ pnpm test
 | **검수** | 다른 멤버가 기록을 확인하는 일 |
 | **승인 · 반려** | 검수 결과 |
 | **자동 인정** | 검수 없이 바로 승인되게 하는 그룹 설정. 그렇게 통과한 기록은 ‘자동 인정’으로 표시합니다 |
+| **가입 자동 승인** | 초대코드로 가입을 신청하는 순간 멤버가 되게 하는 그룹 설정. 기록에 쓰는 ‘자동 인정’과 다릅니다 |
 | **응원** | 멤버가 남의 기록에 남기는 하트 하나. 검수가 아니고 집계에도 들어가지 않습니다 |
 | **기록 종류** | 도장과 함께 무엇을 적을지 정하는 그룹 설정 — 도장만 찍기·몇 시에 했는지(시각)·얼마나 했는지(시간) |
 | **디스코드 알림** | 도장·착석·퇴근·응원·검수를 그룹의 디스코드 채널에 한 줄씩 보내는 그룹 설정. 설정이 끝났다는 표시는 ‘연동됨’입니다 |
@@ -200,6 +201,14 @@ pnpm test
 자동 인정된 기록은 목록에 `자동 인정`으로 보이고 현황판의 승인 집계에 함께 들어갑니다. 검수 대기 집계에는 들어가지 않습니다. 즉시 인정이라 잘못 올린 사진을 본인이 지울 수 있도록, 자동 인정된 본인 기록은 취소할 수 있습니다. 반려된 기록은 지금처럼 본인도 취소할 수 없습니다.
 
 반려는 계속 소유자와 검수자만 할 수 있고 이유를 적어야 합니다. 설정이 꺼진 그룹에서는 브라우저에서 직접 요청해도 인정 상태로 등록되지 않도록 `proofs_insert_self` 정책이 `private.group_auto_approves()`로 막습니다.
+
+## 가입 자동 승인
+
+소유자는 그룹 설정에서 ‘가입 자동 승인’을 켤 수 있습니다. 켜면 초대코드나 초대 링크로 가입을 신청하는 순간 `ACTIVE` 멤버가 되어, 소유자가 멤버 관리에서 하나씩 승인하지 않아도 됩니다. 체험용 스터디처럼 누가 들어올지 미리 알 수 없고 누가 들어와도 괜찮은 그룹을 위한 설정입니다. 신청할 때마다 승인을 기다리게 하면 그사이 들어온 사람은 아무것도 해 보지 못하고 떠납니다. 코드를 받은 사람이 곧바로 그룹 기록을 보게 되므로 기본값은 꺼짐입니다.
+
+켜 두어도 초대코드 규칙은 그대로입니다. 7일 뒤 만료되고, 새로 만들면 이전 코드는 막히며, 신청 횟수 제한도 같습니다. 내보낸 멤버(`REVOKED`)는 다시 들어오지 못합니다. 켜기 전에 들어온 신청은 대기로 남아 있다가, 소유자가 승인하거나 신청자가 같은 코드로 다시 신청하면 멤버가 됩니다.
+
+바뀌는 곳은 `join_group_by_code()` 한 곳입니다. 가입 신청을 받는 길이 이 함수뿐이라 대기와 멤버 가운데 무엇으로 넣을지 여기서 정합니다. 가입 신청 화면은 코드가 어느 그룹 것인지 신청 전에 알려 주지 않아, 안내 문구를 두 경우에 모두 맞게 적었습니다. 코드가 맞는지 미리 물어볼 길이 생기면 신청 횟수 제한을 돌아서 코드를 찾을 수 있기 때문입니다.
 
 ## 디스코드 알림
 
@@ -346,7 +355,7 @@ DB 권한 회귀 테스트는 SQL Editor에서 `supabase/tests/invite_codes_and_
 
 현황판 전체 집계·한국시간 주간 경계·주간 이동 범위·접근 권한은 `supabase/tests/group_overview.sql`로 검증합니다. 이 테스트도 데이터를 모두 롤백합니다.
 
-문제 링크의 DB 제약은 `supabase/tests/problem_links.sql`로 검증합니다. 그룹 문제 제목의 역할별 저장·삭제 권한과 링크 형식은 `supabase/tests/group_problem_titles.sql`로 검증합니다. 사진 필수 차단·사진 없는 등록·재시도 멱등성은 `supabase/tests/group_proof_settings.sql`로, 코드가 사진을 대신하는 규칙과 길이 제한은 `supabase/tests/solution_code.sql`로, 자동 인정 등록·반려 권한과 본인 취소는 `supabase/tests/auto_approve_proofs.sql`로, 비공개 그룹 차단과 공개 범위는 `supabase/tests/public_group_board.sql`로, 새벽 3시 경계는 `supabase/tests/study_day.sql`로, 응원의 접근 범위(본인 기록·취소 중인 기록·외부인·비로그인 차단)는 `supabase/tests/proof_cheers.sql`로, 기록값이 사진을 대신하는 규칙과 목표 설정 권한은 `supabase/tests/record_goals.sql`로, 착석·퇴근 도장과 하루 한 구간 규칙은 `supabase/tests/seat_stamps.sql`로, 현황판이 자동 인정을 승인으로 세는지는 `supabase/tests/overview_counts.sql`로 검증합니다.
+문제 링크의 DB 제약은 `supabase/tests/problem_links.sql`로 검증합니다. 그룹 문제 제목의 역할별 저장·삭제 권한과 링크 형식은 `supabase/tests/group_problem_titles.sql`로 검증합니다. 사진 필수 차단·사진 없는 등록·재시도 멱등성은 `supabase/tests/group_proof_settings.sql`로, 코드가 사진을 대신하는 규칙과 길이 제한은 `supabase/tests/solution_code.sql`로, 자동 인정 등록·반려 권한과 본인 취소는 `supabase/tests/auto_approve_proofs.sql`로, 가입 자동 승인과 소유자만 켜는지·내보낸 멤버 차단은 `supabase/tests/auto_approve_joins.sql`로, 비공개 그룹 차단과 공개 범위는 `supabase/tests/public_group_board.sql`로, 새벽 3시 경계는 `supabase/tests/study_day.sql`로, 응원의 접근 범위(본인 기록·취소 중인 기록·외부인·비로그인 차단)는 `supabase/tests/proof_cheers.sql`로, 기록값이 사진을 대신하는 규칙과 목표 설정 권한은 `supabase/tests/record_goals.sql`로, 착석·퇴근 도장과 하루 한 구간 규칙은 `supabase/tests/seat_stamps.sql`로, 현황판이 자동 인정을 승인으로 세는지는 `supabase/tests/overview_counts.sql`로 검증합니다.
 
 실제 브라우저 압축 검증은 `node tests/photo-compression-server.mjs` 실행 후 `http://127.0.0.1:3913`에서 진행합니다. 생성한 이미지로 압축 크기·해상도·손상 파일 처리를 확인하며 운영 DB와 Storage는 사용하지 않습니다.
 

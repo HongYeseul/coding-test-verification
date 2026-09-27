@@ -21,9 +21,11 @@ export default async function JoinPage({
     <AppShell context="초대코드로 가입">
       <header className="mb-6">
         <h1>초대코드로 가입</h1>
+        {/* 코드가 어느 그룹 것인지는 신청하기 전에 알려 주지 않습니다. 코드가 맞는지
+            미리 물어볼 길이 생기면 신청 횟수 제한을 돌아서 코드를 찾을 수 있습니다. */}
         <p className="mt-1 text-[15px] text-sub">
           로그인한 뒤 가입을 신청해주세요. 그룹 소유자가 승인하면 그룹 기록을
-          공유할 수 있습니다.
+          공유할 수 있습니다. 가입 자동 승인을 켠 그룹은 바로 들어갑니다.
         </p>
       </header>
 

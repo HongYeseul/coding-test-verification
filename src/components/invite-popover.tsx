@@ -4,9 +4,11 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
 export function InvitePopover({
   inviteUrl,
+  autoApproveJoins = false,
   children,
 }: {
   inviteUrl?: string;
+  autoApproveJoins?: boolean;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -90,7 +92,9 @@ export function InvitePopover({
       >
         <h2>멤버 초대</h2>
         <p className="mt-1 text-[13px] text-sub">
-          링크나 코드를 공유해주세요. 가입 신청 후 승인이 필요합니다.
+          {autoApproveJoins
+            ? "링크나 코드를 공유해주세요. 가입 자동 승인이 켜져 있어 신청하면 바로 멤버가 됩니다."
+            : "링크나 코드를 공유해주세요. 가입 신청 후 승인이 필요합니다."}
         </p>
         {inviteUrl && (
           <div className="mt-4">

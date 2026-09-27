@@ -38,6 +38,16 @@ export type Release = {
 /** 최신이 위로 옵니다. 새 배포를 낼 때 맨 앞에 더합니다. */
 export const RELEASES: Release[] = [
   {
+    surface: "WEB",
+    date: "2026-09-27",
+    summary: "초대코드로 신청하면 바로 멤버가 되게 할 수 있습니다.",
+    highlights: [
+      "소유자가 그룹 설정에서 ‘가입 자동 승인’을 켜면 신청마다 승인하지 않아도 됩니다",
+      "켜기 전에 들어온 신청은 그대로 멤버 관리에서 승인합니다",
+      "초대 창과 가입 화면의 안내가 설정에 맞게 바뀝니다",
+    ],
+  },
+  {
     surface: "EXTENSION",
     date: "2026-09-27",
     summary: "처음 쓰는 사람도 팝업에서 GitHub로 바로 로그인됩니다.",

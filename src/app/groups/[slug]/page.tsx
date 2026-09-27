@@ -244,7 +244,7 @@ export default async function GroupPage({
   const { data: group } = await supabase
     .from("groups")
     .select(
-      "id, name, slug, owner_id, auto_approve, is_public, requires_photo, is_coding_study, record_kind, discord_invite_url",
+      "id, name, slug, owner_id, auto_approve, auto_approve_joins, is_public, requires_photo, is_coding_study, record_kind, discord_invite_url",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -656,6 +656,7 @@ export default async function GroupPage({
                 groupId={group.id}
                 groupSlug={group.slug}
                 autoApprove={group.auto_approve}
+                autoApproveJoins={group.auto_approve_joins}
                 isPublic={group.is_public}
                 requiresPhoto={group.requires_photo}
                 isCodingStudy={group.is_coding_study}
@@ -701,6 +702,7 @@ export default async function GroupPage({
               inviteUrl={
                 invitation ? `${getSiteUrl()}/join/${invitation.code}` : undefined
               }
+              autoApproveJoins={group.auto_approve_joins}
             >
               <form
                 action={rotateInviteCodeAction}

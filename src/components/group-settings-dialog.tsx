@@ -32,6 +32,7 @@ export function GroupSettingsDialog({
   groupId,
   groupSlug,
   autoApprove,
+  autoApproveJoins,
   isPublic,
   requiresPhoto,
   isCodingStudy,
@@ -42,6 +43,7 @@ export function GroupSettingsDialog({
   groupId: string;
   groupSlug: string;
   autoApprove: boolean;
+  autoApproveJoins: boolean;
   isPublic: boolean;
   requiresPhoto: boolean;
   isCodingStudy: boolean;
@@ -143,6 +145,26 @@ export function GroupSettingsDialog({
                   켜면 로그인하지 않은 사람도 멤버 닉네임과 승인 건수를 볼 수
                   있습니다. 사진·문제 링크·검수 내용은 공개되지 않습니다. 끄더라도
                   그룹 이름과 인원수는 첫 화면 목록에 나옵니다.
+                </span>
+              </span>
+            </label>
+
+            {/* 켜면 코드를 받은 사람은 누구나 바로 기록을 봅니다. 그래서 끔이 기본이고,
+                누가 들어와도 괜찮은 스터디라는 조건을 설명에 먼저 둡니다. */}
+            <label className="flex items-start gap-2 text-[15px]">
+              <input
+                type="checkbox"
+                name="autoApproveJoins"
+                defaultChecked={autoApproveJoins}
+                className="mt-1"
+              />
+              <span>
+                가입 자동 승인
+                <span className="mt-1 block text-[13px] text-sub">
+                  켜면 초대코드나 초대 링크로 가입을 신청하는 순간 멤버가 됩니다.
+                  코드를 받은 사람은 누구나 바로 기록을 보게 되니, 체험용처럼 누가
+                  들어와도 괜찮은 스터디에서 켜주세요. 켜기 전에 들어온 신청은 멤버
+                  관리에서 승인합니다.
                 </span>
               </span>
             </label>
