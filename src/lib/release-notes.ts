@@ -38,6 +38,17 @@ export type Release = {
 /** 최신이 위로 옵니다. 새 배포를 낼 때 맨 앞에 더합니다. */
 export const RELEASES: Release[] = [
   {
+    surface: "EXTENSION",
+    date: "2026-09-29",
+    summary: "LeetCode에서도 정답을 맞히면 그 자리에서 도장을 찍습니다.",
+    highlights: [
+      "제출(Submit)이 정답이면 프로그래머스·NeetCode와 같은 카드가 뜹니다",
+      "실행(Run)은 결과가 Accepted여도 카드를 띄우지 않습니다",
+      "저장소에 올리면 커밋 메시지에 난이도와 시간·메모리가 들어갑니다",
+      "대회 문제에서는 카드가 뜨지 않습니다",
+    ],
+  },
+  {
     surface: "WEB",
     date: "2026-09-27",
     summary: "초대코드로 신청하면 바로 멤버가 되게 할 수 있습니다.",
@@ -50,6 +61,7 @@ export const RELEASES: Release[] = [
   },
   {
     surface: "EXTENSION",
+    version: "0.2.10",
     date: "2026-09-27",
     summary: "처음 쓰는 사람도 팝업에서 GitHub로 바로 로그인됩니다.",
     highlights: [
