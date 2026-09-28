@@ -1,5 +1,5 @@
 /**
- * 정답을 맞힌 순간에 뜨는 카드입니다. 프로그래머스와 NeetCode가 함께 씁니다.
+ * 정답을 맞힌 순간에 뜨는 카드입니다. 프로그래머스·NeetCode·LeetCode가 함께 씁니다.
  *
  * 플랫폼마다 다른 것은 '정답을 어떻게 알아내고 코드를 어디서 읽느냐'뿐이고,
  * 그 뒤로 보여주고 보내는 일은 같습니다. 그래서 카드만 여기 모아 둡니다.
@@ -9,7 +9,7 @@
  *   dojangCard({ title, code, problemUrl, language, level, grading, mount, onStamped })
  *
  * language·level·grading은 GitHub 저장소에 올릴 때만 씁니다. language는 파일 확장자를,
- * level(프로그래머스 난이도)과 grading(채점 결과)은 커밋 메시지를 정합니다.
+ * level(난이도)과 grading(채점 결과)은 커밋 메시지를 정합니다.
  *
  * 두 카드의 줄은 늘 같은 순서입니다 — 문제, 코드, 저장소, 태그, 그리고 찍은 뒤에만 상태.
  * 같은 자리에 같은 것이 있어야 찍기 전후를 견주지 않고 읽습니다.

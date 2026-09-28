@@ -12,6 +12,7 @@ import { gradingSummary, solutionFiles } from "../extension/solution-files.js";
 const PROGRAMMERS =
   "https://school.programmers.co.kr/learn/courses/30/lessons/42746";
 const NEETCODE = "https://neetcode.io/problems/duplicate-integer";
+const LEETCODE = "https://leetcode.com/problems/two-sum";
 
 /** 프로그래머스 채점 표의 통과 칸 글자입니다. 백준허브가 읽는 것과 같은 칸입니다. */
 const CELLS = [
@@ -129,6 +130,60 @@ test("NeetCode는 슬러그 폴더에 두고 통과한 테스트 수를 첫 줄�
   assert.doesNotMatch(solution.files[1].content, /난이도|태그/);
 });
 
+test("LeetCode는 슬러그 폴더에 두고 번호가 붙은 제목과 난이도·시간·메모리를 적는다", () => {
+  // 2026-09-29 two-sum을 실제로 제출했을 때 카드로 넘어온 값입니다.
+  const solution = solutionFiles({
+    problemUrl: LEETCODE,
+    title: "1. Two Sum",
+    language: "cpp",
+    code: "class Solution {};",
+    tags: "해시",
+    level: "Easy",
+    grading: { passed: 65, total: 65, time: "4 ms", memory: "14.9 MB" },
+  });
+
+  // 번호는 화면에서 못 읽을 때가 있어 폴더에는 언제나 있는 슬러그만 씁니다.
+  assert.equal(solution.folder, "LeetCode/two-sum");
+  assert.deepEqual(solution.files, [
+    { path: "LeetCode/two-sum/solution.cpp", content: "class Solution {};\n" },
+    {
+      path: "LeetCode/two-sum/README.md",
+      content: [
+        "# 1. Two Sum",
+        "",
+        "- 플랫폼: LeetCode",
+        "- 난이도: Easy",
+        `- 문제: ${LEETCODE}`,
+        "- 태그: 해시",
+        "",
+      ].join("\n"),
+    },
+  ]);
+  assert.equal(
+    solution.message,
+    [
+      // 단위 앞 띄어쓰기는 프로그래머스와 같은 모양으로 붙입니다.
+      "[LeetCode Easy] 1. Two Sum · 4ms · 14.9MB",
+      "",
+      `- 문제: ${LEETCODE}`,
+      "- 언어: C++",
+      "- 채점: 테스트 65개 통과",
+      "- 태그: 해시",
+    ].join("\n"),
+  );
+});
+
+test("LeetCode 난이도는 Easy·Medium·Hard일 때만 적는다", () => {
+  const subject = (level) =>
+    solutionFiles({ problemUrl: LEETCODE, title: "t", code: "x", level }).message.split("\n")[0];
+
+  assert.equal(subject("Medium"), "[LeetCode Medium] t");
+  assert.equal(subject("Hard"), "[LeetCode Hard] t");
+  assert.equal(subject("2"), "[LeetCode] t");
+  assert.equal(subject(""), "[LeetCode] t");
+  assert.equal(subject("Easy] 끼어들기 ["), "[LeetCode] t");
+});
+
 test("옛 가로채기처럼 언어도 채점도 없으면 그 줄을 빼고 확장자는 txt로 둔다", () => {
   const solution = solutionFiles({
     problemUrl: NEETCODE,
@@ -155,12 +210,17 @@ test("파일 이름은 언어를 따르고, 모르는 언어는 코드를 잃지
   assert.equal(file("kotlin"), "solution.kt");
   assert.equal(file("mysql"), "solution.sql");
   assert.equal(file("Python3"), "solution.py");
+  // LeetCode가 쓰는 언어 이름입니다.
+  assert.equal(file("golang"), "solution.go");
+  assert.equal(file("pythondata"), "solution.py");
+  assert.equal(file("postgresql"), "solution.sql");
+  assert.equal(file("bash"), "solution.sh");
   assert.equal(file("brainfuck"), "solution.txt");
   assert.equal(file(""), "solution.txt");
   assert.equal(file(undefined), "solution.txt");
 });
 
-test("난이도는 숫자일 때만 적는다", () => {
+test("프로그래머스 난이도는 숫자일 때만 적는다", () => {
   const subject = (level) =>
     solutionFiles({ problemUrl: PROGRAMMERS, title: "t", code: "x", level }).message.split("\n")[0];
 
@@ -202,7 +262,9 @@ test("제목이 없으면 번호만으로 폴더를 짓는다", () => {
 test("지원하지 않는 주소나 빈 코드는 올릴 자리를 정하지 않는다", () => {
   const base = { title: "t", language: "python3", code: "x", tags: "" };
   for (const problemUrl of [
-    "https://leetcode.com/problems/two-sum",
+    "https://www.acmicpc.net/problem/1000",
+    "https://leetcode.com/problems/two-sum/submissions/2156492751",
+    "https://leetcode.com/problems/..%2F..%2Fetc",
     "https://school.programmers.co.kr/learn/courses/30/lessons/../../etc",
     "https://neetcode.io/problems/..%2F..%2Fetc",
     "https://neetcode.io/problems/duplicate-integer/question",
@@ -252,6 +314,15 @@ test("채점 요약은 칸마다 따로 가장 큰 시간과 메모리를 고르
     time: null,
     memory: null,
   });
+  // LeetCode는 통과 수와 함께 띄어 쓴 시간·메모리를 넘깁니다.
+  assert.deepEqual(
+    gradingSummary({ passed: 65, total: 65, time: "4 ms", memory: "14.9 MB" }),
+    { passed: 65, total: 65, time: "4ms", memory: "14.9MB" },
+  );
+  assert.deepEqual(
+    gradingSummary({ passed: 5, total: 5, time: "N/A", memory: "" }),
+    { passed: 5, total: 5, time: null, memory: null },
+  );
   for (const nothing of [undefined, null, {}, { cells: [] }, { passed: 0, total: 3 }])
     assert.equal(gradingSummary(nothing), null, JSON.stringify(nothing));
 });

@@ -7,7 +7,10 @@
  * 읽지도 옮기지도 않습니다. 저장소는 공개라 더 그렇습니다.
  */
 
-/** 문제 주소를 폴더로 바꾸는 규칙입니다. 주소는 감지 스크립트가 저장 형식으로 다듬어 넘깁니다. */
+/**
+ * 문제 주소를 폴더로 바꾸는 규칙입니다. 주소는 감지 스크립트가 저장 형식으로 다듬어 넘깁니다.
+ * rank는 감지 스크립트가 넘긴 난이도를 커밋 메시지와 README에 적을 모양으로 바꿉니다.
+ */
 const PLATFORMS = [
   {
     host: "school.programmers.co.kr",
@@ -15,6 +18,8 @@ const PLATFORMS = [
     id: /^\/learn\/courses\/30\/lessons\/(\d+)$/,
     // 번호를 앞에 두면 폴더가 번호순으로 줄을 섭니다.
     folder: (id, title) => (title ? `${id}. ${title}` : id),
+    // 문제 영역에 붙은 숫자입니다. Lv.0 문제도 있습니다.
+    rank: (level) => (/^\d{1,2}$/.test(level) ? `Lv.${level}` : ""),
   },
   {
     host: "neetcode.io",
@@ -22,26 +27,47 @@ const PLATFORMS = [
     id: /^\/problems\/([a-z0-9][a-z0-9-]*)$/,
     // 슬러그가 이미 읽히는 이름이라 제목을 덧붙이지 않습니다.
     folder: (id) => id,
+    rank: () => "",
+  },
+  {
+    host: "leetcode.com",
+    name: "LeetCode",
+    id: /^\/problems\/([a-z0-9][a-z0-9-]*)$/,
+    // 번호는 화면에서 읽는 값이라 못 읽을 때가 있습니다. 폴더에 넣으면 같은 문제가 두 폴더로
+    // 갈리므로 언제나 있는 슬러그만 씁니다. 번호는 제목(`1. Two Sum`)에 붙어 README와 커밋에 남습니다.
+    folder: (id) => id,
+    rank: (level) => (["Easy", "Medium", "Hard"].includes(level) ? level : ""),
   },
 ];
 
 /**
  * 언어 값을 [보여 줄 이름, 파일 확장자]로 바꿉니다. 프로그래머스 에디터의 data-language와
- * NeetCode 제출의 lang을 함께 받습니다. 모르는 언어는 코드를 잃지 않도록 txt로 둡니다.
+ * NeetCode·LeetCode 제출의 lang을 함께 받습니다. 모르는 언어는 코드를 잃지 않도록 txt로 둡니다.
+ * golang·mssql·oraclesql·postgresql·pythondata는 LeetCode가 쓰는 이름입니다.
  */
 const LANGUAGES = {
+  bash: ["Bash", "sh"],
   c: ["C", "c"],
   cpp: ["C++", "cpp"],
   csharp: ["C#", "cs"],
   dart: ["Dart", "dart"],
+  elixir: ["Elixir", "ex"],
+  erlang: ["Erlang", "erl"],
   go: ["Go", "go"],
+  golang: ["Go", "go"],
   java: ["Java", "java"],
   javascript: ["JavaScript", "js"],
   kotlin: ["Kotlin", "kt"],
+  mssql: ["MS SQL Server", "sql"],
   mysql: ["MySQL", "sql"],
   oracle: ["Oracle", "sql"],
+  oraclesql: ["Oracle", "sql"],
+  php: ["PHP", "php"],
+  postgresql: ["PostgreSQL", "sql"],
   python: ["Python", "py"],
   python3: ["Python3", "py"],
+  pythondata: ["Pandas", "py"],
+  racket: ["Racket", "rkt"],
   ruby: ["Ruby", "rb"],
   rust: ["Rust", "rs"],
   scala: ["Scala", "scala"],
@@ -59,11 +85,19 @@ function folderTitle(title) {
     .trim();
 }
 
+/** `4 ms`·`14.9 MB`처럼 단위 앞에 띄어 쓴 값을 `4ms`·`14.9MB`로 붙입니다. 없으면 null입니다. */
+function measured(text, unit) {
+  const value = String(text ?? "").match(
+    new RegExp(`(\\d+(?:\\.\\d+)?)\\s*${unit}`, "i"),
+  )?.[1];
+  return value ? `${value}${unit}` : null;
+}
+
 /**
  * 채점 결과를 줄입니다. 프로그래머스는 통과 칸의 글자(`통과 (0.02ms, 10.2MB)`)를 넘기고,
- * NeetCode는 통과한 테스트 수를 넘깁니다. 시간과 메모리는 칸마다 따로 가장 큰 값을 고르고,
- * 플랫폼이 적은 자릿수를 그대로 씁니다. 채점 표가 없는 문제(SQL 등)는 null입니다 — 0을
- * 적으면 실제로 잰 값처럼 보입니다.
+ * NeetCode는 통과한 테스트 수를, LeetCode는 통과 수와 함께 시간·메모리(`4 ms`·`14.9 MB`)를
+ * 넘깁니다. 시간과 메모리는 칸마다 따로 가장 큰 값을 고르고, 플랫폼이 적은 자릿수를 그대로
+ * 씁니다. 채점 표가 없는 문제(SQL 등)는 null입니다 — 0을 적으면 실제로 잰 값처럼 보입니다.
  */
 export function gradingSummary(grading) {
   const cells = Array.isArray(grading?.cells) ? grading.cells.map(String) : [];
@@ -90,8 +124,8 @@ export function gradingSummary(grading) {
     return {
       passed,
       total: Number.isInteger(grading.total) ? grading.total : passed,
-      time: null,
-      memory: null,
+      time: measured(grading.time, "ms"),
+      memory: measured(grading.memory, "MB"),
     };
   return null;
 }
@@ -140,14 +174,13 @@ export function solutionFiles({
     languageKey,
     "txt",
   ];
-  // 자바는 관례대로 클래스 이름을 따릅니다. 두 플랫폼 모두 Solution 클래스를 씁니다.
+  // 자바는 관례대로 클래스 이름을 따릅니다. 세 플랫폼 모두 Solution 클래스를 씁니다.
   const file = extension === "java" ? "Solution.java" : `solution.${extension}`;
   const topics = (tags ?? "")
     .split(",")
     .map((tag) => tag.trim())
     .filter(Boolean);
-  // 난이도는 프로그래머스가 문제 영역에 붙여 둔 숫자입니다. Lv.0 문제도 있습니다.
-  const rank = /^\d{1,2}$/.test(String(level ?? "")) ? `Lv.${level}` : "";
+  const rank = platform.rank(String(level ?? ""));
   const summary = gradingSummary(grading);
 
   const readme = [

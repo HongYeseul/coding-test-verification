@@ -21,6 +21,7 @@ const TABS = [
   },
   { id: 2, url: "https://neetcode.io/problems/duplicate-integer/question" },
   { id: 3, url: "https://www.acmicpc.net/problem/1000" },
+  { id: 4, url: "https://leetcode.com/problems/two-sum/description/" },
 ];
 
 /** manifest의 match pattern을 정규식으로 봅니다. 여기 쓰는 패턴은 *만 와일드카드입니다. */
@@ -78,6 +79,12 @@ test("설치하거나 바꾸면 열려 있던 문제 탭에 manifest의 스크�
           "content/neetcode-intercept.js@MAIN",
           "content/overlay.css",
           "content/neetcode.js@ISOLATED",
+        ],
+        // LeetCode도 같습니다.
+        4: [
+          "content/leetcode-intercept.js@MAIN",
+          "content/overlay.css",
+          "content/leetcode.js@ISOLATED",
         ],
       },
       reason,

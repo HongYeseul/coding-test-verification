@@ -24,7 +24,7 @@ export async function injectIntoOpenTabs({ reason }) {
           await chrome.scripting.executeScript({
             target,
             files: script.js,
-            // NeetCode 요청을 엿보는 파일은 페이지 쪽 세계에서 돌아야 합니다.
+            // NeetCode·LeetCode 요청을 엿보는 파일은 페이지 쪽 세계에서 돌아야 합니다.
             world: script.world ?? "ISOLATED",
           });
       } catch {

@@ -14,7 +14,8 @@
     "https://coding-test-verification.vercel.app/*",
     "https://dzibporiiexvsndungkx.supabase.co/*",
     "https://school.programmers.co.kr/learn/courses/30/lessons/*",
-    "https://neetcode.io/*"
+    "https://neetcode.io/*",
+    "https://leetcode.com/*"
   ],
   "action": {
     "default_title": "도장 찍기",
@@ -64,6 +65,31 @@
         "content/confetti.js",
         "content/card.js",
         "content/neetcode.js"
+      ],
+      "css": [
+        "content/overlay.css"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://leetcode.com/*"
+      ],
+      "js": [
+        "content/leetcode-intercept.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "https://leetcode.com/*"
+      ],
+      "js": [
+        "seal.js",
+        "content/confetti.js",
+        "content/card.js",
+        "content/leetcode.js"
       ],
       "css": [
         "content/overlay.css"
