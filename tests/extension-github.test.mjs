@@ -33,6 +33,10 @@ const FILES = [
  *   sameTree — 새로 지은 트리가 지금 트리와 같음(같은 코드로 다시 찍음)
  *   canPush  — 이 저장소에 쓸 권한
  *   status   — 모든 요청을 이 상태로 거절
+ *
+ * 브라우저 캐시도 흉내 냅니다. GitHub는 읽기 응답에 `max-age=60`을 붙여, fetch가 cache를
+ * 따로 정하지 않으면 1분 안의 같은 GET에 GitHub 대신 처음 받은 응답을 돌려줍니다. 브랜치는
+ * 새 커밋의 부모가 지금 끝일 때만 옮겨집니다(fast forward).
  */
 function fakeGithub({
   empty = false,
@@ -42,16 +46,25 @@ function fakeGithub({
   status,
 } = {}) {
   const calls = [];
+  // 커밋마다 트리와 부모를 기억합니다. 캐시에서 옛 끝을 받았을 때도 그 커밋을 읽을 수 있습니다.
+  const commits = new Map([["c1", { tree: "t1" }]]);
   let head = empty ? null : { sha: "c1", tree: "t1" };
   let trees = 0;
+  const cached = new Map();
 
   globalThis.fetch = async (url, init = {}) => {
     const method = init.method ?? "GET";
     const path = decodeURI(String(url).replace("https://api.github.com", ""));
     const body = init.body ? JSON.parse(init.body) : undefined;
-    calls.push({ method, path, body, auth: init.headers?.Authorization });
-    const reply = (code, data) =>
-      new Response(JSON.stringify(data), { status: code });
+    calls.push({ method, path, body, auth: init.headers?.Authorization, cache: init.cache });
+    const reply = (code, data) => {
+      if (method === "GET" && code === 200 && init.cache !== "no-store")
+        cached.set(path, data);
+      return new Response(JSON.stringify(data), { status: code });
+    };
+    // 캐시 방식을 정하지 않은 GET은 1분 안이면 GitHub에 묻지 않고 처음 받은 응답을 씁니다.
+    if (method === "GET" && (init.cache ?? "default") === "default" && cached.has(path))
+      return new Response(JSON.stringify(cached.get(path)), { status: 200 });
 
     if (status) return reply(status, { message: "Bad credentials" });
     if (method === "GET" && path === BASE)
@@ -60,9 +73,11 @@ function fakeGithub({
       return head
         ? reply(200, { object: { sha: head.sha } })
         : reply(409, { message: "Git Repository is empty." });
-    if (method === "GET" && path === `${BASE}/git/commits/${head?.sha}`)
-      return reply(200, { sha: head.sha, tree: { sha: head.tree } });
+    const sha = path.slice(`${BASE}/git/commits/`.length);
+    if (method === "GET" && path.startsWith(`${BASE}/git/commits/`) && commits.has(sha))
+      return reply(200, { sha, tree: { sha: commits.get(sha).tree } });
     if (method === "PUT" && path.startsWith(`${BASE}/contents/`)) {
+      commits.set("c0", { tree: "t0" });
       head = { sha: "c0", tree: "t0" };
       return reply(201, { commit: { sha: "c0" } });
     }
@@ -70,15 +85,22 @@ function fakeGithub({
       trees += 1;
       return reply(201, { sha: sameTree ? body.base_tree : `new-tree-${trees}` });
     }
-    if (method === "POST" && path === `${BASE}/git/commits`)
-      return reply(201, { sha: `new-commit-${trees}` });
+    if (method === "POST" && path === `${BASE}/git/commits`) {
+      const made = `new-commit-${trees}`;
+      commits.set(made, { tree: body.tree, parent: body.parents[0] });
+      return reply(201, { sha: made });
+    }
     if (method === "PATCH" && path === `${BASE}/git/refs/heads/main`) {
       if (moved > 0) {
         moved -= 1;
+        commits.set("c9", { tree: "t9" });
         head = { sha: "c9", tree: "t9" };
         return reply(422, { message: "Update is not a fast forward" });
       }
-      head = { sha: body.sha, tree: "moved" };
+      // 새 커밋이 지금 끝 위에 지어지지 않았으면 옮기지 않습니다.
+      if (commits.get(body.sha)?.parent !== head.sha)
+        return reply(422, { message: "Update is not a fast forward" });
+      head = { sha: body.sha, tree: commits.get(body.sha).tree };
       return reply(200, { object: { sha: body.sha } });
     }
     return reply(404, { message: "Not Found" });
@@ -147,6 +169,28 @@ test("그 사이 다른 커밋이 들어와 브랜치가 앞서 나갔으면 한
   const commits = calls.filter((call) => call.path === `${BASE}/git/commits` && call.method === "POST");
   // 다시 할 때는 새로 앞선 커밋 위에 짓습니다.
   assert.deepEqual(commits.map((call) => call.body.parents), [["c1"], ["c9"]]);
+});
+
+test("한 문제를 올리고 1분 안에 다음 문제를 올려도 브랜치 끝을 새로 읽는다", async () => {
+  // GitHub 읽기 응답은 max-age=60입니다. 브라우저 캐시를 그대로 쓰면 두 번째 올리기가 방금 옮긴
+  // 끝이 아니라 그 전 끝 위에 커밋을 지어 브랜치를 옮기지 못했고, 다시 읽어도 같은 옛 값이라
+  // ‘그 사이 저장소가 바뀌어 올리지 못했습니다’로 끝났습니다(0.2.12, 사용자 제보).
+  const calls = fakeGithub();
+  await commitFiles("t", REPO, FILES, "첫 문제");
+  const second = await commitFiles(
+    "t",
+    REPO,
+    [{ path: "LeetCode/two-sum/solution.cpp", content: "x\n" }],
+    "다음 문제",
+  );
+
+  assert.deepEqual(second, { branch: "main", sha: "new-commit-2" });
+  const parents = calls
+    .filter((call) => call.path === `${BASE}/git/commits` && call.method === "POST")
+    .map((call) => call.body.parents);
+  assert.deepEqual(parents, [["c1"], ["new-commit-1"]]);
+  // GitHub에 가는 요청은 모두 캐시를 믿지 않고 되묻습니다.
+  assert.ok(calls.every((call) => call.cache === "no-cache"));
 });
 
 test("두 번 연달아 밀리면 덮어쓰지 않고 멈춘다", async () => {

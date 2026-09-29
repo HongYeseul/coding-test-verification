@@ -26,6 +26,12 @@ export class GithubError extends Error {
 async function send(token, path, { method = "GET", body } = {}) {
   const response = await fetch(`${API}${path}`, {
     method,
+    // GitHub는 읽기 응답에 `Cache-Control: private, max-age=60`을 붙입니다. 그대로 두면 브라우저가
+    // 60초 동안 GitHub에 묻지 않고 옛 응답을 돌려줍니다. 한 문제를 올리고 1분 안에 다음 문제를
+    // 올리면 방금 옮긴 브랜치 끝 대신 그 전 끝을 읽었고, 그 위에 지은 커밋은 브랜치를 옮기지
+    // 못했습니다(422). 다시 읽어도 같은 옛 값이라 두 번째도 실패했습니다. 매번 GitHub에 되묻고,
+    // 바뀌지 않았으면 304로 가볍게 받습니다.
+    cache: "no-cache",
     headers: {
       Accept: "application/vnd.github+json",
       Authorization: `Bearer ${token}`,
