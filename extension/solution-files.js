@@ -6,6 +6,13 @@
  * 난이도·링크 — 와 사용자가 적은 태그뿐입니다. 문제 설명·입출력 예시 같은 플랫폼 콘텐츠는
  * 읽지도 옮기지도 않습니다. 저장소는 공개라 더 그렇습니다.
  */
+import { CONFIG } from "./config.js";
+
+/**
+ * 커밋 본문 끝에 남기는 한 줄입니다. 저장소를 보는 사람도 어느 서비스가 올린 커밋인지 알 수
+ * 있게 합니다. 주소는 설정을 따라가 로컬에서 올린 커밋에는 로컬 주소가 남습니다.
+ */
+const SIGNATURE = `Auto-committed by 도장 (${CONFIG.appUrl})`;
 
 /**
  * 문제 주소를 폴더로 바꾸는 규칙입니다. 주소는 감지 스크립트가 저장 형식으로 다듬어 넘깁니다.
@@ -144,7 +151,8 @@ function gradingSuffix(summary) {
  *
  * 커밋 메시지 첫 줄은 GitHub 폴더 목록에도 보이므로 플랫폼·난이도·제목·채점 요약을 담습니다.
  * 예: `[프로그래머스 Lv.2] 가장 큰 수 · 64.31ms · 96.4MB`. 링크·언어·통과 수·태그는 본문에
- * 둡니다. 서비스 이름은 넣지 않습니다 — 남의 커밋 이력에 광고처럼 쌓입니다.
+ * 둡니다. 어느 서비스가 올렸는지는 본문 맨 끝에 한 줄로 적고 첫 줄에는 넣지 않습니다 —
+ * 폴더 목록에서 문제 이름보다 서비스 이름이 먼저 읽히면 남의 커밋 이력이 광고처럼 보입니다.
  */
 export function solutionFiles({
   problemUrl,
@@ -202,7 +210,7 @@ export function solutionFiles({
 
   return {
     folder,
-    message: `${subject}\n\n${details.join("\n")}`,
+    message: `${subject}\n\n${details.join("\n")}\n\n${SIGNATURE}`,
     files: [
       {
         path: `${folder}/${file}`,

@@ -61,7 +61,7 @@
   color: #ffffff;
 }
 
-.dojang-close {
+.dojang-card .dojang-close {
   margin-left: auto;
   padding: 0 2px;
   border: 0;
@@ -130,7 +130,12 @@
   font-size: 12px;
 }
 
-.dojang-stamp {
+/* 카드 안 단추는 모두 .dojang-card를 앞에 붙여 특이도를 한 단계 올립니다.
+   크롬은 확장이 넣은 CSS를 페이지 스타일보다 앞에 두어, 특이도가 같으면 페이지가 이깁니다.
+   LeetCode의 `[type="button"], button { background-color: initial }`이 .dojang-stamp와
+   특이도가 같아 파란 바탕을 지웠고, 흰 글자만 흰 카드 위에 남아 도장 찍기가 사라진 것처럼
+   보였습니다. 우리 단추는 모두 type="button"이라 같은 규칙에 걸립니다. */
+.dojang-card .dojang-stamp {
   width: 100%;
   min-height: 38px;
   border: 0;
@@ -142,7 +147,7 @@
   cursor: pointer;
 }
 
-.dojang-stamp:disabled {
+.dojang-card .dojang-stamp:disabled {
   cursor: default;
   opacity: 0.55;
 }
@@ -175,7 +180,7 @@
 }
 
 /* 다시 올리기·저장소 만들기처럼 도장 찍기 다음가는 단추입니다. */
-.dojang-secondary {
+.dojang-card .dojang-secondary {
   width: 100%;
   min-height: 32px;
   border: 1px solid #e3dfd5;
@@ -188,8 +193,8 @@
   cursor: pointer;
 }
 
-.dojang-secondary:disabled,
-.dojang-small:disabled {
+.dojang-card .dojang-secondary:disabled,
+.dojang-card .dojang-small:disabled {
   cursor: default;
   opacity: 0.55;
 }
@@ -215,7 +220,7 @@
 }
 
 /* 저장소 줄 안의 작은 단추입니다. 줄 높이를 크게 바꾸지 않을 만큼만 둡니다. */
-.dojang-small {
+.dojang-card .dojang-small {
   flex: none;
   min-height: 26px;
   padding: 0 10px;
@@ -230,7 +235,7 @@
 }
 
 /* 바꾸기·취소처럼 글자만 있는 단추입니다. 오른쪽 끝에 붙습니다. */
-.dojang-text {
+.dojang-card .dojang-text {
   flex: none;
   margin-left: auto;
   padding: 0;

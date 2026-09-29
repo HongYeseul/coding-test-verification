@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import { CONFIG } from "../extension/config.js";
 import { gradingSummary, solutionFiles } from "../extension/solution-files.js";
 
 /**
@@ -13,6 +14,9 @@ const PROGRAMMERS =
   "https://school.programmers.co.kr/learn/courses/30/lessons/42746";
 const NEETCODE = "https://neetcode.io/problems/duplicate-integer";
 const LEETCODE = "https://leetcode.com/problems/two-sum";
+
+/** 커밋 본문 맨 끝 줄입니다. 저장소를 보는 사람에게 어느 서비스가 올렸는지 알립니다. */
+const SIGNATURE = `Auto-committed by 도장 (${CONFIG.appUrl})`;
 
 /** 프로그래머스 채점 표의 통과 칸 글자입니다. 백준허브가 읽는 것과 같은 칸입니다. */
 const CELLS = [
@@ -75,6 +79,8 @@ test("커밋 메시지 첫 줄에 플랫폼·난이도·제목·시간·메모�
       "- 언어: Python3",
       "- 채점: 테스트 3개 통과",
       "- 태그: 정렬, 문자열",
+      "",
+      SIGNATURE,
     ].join("\n"),
   );
 });
@@ -97,6 +103,8 @@ test("채점 표가 없는 문제는 수치를 지어내지 않는다", () => {
       "",
       `- 문제: ${PROGRAMMERS}`,
       "- 언어: MySQL",
+      "",
+      SIGNATURE,
     ].join("\n"),
   );
 });
@@ -124,6 +132,8 @@ test("NeetCode는 슬러그 폴더에 두고 통과한 테스트 수를 첫 줄�
       `- 문제: ${NEETCODE}`,
       "- 언어: Python",
       "- 채점: 테스트 34개 통과",
+      "",
+      SIGNATURE,
     ].join("\n"),
   );
   // 난이도와 태그가 없으면 줄도 없습니다.
@@ -169,6 +179,8 @@ test("LeetCode는 슬러그 폴더에 두고 번호가 붙은 제목과 난이�
       "- 언어: C++",
       "- 채점: 테스트 65개 통과",
       "- 태그: 해시",
+      "",
+      SIGNATURE,
     ].join("\n"),
   );
 });
@@ -193,9 +205,26 @@ test("옛 가로채기처럼 언어도 채점도 없으면 그 줄을 빼고 확
 
   assert.equal(
     solution.message,
-    `[NeetCode] Contains Duplicate\n\n- 문제: ${NEETCODE}`,
+    `[NeetCode] Contains Duplicate\n\n- 문제: ${NEETCODE}\n\n${SIGNATURE}`,
   );
   assert.equal(solution.files[0].path, "NeetCode/duplicate-integer/solution.txt");
+});
+
+test("커밋 본문 끝에 어느 서비스가 올렸는지 남기고 첫 줄에는 넣지 않는다", () => {
+  const { message } = solutionFiles({
+    problemUrl: LEETCODE,
+    title: "1. Two Sum",
+    language: "cpp",
+    code: "x",
+    level: "Easy",
+  });
+  const lines = message.split("\n");
+
+  // 첫 줄은 GitHub 폴더 목록에 보이는 자리라 문제 이름이 먼저 읽혀야 합니다.
+  assert.doesNotMatch(lines[0], /도장|Auto-committed/);
+  assert.equal(lines.at(-1), SIGNATURE);
+  assert.equal(lines.at(-2), "");
+  assert.equal(SIGNATURE, "Auto-committed by 도장 (https://coding-test-verification.vercel.app)");
 });
 
 test("파일 이름은 언어를 따르고, 모르는 언어는 코드를 잃지 않도록 txt로 둔다", () => {
