@@ -225,13 +225,15 @@ NeetCode·LeetCode에서는 정답이 나온 자리에서 버튼 한 번으로 �
 <img src="../extension/screenshots/card-repo.png" width="388" alt="저장소에 올린 뒤의 카드">
 
 문제 하나가 폴더 하나가 되고, 코드와 README가 커밋 하나로 올라갑니다. 커밋 메시지 첫 줄에는
-플랫폼·난이도·제목·채점 결과가 들어갑니다.
+플랫폼·난이도·제목·채점 결과가 들어가고, 맨 끝에는 도장이 올렸다는 한 줄이 남습니다.
 
 ```
 프로그래머스/42746. 가장 큰 수/solution.kt
 프로그래머스/42746. 가장 큰 수/README.md
 
 [프로그래머스 Lv.2] 가장 큰 수 · 64.31ms · 96.4MB
+…
+Auto-committed by 도장 (https://coding-test-verification.vercel.app)
 ```
 
 README에는 제목·플랫폼·난이도·문제 링크·주제 태그만 적고, 문제 설명은 옮기지 않습니다. 문제 설명은

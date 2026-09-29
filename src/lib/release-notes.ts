@@ -40,6 +40,16 @@ export const RELEASES: Release[] = [
   {
     surface: "EXTENSION",
     date: "2026-09-29",
+    summary: "LeetCode에서도 도장 찍기 단추가 제대로 보입니다.",
+    highlights: [
+      "LeetCode 화면에서 카드의 도장 찍기 단추가 보이지 않던 것을 고쳤습니다",
+      "저장소 커밋 끝에 어느 서비스가 올렸는지 한 줄 남깁니다",
+    ],
+  },
+  {
+    surface: "EXTENSION",
+    version: "0.2.11",
+    date: "2026-09-29",
     summary: "LeetCode에서도 정답을 맞히면 그 자리에서 도장을 찍습니다.",
     highlights: [
       "제출(Submit)이 정답이면 프로그래머스·NeetCode와 같은 카드가 뜹니다",
