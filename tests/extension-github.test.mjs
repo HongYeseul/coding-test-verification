@@ -11,6 +11,7 @@ import {
   githubState,
   repoNames,
   uploadSolution,
+  uploadTarget,
 } from "../extension/github.js";
 
 /**
@@ -33,6 +34,7 @@ const FILES = [
  *   sameTree — 새로 지은 트리가 지금 트리와 같음(같은 코드로 다시 찍음)
  *   canPush  — 이 저장소에 쓸 권한
  *   status   — 모든 요청을 이 상태로 거절
+ *   rejectToken — 이 토큰으로 온 요청만 401로 거절(만료되거나 끊긴 토큰)
  *
  * 브라우저 캐시도 흉내 냅니다. GitHub는 읽기 응답에 `max-age=60`을 붙여, fetch가 cache를
  * 따로 정하지 않으면 1분 안의 같은 GET에 GitHub 대신 처음 받은 응답을 돌려줍니다. 브랜치는
@@ -44,6 +46,7 @@ function fakeGithub({
   sameTree = false,
   canPush = true,
   status,
+  rejectToken,
 } = {}) {
   const calls = [];
   // 커밋마다 트리와 부모를 기억합니다. 캐시에서 옛 끝을 받았을 때도 그 커밋을 읽을 수 있습니다.
@@ -67,6 +70,8 @@ function fakeGithub({
       return new Response(JSON.stringify(cached.get(path)), { status: 200 });
 
     if (status) return reply(status, { message: "Bad credentials" });
+    if (rejectToken && init.headers?.Authorization === `Bearer ${rejectToken}`)
+      return reply(401, { message: "Bad credentials" });
     if (method === "GET" && path === BASE)
       return reply(200, { default_branch: "main", permissions: { push: canPush } });
     if (method === "GET" && path === `${BASE}/git/ref/heads/main`)
@@ -244,11 +249,99 @@ test("올리면 그 문제의 폴더 주소를 돌려준다", async () => {
   );
 });
 
-test("GitHub가 토큰을 거절하면 토큰만 버리고 고른 저장소는 남긴다", async () => {
+test("GitHub가 토큰을 거절하고 새로 받지도 못하면 토큰만 버리고 다시 연결하게 한다", async () => {
   const store = fakeStorage({ "dojang.github": { token: "t", login: "yeseul", repo: REPO } });
   fakeGithub({ status: 401 });
 
-  await assert.rejects(uploadSolution(SOLUTION), /다시 연결/);
+  // 카드는 reconnect 표시를 보고 ‘다시 올리기’ 대신 ‘GitHub 다시 연결’을 띄웁니다.
+  await assert.rejects(uploadSolution(SOLUTION), (error) => {
+    assert.match(error.message, /다시 연결/);
+    assert.equal(error.reconnect, true);
+    return true;
+  });
+  assert.deepEqual(store["dojang.github"], { token: null, login: "yeseul", repo: REPO });
+});
+
+/**
+ * 창 없이 토큰을 다시 받는 흐름을 흉내 냅니다. 이미 허락한 앱이면 GitHub가 묻지 않고
+ * 돌려보내고(needsClick가 거짓), 무언가 눌러야 하면 크롬이 창 없는 요청을 실패시킵니다.
+ * 나머지 GitHub 요청은 fakeGithub이 받습니다.
+ */
+function fakeQuietSignIn({ login = "yeseul", needsClick = false } = {}) {
+  const opened = [];
+  globalThis.chrome.identity = {
+    getRedirectURL: () => "https://pkpabpnpecgcpakaehojnphgeajoieih.chromiumapp.org/",
+    launchWebAuthFlow: async ({ url, interactive }) => {
+      opened.push({ url: new URL(url), interactive });
+      if (needsClick && !interactive) throw new Error("User interaction required.");
+      return "https://pkpabpnpecgcpakaehojnphgeajoieih.chromiumapp.org/?code=auth-code";
+    },
+  };
+  const github = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    const address = String(url);
+    if (address === `${CONFIG.supabaseUrl}/auth/v1/token?grant_type=pkce`)
+      return new Response(
+        JSON.stringify({
+          access_token: "supabase-access",
+          refresh_token: "supabase-refresh",
+          expires_in: 3600,
+          provider_token: "gho_new",
+        }),
+        { status: 200 },
+      );
+    if (address === "https://api.github.com/user")
+      return new Response(JSON.stringify({ login }), { status: 200 });
+    return github(url, init);
+  };
+  return opened;
+}
+
+test("토큰이 거절되면 창 없이 새 토큰을 받아 한 번 더 올린다", async () => {
+  // OAuth 앱에 토큰 만료가 켜져 있으면 8시간 뒤 이렇게 됩니다(2026-09-30 사용자 제보).
+  const store = fakeStorage({ "dojang.github": { token: "old", login: "yeseul", repo: REPO } });
+  fakeGithub({ rejectToken: "old" });
+  const opened = fakeQuietSignIn();
+
+  const result = await uploadSolution(SOLUTION);
+
+  assert.equal(result.repo, "yeseul/algo");
+  // 보이지 않는 창으로 한 번만 받았습니다.
+  assert.deepEqual(opened.map((flow) => flow.interactive), [false]);
+  assert.equal(opened[0].url.searchParams.get("scopes"), "public_repo");
+  assert.deepEqual(store["dojang.github"], { token: "gho_new", login: "yeseul", repo: REPO });
+  assert.equal(store["dojang.session"].accessToken, "supabase-access");
+});
+
+test("연결이 풀린 채로 찍어도 창 없이 다시 받아 올린다", async () => {
+  const store = fakeStorage({ "dojang.github": { token: null, login: "yeseul", repo: REPO } });
+  fakeGithub();
+  fakeQuietSignIn();
+
+  // 토큰이 비어 있어도 고른 저장소가 있으면 카드가 올려 봅니다.
+  assert.equal(await uploadTarget(), "yeseul/algo");
+  assert.equal((await uploadSolution(SOLUTION)).repo, "yeseul/algo");
+  assert.equal(store["dojang.github"].token, "gho_new");
+});
+
+test("github.com에 다른 계정으로 로그인돼 있으면 조용히 받은 토큰을 쓰지 않는다", async () => {
+  const store = fakeStorage({ "dojang.github": { token: "old", login: "yeseul", repo: REPO } });
+  fakeGithub({ rejectToken: "old" });
+  fakeQuietSignIn({ login: "friend" });
+
+  await assert.rejects(uploadSolution(SOLUTION), (error) => error.reconnect === true);
+  assert.deepEqual(store["dojang.github"], { token: null, login: "yeseul", repo: REPO });
+  // 도장 계정도 바꾸지 않습니다.
+  assert.equal(store["dojang.session"], undefined);
+});
+
+test("창 없이 받을 수 없으면 다시 연결하게 한다", async () => {
+  const store = fakeStorage({ "dojang.github": { token: "old", login: "yeseul", repo: REPO } });
+  fakeGithub({ rejectToken: "old" });
+  const opened = fakeQuietSignIn({ needsClick: true });
+
+  await assert.rejects(uploadSolution(SOLUTION), (error) => error.reconnect === true);
+  assert.deepEqual(opened.map((flow) => flow.interactive), [false]);
   assert.deepEqual(store["dojang.github"], { token: null, login: "yeseul", repo: REPO });
 });
 
@@ -256,6 +349,7 @@ test("저장소를 연결하지 않았으면 GitHub를 부르지 않는다", asy
   fakeStorage({});
   const calls = fakeGithub();
 
+  assert.equal(await uploadTarget(), null);
   await assert.rejects(uploadSolution(SOLUTION), /먼저 연결/);
   assert.equal(calls.length, 0);
 });

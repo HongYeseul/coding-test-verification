@@ -81,7 +81,11 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   const task = TASKS.get(message?.type);
   if (!task) return false;
   task.run(message).then(sendResponse, (error) =>
-    sendResponse({ error: readable(error, task.fallback) }),
+    sendResponse({
+      error: readable(error, task.fallback),
+      // 저장소 연결이 풀려 못 했으면 카드가 ‘GitHub 다시 연결’을 띄웁니다.
+      ...(error?.reconnect ? { reconnect: true } : {}),
+    }),
   );
   // 비동기로 답하므로 채널을 열어둡니다.
   return true;

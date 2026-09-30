@@ -1,4 +1,4 @@
-import { signInWithScopes } from "./auth.js";
+import { authorizeQuietly, keepSession, signInWithScopes } from "./auth.js";
 import { solutionFiles } from "./solution-files.js";
 
 const GITHUB_KEY = "dojang.github";
@@ -163,10 +163,14 @@ export async function chooseRepo(repo) {
   await saveGithub({ ...github, repo: { owner: repo.owner, name: repo.name } });
 }
 
-/** 올릴 곳이 정해져 있으면 그 이름을, 아니면 null을 돌려줍니다. 카드가 올릴지 정합니다. */
+/**
+ * 올릴 곳이 정해져 있으면 그 이름을, 아니면 null을 돌려줍니다. 카드가 올릴지 정합니다.
+ * 토큰이 비어 있어도 고른 저장소가 있으면 올려 봅니다. 올리는 쪽이 창 없이 토큰을 다시
+ * 받아 보고, 안 되면 카드가 ‘GitHub 다시 연결’을 띄웁니다.
+ */
 export async function uploadTarget() {
   const github = await getGithub();
-  return github?.token && github.repo ? repoName(github.repo) : null;
+  return github?.repo ? repoName(github.repo) : null;
 }
 
 /**
@@ -314,19 +318,69 @@ async function branchHead(token, base, branch) {
  * 남깁니다. 같은 계정으로 다시 연결하면 그대로 이어 씁니다.
  */
 async function withToken(work) {
-  const github = await getGithub();
-  if (!github?.token)
-    throw new Error("GitHub 저장소를 먼저 연결해주세요.");
+  let github = await getGithub();
+  if (!github?.token) {
+    github = await renewQuietly(github);
+    if (!github) throw disconnected("GitHub 저장소를 먼저 연결해주세요.");
+  }
   try {
     return await work(github.token, github);
   } catch (error) {
-    if (error instanceof GithubError && error.status === 401) {
-      await saveGithub({ ...github, token: null });
-      throw new Error(
-        "GitHub 연결이 풀렸습니다. 저장소를 다시 연결해주세요.",
-      );
+    if (!(error instanceof GithubError && error.status === 401))
+      throw new Error(explain(error));
+    // 토큰이 거절됐습니다. 창 없이 새로 받아 한 번만 더 합니다.
+    await saveGithub({ ...github, token: null });
+    const renewed = await renewQuietly(github);
+    if (!renewed)
+      throw disconnected("GitHub 연결이 풀렸습니다. 저장소를 다시 연결해주세요.");
+    try {
+      return await work(renewed.token, renewed);
+    } catch (retryError) {
+      if (retryError instanceof GithubError && retryError.status === 401) {
+        await saveGithub({ ...renewed, token: null });
+        throw disconnected("GitHub 연결이 풀렸습니다. 저장소를 다시 연결해주세요.");
+      }
+      throw new Error(explain(retryError));
     }
-    throw new Error(explain(error));
+  }
+}
+
+/**
+ * 연결이 풀려 할 수 없다는 오류입니다. 카드는 이 표시를 보고 ‘다시 올리기’ 대신
+ * ‘GitHub 다시 연결’을 띄웁니다.
+ */
+function disconnected(message) {
+  const error = new Error(message);
+  error.reconnect = true;
+  return error;
+}
+
+/**
+ * 거절된 토큰 대신 창 없이 새 토큰을 받아 간직합니다. 받지 못하면 null입니다.
+ *
+ * GitHub 토큰은 이렇게 죽습니다. OAuth 앱에 토큰 만료를 켜 두면 8시간 뒤 만료되고, 같은 권한
+ * 조합의 토큰이 10개를 넘으면 가장 오래 쓰지 않은 것부터 끊깁니다. 웹이든 확장이든 로그인할
+ * 때마다 새 토큰이 생기고, 한 번 public_repo를 허락한 뒤로는 모든 로그인이 그 권한으로
+ * 발급됩니다. 만료된 토큰을 갱신하려면 client secret이 있어야 해서 확장은 새로 받습니다.
+ *
+ * 앱을 이미 허락했고 github.com에 로그인돼 있으면 GitHub가 묻지 않고 돌려보내 창 없이
+ * 끝납니다. github.com에 다른 계정으로 로그인돼 있으면 그 토큰은 쓰지 않습니다 — 도장
+ * 계정까지 조용히 바뀌면 안 됩니다. 같은 계정일 때만 도장 세션도 새것으로 간직합니다.
+ */
+async function renewQuietly(github) {
+  if (!github?.login) return null;
+  try {
+    const session = await authorizeQuietly(REPO_SCOPE);
+    const token = session.provider_token;
+    if (!token) return null;
+    const { data: user } = await send(token, "/user");
+    if (user?.login !== github.login) return null;
+    await keepSession(session);
+    const renewed = { ...github, token };
+    await saveGithub(renewed);
+    return renewed;
+  } catch {
+    return null;
   }
 }
 

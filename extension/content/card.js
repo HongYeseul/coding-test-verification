@@ -47,7 +47,7 @@ window.dojangCard = function dojangCard({
 
   const size = `${code.split("\n").length}줄 · ${code.length}자`;
   const body = el("div", "dojang-body");
-  body.append(row("문제", title || "제목 없음"));
+  body.append(titleRow(title));
   body.append(row("코드", size));
 
   const tagWrap = el("div");
@@ -227,6 +227,13 @@ function el(tag, className, text) {
 function row(name, value) {
   const line = el("div", "dojang-row");
   line.append(el("span", null, name), el("span", null, value));
+  return line;
+}
+
+/** 문제 줄입니다. 제목이 길면 말줄임표로 줄어드니 마우스를 올리면 전체가 보이게 합니다. */
+function titleRow(title) {
+  const line = row("문제", title || "제목 없음");
+  line.lastChild.title = title || "";
   return line;
 }
 
@@ -456,27 +463,38 @@ function showResult(card, { title, size, tags, autoApproved, repo, upload }) {
     void pushToRepo(card, line, upload);
   } else {
     // 찍을 때 연결돼 있지 않았으면 여기서도 연결할 수 있고, 정하면 방금 찍은 풀이를 올립니다.
-    // 연결하거나 고르는 동안은 카드가 사라지지 않게 막대를 거둡니다.
-    const tell = teller(note);
-    line = repoRow({
-      tell,
-      onBusy: () => hold(card),
-      onChosen() {
-        const status = row("저장소", "올리는 중…");
-        line.replaceWith(status);
-        void pushToRepo(card, status, upload);
-      },
-    }).line;
-    line.addEventListener("click", () => hold(card));
+    line = pickAndPush(card, note, upload);
   }
-  body.append(row("문제", title || "제목 없음"), row("코드", size), line);
+  body.append(titleRow(title), row("코드", size), line);
   if (tags.length) body.append(row("태그", tags.join(", ")));
   body.append(row("상태", autoApproved ? "자동 인정" : "검수 대기"), note);
   card.append(head, body);
   if (!repo) countDown(card);
 }
 
-/** 저장소에 올리고 그 줄을 결과로 바꿉니다. 실패하면 이유와 다시 올리기를 둡니다. */
+/**
+ * 저장소를 연결하고 고르는 줄입니다. 정하면 방금 찍은 풀이를 올립니다.
+ * 연결하거나 고르는 동안은 카드가 사라지지 않게 막대를 거둡니다.
+ */
+function pickAndPush(card, note, upload) {
+  const line = repoRow({
+    tell: teller(note),
+    onBusy: () => hold(card),
+    onChosen() {
+      const status = row("저장소", "올리는 중…");
+      line.replaceWith(status);
+      void pushToRepo(card, status, upload);
+    },
+  }).line;
+  line.addEventListener("click", () => hold(card));
+  return line;
+}
+
+/**
+ * 저장소에 올리고 그 줄을 결과로 바꿉니다. 실패하면 이유와 다음 할 일을 카드 맨 아래에
+ * 둡니다 — 줄 사이에 끼우면 찍기 전과 줄 순서가 달라집니다. 연결이 풀려 못 올렸으면
+ * ‘다시 올리기’ 대신 ‘GitHub 다시 연결’을 두고, 연결되면 바로 이어 올립니다.
+ */
 async function pushToRepo(card, line, upload) {
   const value = line.lastChild;
   value.classList.remove("dojang-bad");
@@ -486,14 +504,41 @@ async function pushToRepo(card, line, upload) {
     value.textContent = "올리지 못했습니다";
     value.classList.add("dojang-bad");
     const note = el("p", "dojang-note dojang-bad", result.error);
-    const retry = el("button", "dojang-secondary", "다시 올리기");
-    retry.type = "button";
-    retry.addEventListener("click", () => {
+    const tell = teller(note);
+    const action = el(
+      "button",
+      "dojang-secondary",
+      result.reconnect ? "GitHub 다시 연결" : "다시 올리기",
+    );
+    action.type = "button";
+    action.addEventListener("click", async () => {
+      if (result.reconnect) {
+        action.disabled = true;
+        action.textContent = "연결하는 중…";
+        tell("GitHub 창에서 권한을 허용해주세요.");
+        const connected = await sendToBackground(
+          { type: "connect-github" },
+          "GitHub 연결을 마치지 못했습니다. 다시 시도해주세요.",
+        );
+        if (connected.error) {
+          action.disabled = false;
+          action.textContent = "GitHub 다시 연결";
+          tell(connected.error, true);
+          return;
+        }
+        // 다른 계정으로 연결했으면 저장소를 다시 골라야 합니다. 고르면 이어서 올립니다.
+        if (!connected.repo) {
+          action.remove();
+          tell("");
+          line.replaceWith(pickAndPush(card, note, upload));
+          return;
+        }
+      }
       note.remove();
-      retry.remove();
+      action.remove();
       void pushToRepo(card, line, upload);
     });
-    line.after(note, retry);
+    line.parentElement.append(note, action);
     return;
   }
   const link = el(

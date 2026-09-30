@@ -73,8 +73,11 @@
   cursor: pointer;
 }
 
+/* 칸 폭을 minmax(0, 1fr)로 묶습니다. 그냥 두면 격자 칸이 가장 긴 줄의 글자 폭만큼 늘어나,
+   `104. Maximum Depth of Binary Tree` 같은 제목이 말줄임표 없이 카드 밖으로 밀려 잘렸습니다. */
 .dojang-body {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
   padding: 12px 14px;
 }

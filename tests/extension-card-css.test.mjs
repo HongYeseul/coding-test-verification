@@ -53,3 +53,10 @@ test("카드가 만드는 단추는 모두 .dojang-card 아래에서 모양을 �
     for (const rule of rules) assert.match(rule, /^\.dojang-card\s/, rule);
   }
 });
+
+test("카드 본문 칸은 긴 제목에 맞춰 늘어나지 않는다", () => {
+  // 그냥 두면 격자 칸이 가장 긴 줄의 글자 폭만큼 늘어나, 긴 제목이 말줄임표 없이 카드 밖으로
+  // 밀려 잘렸습니다(0.2.12, `104. Maximum Depth of Binary Tree`).
+  const body = CSS.match(/\.dojang-body\s*\{([^}]*)\}/)?.[1] ?? "";
+  assert.match(body, /grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+});

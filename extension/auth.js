@@ -51,8 +51,9 @@ async function store(session) {
 /**
  * GitHub 로그인 창을 띄우고 받은 코드를 토큰 응답으로 바꿉니다.
  * scopes를 주면 Supabase가 GitHub에 그 권한을 더 청합니다.
+ * interactive가 거짓이면 창을 보이지 않고, 사용자가 무언가 눌러야 하는 순간 실패합니다.
  */
-async function authorize(scopes) {
+async function authorize(scopes, { interactive = true } = {}) {
   const redirectTo = chrome.identity.getRedirectURL();
   const { verifier, challenge } = await createPkce();
   const url =
@@ -64,7 +65,7 @@ async function authorize(scopes) {
 
   // 사용자가 창을 닫으면 크롬이 영어 문장으로 거절합니다. 우리 말로 바꿔 둡니다.
   const callback = await chrome.identity
-    .launchWebAuthFlow({ url, interactive: true })
+    .launchWebAuthFlow({ url, interactive })
     .catch(() => {
       throw new Error("GitHub 로그인을 마치지 못했습니다. 창을 닫았다면 다시 눌러주세요.");
     });
@@ -102,6 +103,20 @@ export async function signInWithScopes(scopes) {
   await store(session);
   if (!session.provider_token) throw new Error("GitHub 권한을 받지 못했습니다.");
   return session.provider_token;
+}
+
+/**
+ * 창 없이 GitHub 토큰을 새로 받습니다. 앱을 이미 허락했고 github.com에 로그인돼 있으면
+ * GitHub가 묻지 않고 바로 돌려보내 조용히 끝나고, 무언가 눌러야 하면 실패합니다.
+ * 세션은 돌려주기만 하고 저장하지 않습니다 — 부르는 쪽이 누구로 로그인됐는지 확인한 뒤
+ * keepSession으로 간직합니다. GitHub가 다른 계정으로 돌려보낼 수도 있기 때문입니다.
+ */
+export async function authorizeQuietly(scopes) {
+  return authorize(scopes, { interactive: false });
+}
+
+export async function keepSession(session) {
+  return store(session);
 }
 
 export async function signOut() {
