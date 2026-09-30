@@ -39,6 +39,18 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     surface: "EXTENSION",
+    date: "2026-09-30",
+    summary: "GitHub 저장소 연결이 풀려도 대부분 저절로 다시 이어집니다.",
+    highlights: [
+      "GitHub가 토큰을 거절하면 창 없이 새 권한을 받아 한 번 더 올립니다",
+      "그래도 안 되면 결과 카드에서 바로 ‘GitHub 다시 연결’을 누를 수 있습니다",
+      "긴 문제 제목이 카드 밖으로 밀려 잘리던 것을 고쳤습니다",
+      "1분 안에 두 문제를 올리면 두 번째가 실패하던 것을 고쳤습니다",
+    ],
+  },
+  {
+    surface: "EXTENSION",
+    version: "0.2.12",
     date: "2026-09-29",
     summary: "LeetCode에서도 도장 찍기 단추가 제대로 보입니다.",
     highlights: [
