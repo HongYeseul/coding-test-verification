@@ -39,6 +39,18 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     surface: "EXTENSION",
+    date: "2026-10-01",
+    summary: "프로그래머스 풀이를 저장소에 올릴 때 문제 설명도 함께 올라갑니다.",
+    highlights: [
+      "코딩테스트 연습 문제만 올리고, 프로그래머스가 요구하는 출처 문구를 맨 끝에 붙입니다",
+      "문제 설명은 도장 서버로 보내지 않고 내 저장소에만 올라갑니다",
+      "기업 과제관 문제나 별도 저작권 표시가 붙은 문제는 설명을 올리지 않습니다",
+      "NeetCode와 LeetCode는 지금처럼 문제 설명을 읽지도 올리지도 않습니다",
+    ],
+  },
+  {
+    surface: "EXTENSION",
+    version: "0.2.13",
     date: "2026-09-30",
     summary: "GitHub 저장소 연결이 풀려도 대부분 저절로 다시 이어집니다.",
     highlights: [
