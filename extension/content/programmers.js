@@ -2,13 +2,15 @@
  * 프로그래머스 채점 결과를 지켜보다가, 정답이면 카드를 띄웁니다.
  * 카드는 content/card.js가 그립니다. 여기는 정답을 알아내는 일만 합니다.
  *
- * 읽는 것은 다섯 가지뿐입니다.
+ * 읽는 것은 여섯 가지뿐입니다.
  *   1) 채점 결과 모달의 제목 — 카드를 띄울지 정하는 데만 쓰고 서버로 보내지 않습니다.
  *   2) 사용자가 제출한 코드 — 사용자 본인의 저작물입니다.
  *   3) 그 코드의 언어 값 — GitHub 저장소에 올릴 파일 확장자를 정하는 데만 씁니다.
  *   4) 채점 결과 표의 통과 칸 — 커밋 메시지의 시간·메모리·통과 수가 됩니다.
  *   5) 문제의 식별 정보 — 제목과 난이도. 난이도는 커밋 메시지와 README에만 씁니다.
- * 문제 설명·입출력 예시 같은 플랫폼 콘텐츠는 읽지 않습니다.
+ *   6) 문제 설명 — 분류가 '코딩테스트 연습'일 때만 읽습니다. 프로그래머스가 공식 안내에서
+ *      비상업·비영리 게시를 허용한 범위라서입니다(조건은 solution-files.js 머리말). 서버로는
+ *      가지 않고 사용자 저장소의 README에만 쓰입니다. 테스트케이스와 모범답안은 읽지 않습니다.
  *
  * 실제 DOM에서 확인한 사실 (2026-09-13, lessons/42576):
  *   - 결과 모달은 `#modal-dialog.modal.fade.show` 안의 `h4.modal-title`이다.
@@ -21,6 +23,10 @@
  * 문제 영역 `.lesson-algorithm-main-section`에 `data-language="python3"`처럼 붙고,
  * 언어를 바꾸면 페이지가 `?language=`를 달고 다시 열립니다. 기본 언어로 풀면
  * 주소에는 없어서 주소는 뒷받침으로만 씁니다.
+ *
+ * 문제 설명은 `div.guide-section-description > div.markdown`에 있고(2026-10-01, lessons/42576·
+ * 42889), 로그인하지 않아도 열립니다. 쓰는 태그는 h2·h5·p·ul·li·code·table(thead 있음)·br·img
+ * 정도입니다. 분류는 `ol.breadcrumb`의 첫 칸이고 연습 문제는 `코딩테스트 연습`입니다.
  *
  * 난이도는 문제 영역 `.lesson-content`의 `data-challenge-level`에 숫자로 붙어 있습니다
  * (2026-09-27, lessons/42746에서 `2`). 채점 결과는 `td.result.passed` 칸마다
@@ -100,6 +106,45 @@
     return heading?.textContent?.trim().slice(0, 160) ?? "";
   }
 
+  /**
+   * 문제가 놓인 분류입니다. 머리 경로(`코딩테스트 연습 > 해시 > …`)의 첫 칸이고, 문제 설명을
+   * 읽어도 되는지 가리는 데 씁니다. 기업 과제관·선발관 문제는 이 값이 달라 읽지 않습니다.
+   */
+  function problemCatalog() {
+    const first = document.querySelector("ol.breadcrumb li");
+    return first?.textContent?.replace(/\s+/g, " ").trim().slice(0, 40) ?? "";
+  }
+
+  /**
+   * 문제 설명을 트리로 뜹니다. 같은 제출을 1초마다 다시 보게 되므로 코드가 바뀔 때만 새로
+   * 읽고, 정답이 뜬 순간의 화면을 그대로 들고 있습니다 — 카드를 누르기 전에 다른 문제로
+   * 넘어가도 이 문제의 설명이 올라갑니다.
+   */
+  let statementCache = { key: "", value: { catalog: "", statement: null } };
+  function problemStatement(key) {
+    if (statementCache.key !== key) {
+      let value = { catalog: "", statement: null };
+      try {
+        const catalog = problemCatalog();
+        const area =
+          catalog === "코딩테스트 연습"
+            ? document.querySelector(
+                "div.guide-section-description > div.markdown",
+              )
+            : null;
+        value = {
+          catalog,
+          statement: area ? window.dojangStatementTree(area) : null,
+        };
+      } catch {
+        // 설명을 못 읽어도 도장 찍기는 되어야 합니다. README에 설명만 빠집니다. 같은 제출을
+        // 1초마다 다시 보므로 실패도 담아 두어 같은 실패를 되풀이하지 않습니다.
+      }
+      statementCache = { key, value };
+    }
+    return statementCache.value;
+  }
+
   /** 저장 형식에 맞춰 쿼리와 끝 슬래시를 지웁니다. */
   function problemUrl() {
     const host = window.location.hostname.replace(/^www\./, "");
@@ -128,6 +173,7 @@
     // 모달로 되돌아가 글자가 한 자도 들어가지 않습니다. jQuery가 캡처 단계에서
     // 잡기 때문에 stopPropagation으로는 막지 못합니다. 모달 안에 있으면
     // contains() 검사를 통과해 그냥 놔둡니다.
+    const { catalog, statement } = problemStatement(`${problemUrl()}\n${code}`);
     window.dojangCard({
       title: problemTitle(),
       code,
@@ -135,6 +181,8 @@
       language: submittedLanguage(),
       level: problemLevel(),
       grading: { cells: passedCells() },
+      catalog,
+      statement,
       mount: modal,
       onStamped: () => {
         registeredCode = code;

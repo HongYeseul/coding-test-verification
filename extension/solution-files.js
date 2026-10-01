@@ -3,10 +3,20 @@
  * 그대로 부릅니다.
  *
  * 올리는 것은 본인이 제출한 코드와 채점 결과, 그리고 문제를 가리키는 식별 정보 — 번호·제목·
- * 난이도·링크 — 와 사용자가 적은 태그뿐입니다. 문제 설명·입출력 예시 같은 플랫폼 콘텐츠는
- * 읽지도 옮기지도 않습니다. 저장소는 공개라 더 그렇습니다.
+ * 난이도·링크 — 와 사용자가 적은 태그입니다. 문제 설명 같은 플랫폼 콘텐츠는 올리지 않습니다.
+ * 저장소는 공개라 더 그렇습니다.
+ *
+ * 단 하나의 예외가 프로그래머스 코딩테스트 연습 문제의 설명입니다. 프로그래머스가 공식 안내
+ * (고객센터 '프로그래머스의 문제를 외부에 게시할 수 있나요?')에서 광고 없는 GitHub 같은
+ * 비상업·비영리 용도로 게시하는 것을 허용하고, 출처를 밝히라고 합니다. 그래서 아래 조건을
+ * 모두 지킬 때만 README에 싣습니다. 다른 플랫폼은 그런 허락을 확인하지 못해 싣지 않습니다.
+ *   - 분류가 '코딩테스트 연습'입니다. 기업 과제관·선발관 문제는 어떤 경우에도 게시할 수 없습니다.
+ *   - 설명에 별도 저작권 표시가 없습니다. 안내가 그런 문제를 제외합니다.
+ *   - 설명만 올립니다. 테스트케이스나 채점 환경은 올리지 않습니다.
+ *   - 맨 끝에 안내가 정한 출처 문구를 붙입니다.
  */
 import { CONFIG } from "./config.js";
+import { statementMarkdown } from "./statement.js";
 
 /**
  * 커밋 본문 끝에 남기는 한 줄입니다. 저장소를 보는 사람도 어느 서비스가 올린 커밋인지 알 수
@@ -27,6 +37,12 @@ const PLATFORMS = [
     folder: (id, title) => (title ? `${id}. ${title}` : id),
     // 문제 영역에 붙은 숫자입니다. Lv.0 문제도 있습니다.
     rank: (level) => (/^\d{1,2}$/.test(level) ? `Lv.${level}` : ""),
+    // 문제 설명을 README에 싣는 조건입니다. 위 머리말을 봅니다.
+    statement: {
+      catalog: "코딩테스트 연습",
+      credit:
+        "출처: 프로그래머스 코딩 테스트 연습, https://school.programmers.co.kr/learn/challenges",
+    },
   },
   {
     host: "neetcode.io",
@@ -145,6 +161,20 @@ function gradingSuffix(summary) {
   return summary.total ? ` · ${summary.passed}/${summary.total} 통과` : "";
 }
 
+/** 설명에 이런 글자가 있으면 별도 저작권 표시가 붙은 문제로 보고 설명을 싣지 않습니다. */
+const SEPARATE_COPYRIGHT = /저작권|©|ⓒ|copyright/i;
+
+/**
+ * README에 실을 문제 설명(마크다운)을 정합니다. 싣지 않는 경우는 빈 문자열입니다.
+ * 플랫폼이 허락한 분류가 아니거나, 별도 저작권 표시가 있거나, 변환할 수 없으면 싣지 않습니다.
+ */
+function statementFor(platform, { statement, catalog, title }) {
+  const rule = platform.statement;
+  if (!rule || catalog !== rule.catalog) return "";
+  const markdown = statementMarkdown(statement, { title });
+  return markdown && !SEPARATE_COPYRIGHT.test(markdown) ? markdown : "";
+}
+
 /**
  * 풀이 한 건을 파일 두 개와 커밋 메시지로 짓습니다. 한 문제가 한 폴더라 같은 문제를 다시 풀면
  * 같은 파일을 덮어써 이력으로 남습니다. 지원하지 않는 주소면 null입니다.
@@ -162,6 +192,8 @@ export function solutionFiles({
   tags,
   level,
   grading,
+  statement,
+  catalog,
 }) {
   let pathname;
   let platform;
@@ -190,6 +222,7 @@ export function solutionFiles({
     .filter(Boolean);
   const rank = platform.rank(String(level ?? ""));
   const summary = gradingSummary(grading);
+  const description = statementFor(platform, { statement, catalog, title: name });
 
   const readme = [
     `# ${name || id}`,
@@ -199,6 +232,9 @@ export function solutionFiles({
     `- 문제: ${problemUrl}`,
     ...(topics.length ? [`- 태그: ${topics.join(", ")}`] : []),
     "",
+    ...(description
+      ? ["## 문제 설명", "", description, "", platform.statement.credit, ""]
+      : []),
   ].join("\n");
   const subject = `[${[platform.name, rank].filter(Boolean).join(" ")}] ${name || id}${gradingSuffix(summary)}`;
   const details = [

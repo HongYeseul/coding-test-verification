@@ -7,8 +7,12 @@ import { gradingSummary, solutionFiles } from "../extension/solution-files.js";
 /**
  * GitHub 저장소에 올릴 파일의 자리와 내용, 커밋 메시지를 봅니다.
  *
- * README에는 제목·플랫폼·난이도·링크·태그만 들어가야 합니다. 문제 설명 같은 플랫폼 콘텐츠를
- * 옮기지 않는다는 약속을 여기서 모양으로 붙잡아 둡니다.
+ * README에는 제목·플랫폼·난이도·링크·태그만 들어가는 것이 기본입니다. 문제 설명 같은 플랫폼
+ * 콘텐츠는 올리지 않는다는 약속을 여기서 모양으로 붙잡아 둡니다.
+ *
+ * 단 하나의 예외가 프로그래머스 코딩테스트 연습 문제의 설명입니다. 프로그래머스가 공식 안내에서
+ * 비상업·비영리 게시를 허용하고 출처 표기를 요구해서(2026-10-01 확인), 분류가 연습이고 별도
+ * 저작권 표시가 없을 때만 출처 문구와 함께 싣습니다. 그 조건을 아래 끝의 테스트가 붙잡습니다.
  */
 const PROGRAMMERS =
   "https://school.programmers.co.kr/learn/courses/30/lessons/42746";
@@ -305,7 +309,7 @@ test("지원하지 않는 주소나 빈 코드는 올릴 자리를 정하지 않
   assert.equal(solutionFiles({ ...base, problemUrl: PROGRAMMERS, code: " \n" }), null);
 });
 
-test("README에는 제목·플랫폼·난이도·링크·태그 말고는 아무것도 적지 않는다", () => {
+test("설명을 넘기지 않으면 README에는 제목·플랫폼·난이도·링크·태그 말고는 아무것도 적지 않는다", () => {
   const readme = solutionFiles({
     problemUrl: PROGRAMMERS,
     title: "가장 큰 수",
@@ -354,4 +358,133 @@ test("채점 요약은 칸마다 따로 가장 큰 시간과 메모리를 고르
   );
   for (const nothing of [undefined, null, {}, { cells: [] }, { passed: 0, total: 3 }])
     assert.equal(gradingSummary(nothing), null, JSON.stringify(nothing));
+});
+
+/**
+ * 프로그래머스 연습 문제 설명을 닮은 트리입니다. 실제 지문이 아니라 지어낸 글입니다 —
+ * 남의 문제를 이 저장소에 옮겨 두지 않으려는 것입니다. 모양(h2·h5·code·sup·표)만 실제 화면과
+ * 같습니다.
+ */
+const h = (tag, attrs, ...kids) => ({ tag, ...(attrs ? { attrs } : {}), kids });
+const STATEMENT = h(
+  "div",
+  null,
+  h("h2", null, "가장 큰 수"),
+  h("p", null, "정수 배열 ", h("code", null, "numbers"), "가 주어집니다. 이어 붙여 가장 큰 수를 만드세요."),
+  h("h5", null, "제한사항"),
+  h("ul", null, h("li", null, "1 ≤ ", h("code", null, "n"), " ≤ 10", h("sup", null, "5"))),
+  h("h5", null, "입출력 예"),
+  h(
+    "table",
+    null,
+    h("thead", null, h("tr", null, h("th", null, "numbers"), h("th", null, "return"))),
+    h("tbody", null, h("tr", null, h("td", null, "[6, 10, 2]"), h("td", null, '"6210"'))),
+  ),
+);
+const CREDIT =
+  "출처: 프로그래머스 코딩 테스트 연습, https://school.programmers.co.kr/learn/challenges";
+const PRACTICE = "코딩테스트 연습";
+
+function programmers(extra = {}) {
+  return solutionFiles({
+    problemUrl: PROGRAMMERS,
+    title: "가장 큰 수",
+    language: "python3",
+    code: "x",
+    tags: "정렬",
+    level: "2",
+    grading: { cells: CELLS },
+    ...extra,
+  });
+}
+
+test("프로그래머스 연습 문제는 설명을 README에 싣고 맨 끝에 출처를 붙인다", () => {
+  const readme = programmers({ statement: STATEMENT, catalog: PRACTICE }).files[1].content;
+
+  assert.equal(
+    readme,
+    [
+      "# 가장 큰 수",
+      "",
+      "- 플랫폼: 프로그래머스",
+      "- 난이도: Lv.2",
+      `- 문제: ${PROGRAMMERS}`,
+      "- 태그: 정렬",
+      "",
+      "## 문제 설명",
+      "",
+      // 제목과 같은 첫 제목은 README 맨 위와 겹쳐 뺍니다.
+      "정수 배열 `numbers`가 주어집니다. 이어 붙여 가장 큰 수를 만드세요.",
+      "",
+      "### 제한사항",
+      "",
+      "- 1 ≤ `n` ≤ 10<sup>5</sup>",
+      "",
+      "### 입출력 예",
+      "",
+      "| numbers | return |",
+      "| --- | --- |",
+      '| \\[6, 10, 2\\] | "6210" |',
+      "",
+      CREDIT,
+      "",
+    ].join("\n"),
+  );
+});
+
+test("설명을 싣든 말든 커밋 메시지와 코드 파일은 같다", () => {
+  const plain = programmers();
+  const withStatement = programmers({ statement: STATEMENT, catalog: PRACTICE });
+
+  assert.equal(withStatement.message, plain.message);
+  assert.deepEqual(withStatement.files[0], plain.files[0]);
+});
+
+test("분류가 코딩테스트 연습이 아니면 설명을 싣지 않는다", () => {
+  const plain = programmers().files[1].content;
+  // 기업 과제관·선발관 문제는 어떤 경우에도 게시할 수 없습니다.
+  for (const catalog of ["", undefined, "기업 과제관", "탑프로그래머스", "코딩테스트 연습 "])
+    assert.equal(
+      programmers({ statement: STATEMENT, catalog }).files[1].content,
+      plain,
+      String(catalog),
+    );
+});
+
+test("별도 저작권 표시가 붙은 문제는 설명을 싣지 않는다", () => {
+  const plain = programmers().files[1].content;
+  for (const notice of [
+    "Copyright ⓒ 2026 Example Corp. All rights reserved.",
+    "이 문제의 저작권은 예시 회사에 있습니다.",
+    "© 2026 Example",
+  ]) {
+    const marked = h("div", null, h("p", null, "문제를 푸세요."), h("p", null, notice));
+    assert.equal(
+      programmers({ statement: marked, catalog: PRACTICE }).files[1].content,
+      plain,
+      notice,
+    );
+  }
+});
+
+test("설명이 없거나 모양이 틀리거나 너무 길면 README는 그대로다", () => {
+  const plain = programmers().files[1].content;
+  const long = h("div", null, h("p", null, "가".repeat(30001)));
+  for (const statement of [null, undefined, "문자열", {}, h("div", null), long])
+    assert.equal(
+      programmers({ statement, catalog: PRACTICE }).files[1].content,
+      plain,
+    );
+});
+
+test("프로그래머스 말고는 설명을 넘겨도 싣지 않는다", () => {
+  // NeetCode·LeetCode는 게시를 허락하는 안내를 확인하지 못했습니다.
+  for (const problemUrl of [NEETCODE, LEETCODE]) {
+    const base = { problemUrl, title: "t", language: "python3", code: "x", tags: "" };
+    assert.equal(
+      solutionFiles({ ...base, statement: STATEMENT, catalog: PRACTICE }).files[1].content,
+      solutionFiles(base).files[1].content,
+      problemUrl,
+    );
+  }
 });

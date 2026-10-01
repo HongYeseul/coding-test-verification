@@ -6,10 +6,12 @@
  * 한쪽을 고치다 다른 쪽만 옛 모습으로 남는 일을 막습니다.
  *
  * 부르는 쪽은 무엇을 남길지만 넘깁니다.
- *   dojangCard({ title, code, problemUrl, language, level, grading, mount, onStamped })
+ *   dojangCard({ title, code, problemUrl, language, level, grading, catalog, statement, mount, onStamped })
  *
- * language·level·grading은 GitHub 저장소에 올릴 때만 씁니다. language는 파일 확장자를,
- * level(난이도)과 grading(채점 결과)은 커밋 메시지를 정합니다.
+ * language·level·grading·catalog·statement는 GitHub 저장소에 올릴 때만 씁니다. language는
+ * 파일 확장자를, level(난이도)과 grading(채점 결과)은 커밋 메시지를 정하고, catalog(분류)와
+ * statement(문제 설명 트리)는 README에 설명을 실을지와 그 내용을 정합니다. statement는
+ * 도장을 찍는 `submit-code`에는 싣지 않습니다 — 우리 서버에 저장하지 않는다는 약속입니다.
  *
  * 두 카드의 줄은 늘 같은 순서입니다 — 문제, 코드, 저장소, 태그, 그리고 찍은 뒤에만 상태.
  * 같은 자리에 같은 것이 있어야 찍기 전후를 견주지 않고 읽습니다.
@@ -35,6 +37,8 @@ window.dojangCard = function dojangCard({
   language,
   level,
   grading,
+  catalog,
+  statement,
   mount,
   onStamped,
 }) {
@@ -147,6 +151,8 @@ window.dojangCard = function dojangCard({
             tags: topics,
             level,
             grading,
+            catalog,
+            statement,
           },
           "저장소에 올리지 못했습니다. 다시 시도해주세요.",
         ),

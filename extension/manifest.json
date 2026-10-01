@@ -39,6 +39,7 @@
         "seal.js",
         "content/confetti.js",
         "content/card.js",
+        "content/statement.js",
         "content/programmers.js"
       ],
       "css": [
