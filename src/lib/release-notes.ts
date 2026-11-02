@@ -39,6 +39,18 @@ export type Release = {
 export const RELEASES: Release[] = [
   {
     surface: "EXTENSION",
+    date: "2026-11-02",
+    summary: "정답 풀이를 스터디 기록 없이 GitHub 저장소에 자동으로 올립니다.",
+    highlights: [
+      "팝업에서 GitHub로 로그인하고 공개 저장소를 선택합니다",
+      "정답 제출 시 풀이 코드와 README가 자동으로 올라갑니다",
+      "LeetCode 본문도 원문 링크와 함께 README에 남깁니다",
+      "Supabase는 로그인에만 쓰고 풀이를 서비스 서버에 저장하지 않습니다",
+    ],
+  },
+  {
+    surface: "EXTENSION",
+    version: "0.2.14",
     date: "2026-10-01",
     summary: "프로그래머스 풀이를 저장소에 올릴 때 문제 설명도 함께 올라갑니다.",
     highlights: [

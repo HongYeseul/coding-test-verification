@@ -137,7 +137,7 @@
           statement: area ? window.dojangStatementTree(area) : null,
         };
       } catch {
-        // 설명을 못 읽어도 도장 찍기는 되어야 합니다. README에 설명만 빠집니다. 같은 제출을
+        // 설명을 못 읽어도 풀이 코드는 올라가야 합니다. README에 설명만 빠집니다. 같은 제출을
         // 1초마다 다시 보므로 실패도 담아 두어 같은 실패를 되풀이하지 않습니다.
       }
       statementCache = { key, value };
@@ -167,12 +167,6 @@
     }
     const code = submittedCode();
     if (!code || code === registeredCode) return;
-    // 카드를 모달 안에 넣는 이유가 있습니다. 부트스트랩 모달은 document에
-    // focusin을 걸어 두고 모달 바깥으로 나간 포커스를 도로 끌어옵니다
-    // (enforceFocus). body에 붙이면 태그 입력칸을 눌러도 포커스가 곧바로
-    // 모달로 되돌아가 글자가 한 자도 들어가지 않습니다. jQuery가 캡처 단계에서
-    // 잡기 때문에 stopPropagation으로는 막지 못합니다. 모달 안에 있으면
-    // contains() 검사를 통과해 그냥 놔둡니다.
     const { catalog, statement } = problemStatement(`${problemUrl()}\n${code}`);
     window.dojangCard({
       title: problemTitle(),
@@ -183,6 +177,7 @@
       grading: { cells: passedCells() },
       catalog,
       statement,
+      // 모달 안에 있어야 저장소 선택과 이름 입력의 포커스가 유지됩니다.
       mount: modal,
       onStamped: () => {
         registeredCode = code;

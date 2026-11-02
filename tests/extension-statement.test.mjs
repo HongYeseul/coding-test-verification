@@ -283,18 +283,12 @@ test("너무 크거나 깊은 화면은 잘라 올리지 않고 null이다", () 
   assert.equal(dump(deep), null);
 });
 
-/**
- * 문제 설명은 서버로 가지 않습니다. 도장을 찍는 `submit-code`와 서버에 등록하는 background의
- * `submit`에는 설명이 없어야 하고, 올리는 `push-code`만 싣습니다.
- */
-test("문제 설명은 도장을 찍는 요청에 실리지 않는다", () => {
+test("문제 설명은 GitHub 올리기에만 실리고 서비스 기록 요청은 없다", () => {
   const card = readFileSync(new URL("../extension/content/card.js", import.meta.url), "utf8");
-  const submit = card.match(/type: "submit-code",[\s\S]*?\}\)/)?.[0];
-  assert.ok(submit, "submit-code 메시지를 찾지 못했습니다.");
-  assert.ok(!/statement|catalog/.test(submit), submit);
+  assert.doesNotMatch(card, /submit-code/);
   assert.match(card, /type: "push-code",[\s\S]*?statement,/);
-
-  // background는 설명을 열어 보지 않고 push-code 입력을 그대로 올리는 쪽에 넘깁니다.
-  const background = readFileSync(new URL("../extension/background.js", import.meta.url), "utf8");
-  assert.ok(!/statement/.test(background));
+  for (const file of ["background.js", "popup.js"]) {
+    const source = readFileSync(new URL(`../extension/${file}`, import.meta.url), "utf8");
+    assert.doesNotMatch(source, /api\/proofs|rest\/v1|storage\/v1|submit-code|captureTab/);
+  }
 });

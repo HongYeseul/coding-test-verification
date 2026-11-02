@@ -7,7 +7,8 @@
  *   1) 본인이 제출한 코드와 그 언어 — 제출 요청에 실려 나가는 값을 그대로 받습니다.
  *   2) 채점 결과 — 정답인지, 통과 수·시간·메모리. 카드를 띄울지 정하고 커밋 메시지에 씁니다.
  *   3) 문제 번호·제목·난이도 — 문제 영역 머리의 `1. Two Sum`과 `Easy` 표시입니다.
- * 문제 설명·예제·힌트·에디토리얼·다른 사람의 풀이는 읽지 않습니다.
+ *   4) 현재 문제 탭의 설명 영역 — README에 출처 링크와 함께 올립니다.
+ * 힌트·에디토리얼·다른 사람의 풀이·채점용 테스트케이스는 읽지 않습니다.
  *
  * 실제 화면에서 확인한 것 (2026-09-29, problems/two-sum):
  *   - 제목은 `.text-title-large` 안의 `a[href="/problems/two-sum/"]`에 `1. Two Sum`으로 있습니다.
@@ -53,6 +54,18 @@
     return LEVELS.includes(text) ? text : "";
   }
 
+  /** 해당 문제의 설명 영역만 읽습니다. 없거나 화면 구조가 달라지면 생략합니다. */
+  function problemStatement(link) {
+    try {
+      const area = link?.closest(".flexlayout__tab")?.querySelector(
+        '[data-track-load="description_content"]',
+      );
+      return area ? window.dojangStatementTree(area) : null;
+    } catch {
+      return null;
+    }
+  }
+
   /** 문제 주소는 제출 요청의 슬러그로 짓습니다. 지금 주소에는 `/submissions/…`가 붙어 있습니다. */
   function problemUrl(slug) {
     return `https://leetcode.com/problems/${encodeURIComponent(slug)}`;
@@ -75,6 +88,7 @@
       problemUrl: problemUrl(slug),
       language: typeof language === "string" ? language : "",
       level: problemLevel(link),
+      statement: problemStatement(link),
       grading: {
         passed: Number.isInteger(grading?.passed) ? grading.passed : null,
         total: Number.isInteger(grading?.total) ? grading.total : null,

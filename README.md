@@ -45,24 +45,17 @@
 
 ## 크롬 확장 프로그램
 
-`extension/`에 있습니다. 앱을 열고 그룹을 찾아 모달을 띄우는 과정을 줄입니다.
+`extension/`은 GitHub 자동 업로드 전용입니다. 팝업에서 GitHub로 로그인하고 공개 저장소를 선택하면,
+프로그래머스·LeetCode·NeetCode에서 정답을 맞힐 때 풀이 코드와 README를 자동으로 올립니다.
+스터디 가입은 필요하지 않으며 Vercel 기록 API나 Supabase DB·Storage에 풀이를 저장하지 않습니다.
+Supabase는 GitHub 로그인에만 사용합니다.
 
-- **아이콘 클릭**: 보고 있는 탭 화면을 캡처해 등록합니다. 페이지 내용을 읽지 않고 `activeTab`만 쓰므로 코딩 사이트 권한이 필요 없습니다.
-- **프로그래머스·NeetCode·LeetCode에서 정답이 되면**: 오른쪽 위에 카드가 떠, 주제 태그를 적고 누르면 제출한 코드가 그대로 기록됩니다. 정답 여부와 사용자가 제출한 코드, 그리고 문제의 번호·제목·난이도 같은 식별 정보를 읽습니다. 문제 설명은 프로그래머스 코딩테스트 연습 문제에서만, 사용자 저장소에 올릴 때를 위해서만 읽습니다. 세 사이트가 같은 카드를 쓰고, 다른 것은 정답을 알아내는 방법뿐입니다 — 프로그래머스는 결과 모달을 보고, NeetCode·LeetCode는 에디터가 Monaco라 DOM에서 코드를 온전히 읽을 수 없어 제출 요청에 실린 코드와 그 채점 응답을 봅니다.
-- **GitHub 저장소를 연결하면**: 카드로 도장을 찍을 때 풀이 코드와 README가 고른 저장소에 커밋 하나로 올라갑니다. 연결하고 고르는 일은 정답 카드의 저장소 줄에서 합니다 — 팝업을 열어 보지 않은 사람도 그 순간에 알게 하려는 것입니다. 커밋 메시지 첫 줄은 `[프로그래머스 Lv.2] 가장 큰 수 · 64.31ms · 96.4MB`처럼 플랫폼·난이도·제목·채점 요약이고, 본문 끝에는 어느 서비스가 올렸는지 `Auto-committed by 도장 (…)` 한 줄을 남깁니다. README에는 제목·플랫폼·난이도·문제 링크·태그를 적고, 프로그래머스 코딩테스트 연습 문제는 문제 설명과 출처도 함께 적습니다. 프로그래머스가 공식 안내에서 광고 없는 GitHub 같은 비상업·비영리 게시를 허용하고 출처 표기를 요구해서입니다. 설명은 우리 서버로 가지 않고 사용자의 저장소에만 올라갑니다. NeetCode·LeetCode는 그런 허락을 확인하지 못해 설명을 옮기지 않습니다. 같은 GitHub 로그인에 `public_repo` 권한을 더해 받으므로 공개 저장소만 고를 수 있고, 토큰은 확장에만 두고 서버로 보내지 않습니다. 올리다 실패해도 도장은 남습니다.
-- **설치하거나 새 버전으로 바꾸면**: 이미 열려 있던 문제 탭에도 감지 스크립트를 넣어, 새로고침하지 않아도 카드가 뜹니다. 크롬은 manifest의 콘텐츠 스크립트를 설치한 뒤에 불러온 페이지에만 넣기 때문입니다. `scripting` 권한은 이 일에만 씁니다.
+프로그래머스 연습 문제와 LeetCode는 사용자가 연 문제의 본문을 출처와 함께 README에 싣습니다.
+NeetCode 본문, 힌트·에디토리얼·다른 사람의 풀이·채점용 테스트케이스는 읽지 않습니다.
+LeetCode 본문 재게시의 공식 허용은 확인되지 않았습니다.
 
-LeetCode는 처음에 약관의 `crawling`·`scraping` 금지 조항 때문에 빼 두었다가 다시 붙였습니다. 같은 조항이 프로그래머스 약관에도 있고, 확장은 LeetCode에 요청을 하나도 더 보내지 않은 채 사용자가 누른 제출 한 건이 오가는 것만 보기 때문입니다. 대회 문제는 감지하지 않습니다. 판단 근거는 [`extension/README.md`](extension/README.md)의 ‘LeetCode 약관을 어떻게 읽었나’에 있습니다. 문제 링크는 프로그래머스·백준·LeetCode·NeetCode 등 지원 플랫폼 주소를 받습니다.
-
-![정답 순간에 뜨는 카드](extension/screenshots/card-input.png)
-
-신원은 웹과 같은 GitHub OAuth를 `chrome.identity`로 태워 확보합니다. 별도 키 체계나 테이블이 없고 서버는 지금처럼 토큰을 확인합니다. 등록은 `POST /api/proofs`로 받으며, 화면이 쓰는 서버 액션과 같은 규칙(`src/lib/proof-record.ts`)을 공유합니다.
-
-[릴리스 페이지](https://github.com/HongYeseul/coding-test-verification/releases/latest)에서 zip을 받아 압축을 풀고, 크롬의 ‘압축해제된 확장 프로그램을 로드합니다’로 그 폴더를 고르면 끝입니다. 기본값이 운영 환경이라 주소나 키를 입력할 필요가 없습니다.
-
-`manifest.json`의 `key`로 확장 아이디를 `pkpabpnpecgcpakaehojnphgeajoieih`에 고정했습니다. 누가 설치하든 같은 아이디라 로그인 복귀 주소 `https://pkpabpnpecgcpakaehojnphgeajoieih.chromiumapp.org/*`를 Supabase에 한 번만 등록하면 됩니다.
-
-로컬 개발용 사본은 `bash extension/install.sh`가 만들어 줍니다. 자세한 절차와 깨질 수 있는 부분은 [`extension/README.md`](extension/README.md)에 있습니다.
+설치·사용·권한·본문 게시 조건은 [확장 안내](extension/README.md)를 확인합니다.
+[릴리스 페이지](https://github.com/HongYeseul/coding-test-verification/releases/latest)에서 배포용 ZIP을 받습니다.
 
 ## 릴리스 노트
 

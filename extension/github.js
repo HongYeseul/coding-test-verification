@@ -215,8 +215,7 @@ export async function createAndChooseRepo(name) {
 }
 
 /**
- * 도장을 찍은 풀이를 고른 저장소에 올립니다. 도장과 따로 가므로 여기서 실패해도 도장은
- * 남습니다. 돌려주는 주소는 그 문제의 폴더입니다.
+ * 정답 풀이를 고른 저장소에 올리고 문제 폴더의 주소를 돌려줍니다.
  */
 export async function uploadSolution(input) {
   const solution = solutionFiles(input);

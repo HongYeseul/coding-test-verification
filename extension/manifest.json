@@ -1,24 +1,22 @@
 {
   "manifest_version": 3,
   "name": "도장",
-  "version": "0.2.14",
-  "description": "보고 있는 화면이나 방금 맞힌 풀이로 스터디 도장을 찍습니다.",
+  "version": "0.3.0",
+  "description": "프로그래머스·LeetCode·NeetCode에서 정답을 맞히면 GitHub 저장소에 풀이를 자동으로 올립니다.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApkMkywQICRmAxc65ef9rIcm0IWMe3c903Sj3y0AdppYeaxBt8ygxSuZOooDX7lqDTHWLywdZa6C9rBk8sLQRhFZRb6gaXd7kRtUJ3CXADxFSFMIuRYzs6JVxegaCtEA06gSGy8OW+DmtSnhF6JZrwcoNArlkDwnfFYhjVaQx4EDYQtcYODKqrbjvUA50lFyz7VfTO/brRbh2VnhdvJD6m6e94CMZm72FBLrSxiuO5U2sasmueZQiIOD25cROgUpwIYsOETMtC0zHHSdtJA8su6/1cKUU5tJQVYiDETtUy0hsaJj+I2fLcNaagXNA9UVFz5Q+aj5V1shnrfNpMP8ItQIDAQAB",
   "permissions": [
-    "activeTab",
     "identity",
     "scripting",
     "storage"
   ],
   "host_permissions": [
-    "https://coding-test-verification.vercel.app/*",
     "https://dzibporiiexvsndungkx.supabase.co/*",
     "https://school.programmers.co.kr/learn/courses/30/lessons/*",
     "https://neetcode.io/*",
     "https://leetcode.com/*"
   ],
   "action": {
-    "default_title": "도장 찍기",
+    "default_title": "도장 · GitHub 자동 올리기",
     "default_popup": "popup.html"
   },
   "icons": {
@@ -90,6 +88,7 @@
         "seal.js",
         "content/confetti.js",
         "content/card.js",
+        "content/statement.js",
         "content/leetcode.js"
       ],
       "css": [

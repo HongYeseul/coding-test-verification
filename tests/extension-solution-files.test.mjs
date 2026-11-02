@@ -228,7 +228,7 @@ test("커밋 본문 끝에 어느 서비스가 올렸는지 남기고 첫 줄에
   assert.doesNotMatch(lines[0], /도장|Auto-committed/);
   assert.equal(lines.at(-1), SIGNATURE);
   assert.equal(lines.at(-2), "");
-  assert.equal(SIGNATURE, "Auto-committed by 도장 (https://coding-test-verification.vercel.app)");
+  assert.equal(SIGNATURE, "Auto-committed by 도장 (https://github.com/HongYeseul/coding-test-verification)");
 });
 
 test("파일 이름은 언어를 따르고, 모르는 언어는 코드를 잃지 않도록 txt로 둔다", () => {
@@ -477,9 +477,9 @@ test("설명이 없거나 모양이 틀리거나 너무 길면 README는 그대�
     );
 });
 
-test("프로그래머스 말고는 설명을 넘겨도 싣지 않는다", () => {
-  // NeetCode·LeetCode는 게시를 허락하는 안내를 확인하지 못했습니다.
-  for (const problemUrl of [NEETCODE, LEETCODE]) {
+test("NeetCode는 설명을 넘겨도 싣지 않는다", () => {
+  // NeetCode 설명은 수집하지 않습니다.
+  for (const problemUrl of [NEETCODE]) {
     const base = { problemUrl, title: "t", language: "python3", code: "x", tags: "" };
     assert.equal(
       solutionFiles({ ...base, statement: STATEMENT, catalog: PRACTICE }).files[1].content,
@@ -487,4 +487,28 @@ test("프로그래머스 말고는 설명을 넘겨도 싣지 않는다", () => 
       problemUrl,
     );
   }
+});
+
+test("LeetCode 본문은 예시·제한사항과 출처 링크를 README에 싣는다", () => {
+  const base = { problemUrl: LEETCODE, title: "1. Two Sum", language: "cpp", code: "int x;" };
+  const statement = h("div", null,
+    h("p", null, "지어낸 문제 본문"),
+    h("pre", null, "Input: value = 3\nOutput: 6"),
+    h("ul", null, h("li", null, "1 ≤ n ≤ 10", h("sup", null, "5"))),
+  );
+  const plain = solutionFiles(base);
+  const result = solutionFiles({ ...base, statement });
+  assert.match(result.files[1].content, /## 문제 설명\n\n지어낸 문제 본문/);
+  assert.match(result.files[1].content, /```\nInput: value = 3\nOutput: 6\n```/);
+  assert.match(result.files[1].content, /10<sup>5<\/sup>/);
+  assert.ok(result.files[1].content.endsWith(`출처: LeetCode, ${LEETCODE}\n`));
+  assert.equal(result.message, plain.message);
+  assert.deepEqual(result.files[0], plain.files[0]);
+});
+
+test("LeetCode 본문이 없거나 너무 길면 풀이와 기본 README만 올린다", () => {
+  const base = { problemUrl: LEETCODE, title: "t", code: "x" };
+  const plain = solutionFiles(base);
+  for (const statement of [null, {}, h("div", null, "x".repeat(30001))])
+    assert.deepEqual(solutionFiles({ ...base, statement }), plain);
 });

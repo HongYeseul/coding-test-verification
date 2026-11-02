@@ -103,49 +103,17 @@ button:disabled {
   font-size: 13px;
 }
 
-/* GitHub 저장소는 한 줄입니다. 연결하고 고르는 일은 정답 카드에서 하고, 여기서는
-   어디에 올리고 있는지 보고 끕니다. */
-.repo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 16px 0 0;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
-  font-size: 13px;
-}
-
-.repo[hidden] {
-  display: none;
-}
-
-.repo > span:first-child {
-  flex: none;
-}
-
-.repo a {
-  min-width: 0;
-  overflow: hidden;
+#repo-link {
+  display: block;
+  margin-bottom: 12px;
+  overflow-wrap: anywhere;
   color: var(--brand);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.repo-state {
-  color: var(--sub);
-}
-
-.repo-disconnect {
-  flex: none;
-  width: auto;
-  min-height: 0;
-  margin-left: auto;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--sub);
   font-size: 13px;
-  font-weight: 400;
+}
+
+[hidden],
+#repo-link[hidden] {
+  display: none;
 }
 
 #status {

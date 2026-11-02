@@ -5,7 +5,7 @@
 # 설정·복사·크롬 열기까지만 하고, 마지막 두 단계는 화면에 안내합니다.
 #
 #   bash install.sh
-#   APP_URL=... SUPABASE_URL=... SUPABASE_KEY=... bash install.sh   # 묻지 않고 진행
+#   SUPABASE_URL=... SUPABASE_KEY=... bash install.sh   # 묻지 않고 진행
 set -euo pipefail
 
 SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -41,19 +41,14 @@ env_value() {
   [ -f "$ENV_FILE" ] || return 0
   sed -n "s/^$1=//p" "$ENV_FILE" | tail -1 | tr -d '"'"'"' \r'
 }
-DEFAULT_APP_URL="$(env_value NEXT_PUBLIC_SITE_URL)"
 DEFAULT_SUPABASE_URL="$(env_value NEXT_PUBLIC_SUPABASE_URL)"
 DEFAULT_KEY="$(env_value NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)"
 
 # 로컬 개발용 주소가 잡히면 운영 주소를 기본값으로 둡니다.
-case "$DEFAULT_APP_URL" in ""|*localhost*|*127.0.0.1*)
-  DEFAULT_APP_URL="https://coding-test-verification.vercel.app" ;;
-esac
 case "$DEFAULT_SUPABASE_URL" in ""|*localhost*|*127.0.0.1*)
   DEFAULT_SUPABASE_URL="https://dzibporiiexvsndungkx.supabase.co" ;;
 esac
 
-ask APP_URL "도장 서비스 주소" "$DEFAULT_APP_URL"
 ask SUPABASE_URL "Supabase 프로젝트 주소" "$DEFAULT_SUPABASE_URL"
 if [ -n "$DEFAULT_KEY" ]; then
   echo "· publishable key는 .env.local에서 읽었습니다."
@@ -62,7 +57,6 @@ else
   ask SUPABASE_KEY "Supabase publishable key (sb_publishable_… 또는 anon key)" ""
 fi
 
-APP_URL="${APP_URL%/}"
 SUPABASE_URL="${SUPABASE_URL%/}"
 
 if [ -z "$SUPABASE_KEY" ]; then
@@ -89,14 +83,14 @@ rm -f "$TARGET_DIR/install.sh" "$TARGET_DIR/README.md"
 cat > "$TARGET_DIR/config.js" <<CONFIG
 // install.sh가 만든 파일입니다. 주소를 바꾸려면 스크립트를 다시 실행하세요.
 export const CONFIG = {
-  appUrl: "$APP_URL",
+  appUrl: "https://github.com/HongYeseul/coding-test-verification",
   supabaseUrl: "$SUPABASE_URL",
   supabasePublishableKey:
     "$SUPABASE_KEY",
 };
 CONFIG
 
-APP_URL="$APP_URL" SUPABASE_URL="$SUPABASE_URL" TARGET_DIR="$TARGET_DIR" python3 - <<'PY'
+SUPABASE_URL="$SUPABASE_URL" TARGET_DIR="$TARGET_DIR" python3 - <<'PY'
 import json, os
 path = os.path.join(os.environ["TARGET_DIR"], "manifest.json")
 with open(path, encoding="utf-8") as f:
@@ -107,7 +101,6 @@ platforms = sorted({
     match for script in manifest.get("content_scripts", []) for match in script["matches"]
 })
 manifest["host_permissions"] = [
-    f"{os.environ['APP_URL']}/*",
     f"{os.environ['SUPABASE_URL']}/*",
     *platforms,
 ]
@@ -143,5 +136,5 @@ ${PROJECT_REF:+
 
        https://supabase.com/dashboard/project/$PROJECT_REF/auth/url-configuration
 }
-설치가 끝나면 도장 아이콘을 눌러 GitHub로 연결하고 스터디를 고르세요.
+설치가 끝나면 도장 아이콘을 눌러 GitHub로 로그인하고 공개 저장소를 고르세요.
 GUIDE

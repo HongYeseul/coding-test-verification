@@ -42,7 +42,6 @@ test("카드가 만드는 단추는 모두 .dojang-card 아래에서 모양을 �
     "dojang-close",
     "dojang-secondary",
     "dojang-small",
-    "dojang-stamp",
     "dojang-text",
   ]);
   for (const name of classes) {
